@@ -26,7 +26,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   List<Ball> balls = [];
   Rect deathZone = Rect.fromLTWH(50, 50, 300, 300);
   Rect elasticZone = Rect.fromLTWH(150, 150, 100, 100);
-  double elasticStretch = 0;
+  double stretchLeft = 0;
+  double stretchRight = 0;
+  double stretchTop = 0;
+  double stretchBottom = 0;
   final Random random = Random();
   Ball? playerBall;
 
@@ -65,74 +68,127 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   }
 
   void updatePhysics() {
-    // Update ball positions
-    for (var ball in balls) {
+    // Gradually reduce the stretch (revert to fixed decay rate)
+    if (stretchLeft > 0) {
+      stretchLeft -= 0.1; // Fixed decay rate as before
+      if (stretchLeft < 0) stretchLeft = 0;
+    }
+    if (stretchRight > 0) {
+      stretchRight -= 0.1;
+      if (stretchRight < 0) stretchRight = 0;
+    }
+    if (stretchTop > 0) {
+      stretchTop -= 0.1;
+      if (stretchTop < 0) stretchTop = 0;
+    }
+    if (stretchBottom > 0) {
+      stretchBottom -= 0.1;
+      if (stretchBottom < 0) stretchBottom = 0;
+    }
+
+    // Update ball positions and check for collisions
+    for (int i = balls.length - 1; i >= 0; i--) {
+      var ball = balls[i];
       ball.x += ball.dx;
       ball.y += ball.dy;
 
       // Check collision with elastic zone
-      Rect expandedElasticZone = elasticZone.inflate(elasticStretch);
-      if (expandedElasticZone.contains(Offset(ball.x, ball.y))) {
-        // Ball is inside or hitting the elastic zone
-        if (ball.x - ball.radius < expandedElasticZone.left) {
-          ball.dx = -ball.dx;
-          ball.x = expandedElasticZone.left + ball.radius;
-          elasticStretch += 2; // Stretch the elastic zone
-        } else if (ball.x + ball.radius > expandedElasticZone.right) {
-          ball.dx = -ball.dx;
-          ball.x = expandedElasticZone.right - ball.radius;
-          elasticStretch += 2;
-        }
-        if (ball.y - ball.radius < expandedElasticZone.top) {
-          ball.dy = -ball.dy;
-          ball.y = expandedElasticZone.top + ball.radius;
-          elasticStretch += 2;
-        } else if (ball.y + ball.radius > expandedElasticZone.bottom) {
-          ball.dy = -ball.dy;
-          ball.y = expandedElasticZone.bottom - ball.radius;
-          elasticStretch += 2;
-        }
+      Rect expandedElasticZone = Rect.fromLTRB(
+        elasticZone.left - stretchLeft,
+        elasticZone.top - stretchTop,
+        elasticZone.right + stretchRight,
+        elasticZone.bottom + stretchBottom,
+      );
+
+      // Check if the ball touches the death zone with a small tolerance
+      bool ballDies = false;
+      const tolerance = 1.0; // Small tolerance for death zone collision
+      if (ball.x - ball.radius <= deathZone.left + tolerance &&
+          stretchLeft >= 100 - tolerance) {
+        ballDies = true;
+      } else if (ball.x + ball.radius >= deathZone.right - tolerance &&
+          stretchRight >= 100 - tolerance) {
+        ballDies = true;
+      }
+      if (ball.y - ball.radius <= deathZone.top + tolerance &&
+          stretchTop >= 100 - tolerance) {
+        ballDies = true;
+      } else if (ball.y + ball.radius >= deathZone.bottom - tolerance &&
+          stretchBottom >= 100 - tolerance) {
+        ballDies = true;
       }
 
-      // Check collision with death zone boundaries (fixed)
-      if (ball.x - ball.radius < deathZone.left) {
-        ball.dx = -ball.dx;
-        ball.x = deathZone.left + ball.radius;
-      } else if (ball.x + ball.radius > deathZone.right) {
-        ball.dx = -ball.dx;
-        ball.x = deathZone.right - ball.radius;
+      if (ballDies) {
+        balls.removeAt(i);
+        if (ball == playerBall) playerBall = null;
+        continue;
       }
-      if (ball.y - ball.radius < deathZone.top) {
-        ball.dy = -ball.dy;
-        ball.y = deathZone.top + ball.radius;
-      } else if (ball.y + ball.radius > deathZone.bottom) {
-        ball.dy = -ball.dy;
-        ball.y = deathZone.bottom - ball.radius;
+
+      // Ensure the ball stays within the elastic zone
+      if (ball.x - ball.radius < expandedElasticZone.left) {
+        ball.dx = -ball.dx;
+        ball.x = expandedElasticZone.left + ball.radius;
+        stretchLeft += 10;
+      } else if (ball.x + ball.radius > expandedElasticZone.right) {
+        ball.dx = -ball.dx;
+        ball.x = expandedElasticZone.right - ball.radius;
+        stretchRight += 10;
       }
+      if (ball.y - ball.radius < expandedElasticZone.top) {
+        ball.dy = -ball.dy;
+        ball.y = expandedElasticZone.top + ball.radius;
+        stretchTop += 10;
+      } else if (ball.y + ball.radius > expandedElasticZone.bottom) {
+        ball.dy = -ball.dy;
+        ball.y = expandedElasticZone.bottom - ball.radius;
+        stretchBottom += 10;
+      }
+
+      // Cap the stretch so it doesn't exceed the death zone's inner edge
+      if (stretchLeft > 100) stretchLeft = 100;
+      if (stretchRight > 100) stretchRight = 100;
+      if (stretchTop > 100) stretchTop = 100;
+      if (stretchBottom > 100) stretchBottom = 100;
     }
 
-    // Check ball-to-ball collisions
+    // Check ball-to-ball collisions with correct elastic collision for equal masses
     for (int i = 0; i < balls.length; i++) {
       for (int j = i + 1; j < balls.length; j++) {
         Ball b1 = balls[i];
         Ball b2 = balls[j];
         double dist = sqrt(pow(b1.x - b2.x, 2) + pow(b1.y - b2.y, 2));
         if (dist < b1.radius + b2.radius) {
-          // Elastic collision
-          double angle = atan2(b2.y - b1.y, b2.x - b1.x);
-          double speed1 = sqrt(pow(b1.dx, 2) + pow(b1.dy, 2));
-          double speed2 = sqrt(pow(b2.dx, 2) + pow(b2.dy, 2));
-          b1.dx = -speed1 * cos(angle);
-          b1.dy = -speed1 * sin(angle);
-          b2.dx = speed2 * cos(angle);
-          b2.dy = speed2 * sin(angle);
+          // Normalize the collision vector
+          double dx = b2.x - b1.x;
+          double dy = b2.y - b1.y;
+          double dist = sqrt(dx * dx + dy * dy);
+          double nx = dx / dist;
+          double ny = dy / dist;
+
+          // Project velocities onto the normal and tangent vectors
+          double v1n = b1.dx * nx + b1.dy * ny; // Normal component of b1
+          double v1t_x = b1.dx - v1n * nx; // Tangential component of b1
+          double v1t_y = b1.dy - v1n * ny;
+          double v2n = b2.dx * nx + b2.dy * ny; // Normal component of b2
+          double v2t_x = b2.dx - v2n * nx; // Tangential component of b2
+          double v2t_y = b2.dy - v2n * ny;
+
+          // For equal masses in perfectly elastic collision, swap normal components
+          double v1n_new = v2n;
+          double v2n_new = v1n;
+
+          // Recombine normal and tangential components
+          b1.dx = v1t_x + v1n_new * nx;
+          b1.dy = v1t_y + v1n_new * ny;
+          b2.dx = v2t_x + v2n_new * nx;
+          b2.dy = v2t_y + v2n_new * ny;
 
           // Adjust positions to prevent sticking
           double overlap = (b1.radius + b2.radius - dist) / 2;
-          b1.x -= overlap * cos(angle);
-          b1.y -= overlap * sin(angle);
-          b2.x += overlap * cos(angle);
-          b2.y += overlap * sin(angle);
+          b1.x -= overlap * nx;
+          b1.y -= overlap * ny;
+          b2.x += overlap * nx;
+          b2.y += overlap * ny;
         }
       }
     }
@@ -156,7 +212,15 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     return GestureDetector(
       onTapDown: (details) => onTap(details.localPosition),
       child: CustomPaint(
-        painter: GamePainter(balls, deathZone, elasticZone, elasticStretch),
+        painter: GamePainter(
+          balls,
+          deathZone,
+          elasticZone,
+          stretchLeft,
+          stretchRight,
+          stretchTop,
+          stretchBottom,
+        ),
         size: Size.infinite,
       ),
     );
@@ -189,13 +253,19 @@ class GamePainter extends CustomPainter {
   final List<Ball> balls;
   final Rect deathZone;
   final Rect elasticZone;
-  final double elasticStretch;
+  final double stretchLeft;
+  final double stretchRight;
+  final double stretchTop;
+  final double stretchBottom;
 
   GamePainter(
     this.balls,
     this.deathZone,
     this.elasticZone,
-    this.elasticStretch,
+    this.stretchLeft,
+    this.stretchRight,
+    this.stretchTop,
+    this.stretchBottom,
   );
 
   @override
@@ -208,13 +278,29 @@ class GamePainter extends CustomPainter {
           ..strokeWidth = 2;
     canvas.drawRect(deathZone, deathPaint);
 
-    // Draw Elastic Zone
+    // Draw Elastic Zone with independent stretches for each side (denting effect)
     final elasticPaint =
         Paint()
           ..color = Colors.black.withOpacity(0.3)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2;
-    canvas.drawRect(elasticZone.inflate(elasticStretch), elasticPaint);
+    final path =
+        Path()
+          ..moveTo(elasticZone.left - stretchLeft, elasticZone.top - stretchTop)
+          ..lineTo(
+            elasticZone.right + stretchRight,
+            elasticZone.top - stretchTop,
+          )
+          ..lineTo(
+            elasticZone.right + stretchRight,
+            elasticZone.bottom + stretchBottom,
+          )
+          ..lineTo(
+            elasticZone.left - stretchLeft,
+            elasticZone.bottom + stretchBottom,
+          )
+          ..close();
+    canvas.drawPath(path, elasticPaint);
 
     // Draw balls
     for (var ball in balls) {
