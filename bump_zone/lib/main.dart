@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -7,116 +8,221 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+    return MaterialApp(home: Scaffold(body: GameWidget()));
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class GameWidget extends StatefulWidget {
+  const GameWidget({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<GameWidget> createState() => _GameWidgetState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  List<Ball> balls = [];
+  Rect deathZone = Rect.fromLTWH(50, 50, 300, 300);
+  Rect elasticZone = Rect.fromLTWH(150, 150, 100, 100);
+  double elasticStretch = 0;
+  final Random random = Random();
+  Ball? playerBall;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  @override
+  void initState() {
+    super.initState();
+    // Initialize balls
+    for (int i = 0; i < 5; i++) {
+      double x = 150 + random.nextDouble() * 50;
+      double y = 150 + random.nextDouble() * 50;
+      double dx = (random.nextDouble() - 0.5) * 4;
+      double dy = (random.nextDouble() - 0.5) * 4;
+      Color color =
+          i == 0 ? Colors.red : Colors.accents[i % Colors.accents.length];
+      Ball ball = Ball(
+        x: x,
+        y: y,
+        dx: dx,
+        dy: dy,
+        radius: i == 0 ? 10 : 8,
+        color: color,
+      );
+      balls.add(ball);
+      if (i == 0) playerBall = ball; // First ball is the player ball
+    }
+
+    // Animation controller for game loop
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(days: 1),
+    )..addListener(() {
+      updatePhysics();
+      setState(() {});
     });
+    _controller.forward();
+  }
+
+  void updatePhysics() {
+    // Update ball positions
+    for (var ball in balls) {
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Check collision with elastic zone
+      Rect expandedElasticZone = elasticZone.inflate(elasticStretch);
+      if (expandedElasticZone.contains(Offset(ball.x, ball.y))) {
+        // Ball is inside or hitting the elastic zone
+        if (ball.x - ball.radius < expandedElasticZone.left) {
+          ball.dx = -ball.dx;
+          ball.x = expandedElasticZone.left + ball.radius;
+          elasticStretch += 2; // Stretch the elastic zone
+        } else if (ball.x + ball.radius > expandedElasticZone.right) {
+          ball.dx = -ball.dx;
+          ball.x = expandedElasticZone.right - ball.radius;
+          elasticStretch += 2;
+        }
+        if (ball.y - ball.radius < expandedElasticZone.top) {
+          ball.dy = -ball.dy;
+          ball.y = expandedElasticZone.top + ball.radius;
+          elasticStretch += 2;
+        } else if (ball.y + ball.radius > expandedElasticZone.bottom) {
+          ball.dy = -ball.dy;
+          ball.y = expandedElasticZone.bottom - ball.radius;
+          elasticStretch += 2;
+        }
+      }
+
+      // Check collision with death zone boundaries (fixed)
+      if (ball.x - ball.radius < deathZone.left) {
+        ball.dx = -ball.dx;
+        ball.x = deathZone.left + ball.radius;
+      } else if (ball.x + ball.radius > deathZone.right) {
+        ball.dx = -ball.dx;
+        ball.x = deathZone.right - ball.radius;
+      }
+      if (ball.y - ball.radius < deathZone.top) {
+        ball.dy = -ball.dy;
+        ball.y = deathZone.top + ball.radius;
+      } else if (ball.y + ball.radius > deathZone.bottom) {
+        ball.dy = -ball.dy;
+        ball.y = deathZone.bottom - ball.radius;
+      }
+    }
+
+    // Check ball-to-ball collisions
+    for (int i = 0; i < balls.length; i++) {
+      for (int j = i + 1; j < balls.length; j++) {
+        Ball b1 = balls[i];
+        Ball b2 = balls[j];
+        double dist = sqrt(pow(b1.x - b2.x, 2) + pow(b1.y - b2.y, 2));
+        if (dist < b1.radius + b2.radius) {
+          // Elastic collision
+          double angle = atan2(b2.y - b1.y, b2.x - b1.x);
+          double speed1 = sqrt(pow(b1.dx, 2) + pow(b1.dy, 2));
+          double speed2 = sqrt(pow(b2.dx, 2) + pow(b2.dy, 2));
+          b1.dx = -speed1 * cos(angle);
+          b1.dy = -speed1 * sin(angle);
+          b2.dx = speed2 * cos(angle);
+          b2.dy = speed2 * sin(angle);
+
+          // Adjust positions to prevent sticking
+          double overlap = (b1.radius + b2.radius - dist) / 2;
+          b1.x -= overlap * cos(angle);
+          b1.y -= overlap * sin(angle);
+          b2.x += overlap * cos(angle);
+          b2.y += overlap * sin(angle);
+        }
+      }
+    }
+  }
+
+  void onTap(Offset position) {
+    if (playerBall == null) return;
+    // Calculate direction from player ball to tap position
+    double dx = position.dx - playerBall!.x;
+    double dy = position.dy - playerBall!.y;
+    double magnitude = sqrt(dx * dx + dy * dy);
+    if (magnitude > 0) {
+      // Normalize and apply boost
+      playerBall!.dx += (dx / magnitude) * 5;
+      playerBall!.dy += (dy / magnitude) * 5;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    return GestureDetector(
+      onTapDown: (details) => onTap(details.localPosition),
+      child: CustomPaint(
+        painter: GamePainter(balls, deathZone, elasticZone, elasticStretch),
+        size: Size.infinite,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+class Ball {
+  double x, y;
+  double dx, dy;
+  double radius;
+  Color color;
+
+  Ball({
+    required this.x,
+    required this.y,
+    required this.dx,
+    required this.dy,
+    required this.radius,
+    required this.color,
+  });
+}
+
+class GamePainter extends CustomPainter {
+  final List<Ball> balls;
+  final Rect deathZone;
+  final Rect elasticZone;
+  final double elasticStretch;
+
+  GamePainter(
+    this.balls,
+    this.deathZone,
+    this.elasticZone,
+    this.elasticStretch,
+  );
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Draw Death Zone
+    final deathPaint =
+        Paint()
+          ..color = Colors.red.withOpacity(0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+    canvas.drawRect(deathZone, deathPaint);
+
+    // Draw Elastic Zone
+    final elasticPaint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+    canvas.drawRect(elasticZone.inflate(elasticStretch), elasticPaint);
+
+    // Draw balls
+    for (var ball in balls) {
+      final paint = Paint()..color = ball.color;
+      canvas.drawCircle(Offset(ball.x, ball.y), ball.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
