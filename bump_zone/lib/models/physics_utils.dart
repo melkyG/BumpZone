@@ -41,17 +41,26 @@ class PhysicsUtils {
 
     // Normal vector (perpendicular to segment)
     final normal = Vector2(-segment.y, segment.x).normalized();
+    
 
     // Ensure normal points away from ball
     final toBall = ball.position - (p1 + p2) / 2;
     if (normal.dot(toBall) < 0) {
       normal.scale(-1);
     }
+    // Position correction to prevent sticking
+    final closestPoint = p1 + segment * (((ball.position - p1).dot(segment) / segment.dot(segment)).clamp(0.0, 1.0));
+    final distance = (ball.position - closestPoint).length;
+    if (distance < ball.radius) {
+      final correction = (ball.radius - distance) * 1.01; // Slight over-correction
+      ball.position += normal * correction;
+    }
 
     // Relative velocity
     final v1 = ball.velocity;
     final v2 = (band.velocities[segmentIndex] + band.velocities[segmentIndex + 1]) / 2;
     final relativeVelocity = v1 - v2;
+    if (relativeVelocity.dot(normal).abs() < 0.1) return;
 
     // Impulse along normal
     final impulseMagnitude = -(1 + coefficientOfRestitution) * relativeVelocity.dot(normal) /

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../models/arena.dart';
 import '../models/ball.dart';
@@ -15,17 +16,24 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
   late Ball ball;
   late AnimationController controller;
-  final double deltaT = 0.002;
-  final int subSteps = 8;
+  final double deltaT = 0.001;
+  final int subSteps = 16;
   final double sideLength = 400.0;
+  final double containerWidth = 600.0;
+  final double containerHeight = 600.0;
   int numPtsPerSide = 15;
 
   // Settings values
   double springConstant = 1000.0;
-  double dampingCoeff = 5;
-  double mass = 1;
+  double dampingCoeff = 5.0;
+  double mass = 1.0;
   double coefficientOfRestitution = 1.0;
   double restLengthScale = 0.95;
+
+  // Cursor force
+  bool isClicking = false;
+  Vector2 cursorPosition = Vector2.zero();
+  final double forceConstant = 500.0;
 
   @override
   void initState() {
@@ -42,6 +50,12 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       duration: const Duration(days: 1),
     )..addListener(() {
         for (int i = 0; i < subSteps; i++) {
+          // Apply cursor force if clicking
+          if (isClicking) {
+            final direction = cursorPosition - ball.position;
+            final distance = direction.length;
+            ball.force = direction.normalized() * forceConstant * distance.clamp(0, 100);
+          }
           ball.update(deltaT);
           arena.update(deltaT, ball);
         }
@@ -51,10 +65,15 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   }
 
   void _initializeArena() {
+    // Center the arena in the container
+    final topLeft = Vector2(
+      (containerWidth - sideLength) / 2,
+      (containerHeight - sideLength) / 2,
+    );
     arena = Arena(
       sideLength: sideLength,
       numPtsPerSide: numPtsPerSide,
-      topLeft: Vector2(50.0, 50.0),
+      topLeft: topLeft,
     );
     arena.updateBandParameters(
       springConstant: springConstant,
@@ -74,112 +93,143 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Elastic Band Game'),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+      
+      body: Row(
+        children: [
+          // Game canvas
+          Expanded(
+            child: Center(
+              child: GestureDetector(
+                onPanDown: (details) {
+                  setState(() {
+                    isClicking = true;
+                    cursorPosition = Vector2(
+                      details.localPosition.dx,
+                      details.localPosition.dy,
+                    );
+                  });
+                },
+                onPanUpdate: (details) {
+                  setState(() {
+                    cursorPosition = Vector2(
+                      details.localPosition.dx,
+                      details.localPosition.dy,
+                    );
+                  });
+                },
+                onPanEnd: (_) {
+                  setState(() {
+                    isClicking = false;
+                  });
+                },
+                child: Container(
+                  width: 600,
+                  height: 600,
+                  color: Colors.grey[200],
+                  child: CustomPaint(
+                    painter: GamePainter(arena: arena, ball: ball),
+                  ),
+                ),
               ),
-              child: Text(
-                'Band Settings',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
             ),
-            _buildSlider(
-              label: 'Spring Constant',
-              value: springConstant,
-              min: 0.0,
-              max: 1000.0,
-              divisions: 900,
-              onChanged: (value) {
-                setState(() {
-                  springConstant = value;
-                  arena.updateBandParameters(springConstant: value);
-                });
-              },
-            ),
-            _buildSlider(
-              label: 'Damping Coefficient',
-              value: dampingCoeff,
-              min: 0.0,
-              max: 50,
-              divisions: 500,
-              onChanged: (value) {
-                setState(() {
-                  dampingCoeff = value;
-                  arena.updateBandParameters(dampingCoeff: value);
-                });
-              },
-            ),
-            _buildSlider(
-              label: 'Node Mass',
-              value: mass,
-              min: 0.01,
-              max: 5,
-              divisions: 200,
-              onChanged: (value) {
-                setState(() {
-                  mass = value;
-                  arena.updateBandParameters(mass: value);
-                });
-              },
-            ),
-            _buildSlider(
-              label: 'Coefficient of Restitution',
-              value: coefficientOfRestitution,
-              min: 0.01,
-              max: 1.0,
-              divisions: 200,
-              onChanged: (value) {
-                setState(() {
-                  coefficientOfRestitution = value;
-                  arena.updateBandParameters(coefficientOfRestitution: value);
-                });
-              },
-            ),
-            _buildSlider(
-              label: 'Rest Length Scale',
-              value: restLengthScale,
-              min: 0.9,
-              max: 1.0,
-              divisions: 100,
-              onChanged: (value) {
-                setState(() {
-                  restLengthScale = value;
-                  arena.updateBandParameters(restLengthScale: value);
-                });
-              },
-            ),
-            _buildSlider(
-              label: 'Nodes per Side',
-              value: numPtsPerSide.toDouble(),
-              min: 5,
-              max: 75,
-              divisions: 70,
-              onChanged: (value) {
-                setState(() {
-                  numPtsPerSide = value.round();
-                  _initializeArena(); // Rebuild arena with new numPtsPerSide
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Container(
-          width: 500,
-          height: 500,
-          color: Colors.grey[200],
-          child: CustomPaint(
-            painter: GamePainter(arena: arena, ball: ball),
           ),
-        ),
+          // Settings panel
+          Container(
+            width: 500,
+            padding: const EdgeInsets.all(16.0),
+            color: Colors.white.withOpacity(0.8),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Band Settings',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSlider(
+                    label: 'Spring Constant',
+                    value: springConstant,
+                    min: 0.0,
+                    max: 1000.0,
+                    divisions: 900,
+                    onChanged: (value) {
+                      setState(() {
+                        springConstant = value;
+                        arena.updateBandParameters(springConstant: value);
+                      });
+                    },
+                  ),
+                  _buildSlider(
+                    label: 'Damping Coefficient',
+                    value: dampingCoeff,
+                    min: 0.0,
+                    max: 50,
+                    divisions: 500,
+                    onChanged: (value) {
+                      setState(() {
+                        dampingCoeff = value;
+                        arena.updateBandParameters(dampingCoeff: value);
+                      });
+                    },
+                  ),
+                  _buildSlider(
+                    label: 'Node Mass',
+                    value: mass,
+                    min: 0.01,
+                    max: 5,
+                    divisions: 200,
+                    onChanged: (value) {
+                      setState(() {
+                        mass = value;
+                        arena.updateBandParameters(mass: value);
+                      });
+                    },
+                  ),
+                  _buildSlider(
+                    label: 'Coefficient of Restitution',
+                    value: coefficientOfRestitution,
+                    min: 0.01,
+                    max: 1.0,
+                    divisions: 200,
+                    onChanged: (value) {
+                      setState(() {
+                        coefficientOfRestitution = value;
+                        arena.updateBandParameters(coefficientOfRestitution: value);
+                      });
+                    },
+                  ),
+                  _buildSlider(
+                    label: 'Rest Length Scale',
+                    value: restLengthScale,
+                    min: 0.9,
+                    max: 1.0,
+                    divisions: 100,
+                    onChanged: (value) {
+                      setState(() {
+                        restLengthScale = value;
+                        arena.updateBandParameters(restLengthScale: value);
+                      });
+                    },
+                  ),
+                  _buildSlider(
+                    label: 'Nodes per Side',
+                    value: numPtsPerSide.toDouble(),
+                    min: 5,
+                    max: 75,
+                    divisions: 70,
+                    onChanged: (value) {
+                      setState(() {
+                        numPtsPerSide = value.round();
+                        _initializeArena();
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -193,7 +243,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     required ValueChanged<double> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

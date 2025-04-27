@@ -19,7 +19,7 @@ class ElasticBand {
     required double sideLength,
     required Vector2 start,
     required Vector2 end,
-    this.springConstant = 100.0,
+    this.springConstant = 75.0,
     this.dampingCoeff = 0.0,
     this.mass = 0.1,
     double restLengthScale = 0.95,
@@ -110,11 +110,31 @@ class ElasticBand {
   }
 
   void handleBallCollision(Ball ball, double deltaT) {
+    double minDistance = double.infinity;
+    int? closestSegmentIndex;
+    Vector2? closestPoint;
+
+    // Find the closest colliding segment
     for (int i = 0; i < numPts - 1; i++) {
       if (fixedIndices.contains(i) && fixedIndices.contains(i + 1)) continue;
-      if (PhysicsUtils.detectBallBandCollision(ball, points[i], points[i + 1], deltaT, 5.0)) {
-        PhysicsUtils.resolveBallBandCollision(ball, this, i, coefficientOfRestitution);
+      final p1 = points[i];
+      final p2 = points[i + 1];
+      if (PhysicsUtils.detectBallBandCollision(ball, p1, p2, deltaT, 3.0)) {
+        final segment = p2 - p1;
+        final t = ((ball.position - p1).dot(segment) / segment.dot(segment)).clamp(0.0, 1.0);
+        final point = p1 + segment * t;
+        final distance = (ball.position - point).length;
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestSegmentIndex = i;
+          closestPoint = point;
+        }
       }
+    }
+
+    // Resolve only the closest collision
+    if (closestSegmentIndex != null && closestPoint != null) {
+      PhysicsUtils.resolveBallBandCollision(ball, this, closestSegmentIndex, coefficientOfRestitution);
     }
   }
 }
