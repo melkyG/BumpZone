@@ -15,10 +15,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
   late Ball ball;
   late AnimationController controller;
-  final double deltaT = 0.002; // Smaller time step (~250 FPS per sub-step)
-  final int subSteps = 8; // Number of sub-steps per frame
+  final double deltaT = 0.004; // Smaller time step (~250 FPS per sub-step)
+  final int subSteps = 4; // Number of sub-steps per frame
   final double sideLength = 400.0;
-  final int numPtsPerSide = 100;
+  final int numPtsPerSide = 20;
 
   @override
   void initState() {
@@ -31,10 +31,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     );
     // Initialize the ball
     ball = Ball(
-      position: Vector2(250.0, 250.0),
-      velocity: Vector2(150.0, 75.0),
-      mass: 5.0, // Heavier ball
-      radius: 15.0,
+      position: Vector2(200.0, 250.0),
+      velocity: Vector2(450.0, 75.0),
+      mass: 7.0, // Heavier ball
+      radius: 30.0,
     );
     // Set up game loop
     controller = AnimationController(

@@ -18,9 +18,9 @@ class ElasticBand {
     required double sideLength,
     required Vector2 start,
     required Vector2 end,
-    this.springConstant = 1.0,
-    this.dampingCoeff = 0.1,
-    this.mass = 1.0,
+    this.springConstant = 10000.0, //band tightness
+    this.dampingCoeff = 5,
+    this.mass = 1,
   })  : restLength = sideLength / (numPts - 1),
         points = [],
         velocities = [],
@@ -88,8 +88,8 @@ class ElasticBand {
   void handleBallCollision(Ball ball, double deltaT) {
     for (int i = 0; i < numPts - 1; i++) {
       if (fixedIndices.contains(i) && fixedIndices.contains(i + 1)) continue;
-      if (PhysicsUtils.detectBallBandCollision(ball, points[i], points[i + 1], deltaT, 2.0)) {
-        PhysicsUtils.resolveBallBandCollision(ball, this, i, 0.8);
+      if (PhysicsUtils.detectBallBandCollision(ball, points[i], points[i + 1], deltaT, 4.0)) {
+        PhysicsUtils.resolveBallBandCollision(ball, this, i, 0.99);
       }
     }
   }
