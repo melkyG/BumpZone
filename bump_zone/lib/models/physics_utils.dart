@@ -42,7 +42,7 @@ class PhysicsUtils {
     // Normal vector (perpendicular to segment)
     final normal = Vector2(-segment.y, segment.x).normalized();
     
-
+  
     // Ensure normal points away from ball
     final toBall = ball.position - (p1 + p2) / 2;
     if (normal.dot(toBall) < 0) {
@@ -60,7 +60,7 @@ class PhysicsUtils {
     final v1 = ball.velocity;
     final v2 = (band.velocities[segmentIndex] + band.velocities[segmentIndex + 1]) / 2;
     final relativeVelocity = v1 - v2;
-    if (relativeVelocity.dot(normal).abs() < 0.1) return;
+    //if (relativeVelocity.dot(normal).abs() < 0.1) return;
 
     // Impulse along normal
     final impulseMagnitude = -(1 + coefficientOfRestitution) * relativeVelocity.dot(normal) /
@@ -70,6 +70,8 @@ class PhysicsUtils {
     ball.velocity += normal * (impulseMagnitude / ball.mass);
     band.velocities[segmentIndex] -= normal * (impulseMagnitude / (2 * band.mass));
     band.velocities[segmentIndex + 1] -= normal * (impulseMagnitude / (2 * band.mass));
+    if (ball.collisionCooldown > 0) return;
+    ball.collisionCooldown = 3; // Skip 3 frames
   }
 
   // Helper: Distance from a point to a line segment

@@ -6,6 +6,7 @@ class Ball {
   final double mass;
   final double radius;
   Vector2 force; // External force (e.g., from cursor)
+  int collisionCooldown = 0;
 
   Ball({
     required this.position,
@@ -14,7 +15,9 @@ class Ball {
     required this.radius,
   }) : force = Vector2.zero();
 
+
   void update(double deltaT) {
+    if (collisionCooldown > 0) collisionCooldown--;
     // Apply external force
     final acceleration = force / mass;
     velocity += acceleration * deltaT;
