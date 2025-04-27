@@ -15,10 +15,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
   late Ball ball;
   late AnimationController controller;
-  final double deltaT = 0.004; // Smaller time step (~250 FPS per sub-step)
-  final int subSteps = 4; // Number of sub-steps per frame
+  final double deltaT = 0.002; // Smaller time step (~250 FPS per sub-step)
+  final int subSteps = 8; // Number of sub-steps per frame
   final double sideLength = 400.0;
-  final int numPtsPerSide = 10;
+  final int numPtsPerSide = 100;
 
   @override
   void initState() {
