@@ -5,23 +5,26 @@ import 'physics_utils.dart';
 
 class ElasticBand {
   final int numPts; // Number of nodes (including fixed posts)
-  final double springConstant; // Hooke's law spring constant
-  final double dampingCoeff; // Damping coefficient
-  final double mass; // Mass of each node
-  final double restLength; // Rest length of each spring
+  double springConstant; // Hooke's law spring constant
+  double dampingCoeff; // Damping coefficient
+  double mass; // Mass of each node
+  double restLength; // Rest length of each spring
   List<Vector2> points; // Positions of nodes
   List<Vector2> velocities; // Velocities of nodes
   final List<int> fixedIndices; // Indices of fixed nodes (posts)
+  double coefficientOfRestitution; // Collision elasticity
 
   ElasticBand({
     required this.numPts,
     required double sideLength,
     required Vector2 start,
     required Vector2 end,
-    this.springConstant = 10000.0, //band tightness
-    this.dampingCoeff = 5,
-    this.mass = 1,
-  })  : restLength = sideLength / (numPts - 1),
+    this.springConstant = 100.0,
+    this.dampingCoeff = 0.0,
+    this.mass = 0.1,
+    double restLengthScale = 0.95,
+    this.coefficientOfRestitution = 1.0,
+  })  : restLength = (sideLength / (numPts - 1)) * restLengthScale,
         points = [],
         velocities = [],
         fixedIndices = [0, numPts - 1] {
@@ -29,27 +32,49 @@ class ElasticBand {
   }
 
   void _setInitialState(Vector2 start, Vector2 end) {
-    // Place nodes linearly between start and end
     points = List.generate(numPts, (i) {
       final t = i / (numPts - 1);
       return start + (end - start) * t;
     });
-    // Perturb interior nodes to show oscillation
     for (int i = 1; i < numPts - 1; i++) {
       final offset = Vector2(
-        10.0 * sin(i * pi / (numPts - 1)),
-        10.0 * cos(i * pi / (numPts - 1)),
+        15.0 * sin(i * pi / (numPts - 1)),
+        15.0 * cos(i * pi / (numPts - 1)),
       );
       points[i] += offset;
     }
     velocities = List.generate(numPts, (_) => Vector2.zero());
   }
 
+  // Update parameters dynamically
+  void updateParameters({
+    double? springConstant,
+    double? dampingCoeff,
+    double? mass,
+    double? restLengthScale,
+    double? coefficientOfRestitution,
+  }) {
+    if (springConstant != null && springConstant > 0) {
+      this.springConstant = springConstant;
+    }
+    if (dampingCoeff != null && dampingCoeff >= 0) {
+      this.dampingCoeff = dampingCoeff;
+    }
+    if (mass != null && mass > 0) {
+      this.mass = mass;
+    }
+    if (restLengthScale != null && restLengthScale > 0) {
+      this.restLength = (restLength / 0.95) * restLengthScale; // Adjust based on original sideLength
+    }
+    if (coefficientOfRestitution != null && coefficientOfRestitution >= 0) {
+      this.coefficientOfRestitution = coefficientOfRestitution;
+    }
+  }
+
   List<Vector2> _computeHookeForces() {
     final forces = List.generate(numPts, (_) => Vector2.zero());
     for (int i = 0; i < numPts; i++) {
-      if (fixedIndices.contains(i)) continue; // Skip fixed nodes
-      // Spring to previous node
+      if (fixedIndices.contains(i)) continue;
       if (i > 0) {
         final prevPt = points[i - 1];
         final currPt = points[i];
@@ -59,7 +84,6 @@ class ElasticBand {
         final forceMag = springConstant * (length - restLength);
         forces[i] += direction.normalized() * forceMag;
       }
-      // Spring to next node
       if (i < numPts - 1) {
         final nextPt = points[i + 1];
         final currPt = points[i];
@@ -76,7 +100,7 @@ class ElasticBand {
   void updateState(double deltaT) {
     final hookeForces = _computeHookeForces();
     for (int i = 0; i < numPts; i++) {
-      if (fixedIndices.contains(i)) continue; // Skip fixed nodes
+      if (fixedIndices.contains(i)) continue;
       final dampingForce = velocities[i] * (-dampingCoeff);
       final totalForce = hookeForces[i] + dampingForce;
       final acceleration = totalForce / mass;
@@ -88,8 +112,8 @@ class ElasticBand {
   void handleBallCollision(Ball ball, double deltaT) {
     for (int i = 0; i < numPts - 1; i++) {
       if (fixedIndices.contains(i) && fixedIndices.contains(i + 1)) continue;
-      if (PhysicsUtils.detectBallBandCollision(ball, points[i], points[i + 1], deltaT, 4.0)) {
-        PhysicsUtils.resolveBallBandCollision(ball, this, i, 0.99);
+      if (PhysicsUtils.detectBallBandCollision(ball, points[i], points[i + 1], deltaT, 5.0)) {
+        PhysicsUtils.resolveBallBandCollision(ball, this, i, coefficientOfRestitution);
       }
     }
   }
@@ -106,41 +130,58 @@ class Arena {
     required this.numPtsPerSide,
     required Vector2 topLeft,
   }) : bands = [], posts = [] {
-    // Define the four posts
     posts.addAll([
-      topLeft, // Top-left
-      Vector2(topLeft.x + sideLength, topLeft.y), // Top-right
-      Vector2(topLeft.x + sideLength, topLeft.y + sideLength), // Bottom-right
-      Vector2(topLeft.x, topLeft.y + sideLength), // Bottom-left
+      topLeft,
+      Vector2(topLeft.x + sideLength, topLeft.y),
+      Vector2(topLeft.x + sideLength, topLeft.y + sideLength),
+      Vector2(topLeft.x, topLeft.y + sideLength),
     ]);
 
-    // Create four bands connecting the posts
     bands.addAll([
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[0],
         end: posts[1],
-      ), // Top
+      ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[1],
         end: posts[2],
-      ), // Right
+      ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[2],
         end: posts[3],
-      ), // Bottom
+      ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[3],
         end: posts[0],
-      ), // Left
+      ),
     ]);
+  }
+
+  // Update band parameters
+  void updateBandParameters({
+    double? springConstant,
+    double? dampingCoeff,
+    double? mass,
+    double? restLengthScale,
+    double? coefficientOfRestitution,
+  }) {
+    for (var band in bands) {
+      band.updateParameters(
+        springConstant: springConstant,
+        dampingCoeff: dampingCoeff,
+        mass: mass,
+        restLengthScale: restLengthScale,
+        coefficientOfRestitution: coefficientOfRestitution,
+      );
+    }
   }
 
   void update(double deltaT, Ball? ball) {
