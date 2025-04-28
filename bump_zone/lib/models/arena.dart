@@ -82,9 +82,10 @@ class ElasticBand {
         final currPt = points[i];
         final direction = prevPt - currPt;
         final length = direction.length;
-        if (length == 0) continue;
-        final forceMag = springConstant * (length - restLength);
-        forces[i] += direction.normalized() * forceMag;
+        if (length != 0) {
+          final forceMag = springConstant * (length - restLength);
+          forces[i] += direction.normalized() * forceMag;
+        }
       }
 
       if (i < numPts - 1) {
@@ -92,9 +93,10 @@ class ElasticBand {
         final currPt = points[i];
         final direction = nextPt - currPt;
         final length = direction.length;
-        if (length == 0) continue;
-        final forceMag = springConstant * (length - restLength);
-        forces[i] += direction.normalized() * forceMag;
+        if (length != 0) {
+          final forceMag = springConstant * (length - restLength);
+          forces[i] += direction.normalized() * forceMag;
+        }
       }
     }
     return forces;
@@ -152,12 +154,19 @@ class ElasticBand {
       }
     }
 
+    // Ensure no seep into the ball, i.e., keep the band segments from entering the ball
     _enforceNoSeepIntoBall(ball);
 
+    // If we found the closest segment to the ball, resolve the collision
     if (closestSegmentIndex != null && closestPoint != null) {
       PhysicsUtils.resolveBallBandCollision(ball, this, closestSegmentIndex, coefficientOfRestitution);
+      
+      // Prevent the band from sticking to the ball by not applying force to the band.
+      // Here, we ensure that the band segments are only affected by their own spring forces,
+      // not by the ball's velocity or movement.
     }
   }
+
 }
 
 class Arena {
@@ -170,7 +179,8 @@ class Arena {
     required this.sideLength,
     required this.numPtsPerSide,
     required Vector2 topLeft,
-  }) : bands = [], posts = [] {
+  })  : bands = [],
+        posts = [] {
     posts.addAll([
       topLeft,
       Vector2(topLeft.x + sideLength, topLeft.y),
@@ -229,6 +239,31 @@ class Arena {
       band.updateState(deltaT);
       if (ball != null) {
         band.handleBallCollision(ball, deltaT);
+      }
+    }
+
+    if (ball != null) {
+      double minDistance = double.infinity;
+      Vector2? closestPost;
+      int? closestPostIndex;
+
+      for (int i = 0; i < posts.length; i++) {
+        if (PhysicsUtils.detectBallPostCollision(ball, posts[i], deltaT, 5.0)) {
+          final distance = (ball.position - posts[i]).length;
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPost = posts[i];
+            closestPostIndex = i;
+          }
+        }
+      }
+
+      if (closestPost != null && closestPostIndex != null) {
+        PhysicsUtils.resolveBallPostCollision(
+          ball,
+          closestPost,
+          bands[0].coefficientOfRestitution,
+        );
       }
     }
   }
