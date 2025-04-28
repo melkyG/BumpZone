@@ -11,14 +11,14 @@ class GamePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final postPaint = Paint()
-      ..color = Colors.red
-      ..style = PaintingStyle.fill;
+      ..color = const Color.fromARGB(255, 0, 0, 0);
+      //..style = PaintingStyle.fill;
     final bandPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
     final ballPaint = Paint()
-      ..color = Colors.green
+      ..color = const Color.fromARGB(255, 27, 63, 28)
       ..style = PaintingStyle.fill;
 
     // Draw each band

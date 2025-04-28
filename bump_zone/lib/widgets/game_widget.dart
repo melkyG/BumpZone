@@ -16,8 +16,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
   late Ball ball;
   late AnimationController controller;
-  final double deltaT = 0.001;
-  final int subSteps = 16;
+  final double deltaT = 0.002;
+  final int subSteps = 8;
   final double sideLength = 700.0;
   final double containerWidth = 1000.0;
   final double containerHeight = 1000.0;
