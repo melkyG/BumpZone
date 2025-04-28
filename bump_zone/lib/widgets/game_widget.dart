@@ -25,10 +25,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
 
   // Settings values
   double springConstant = 1000.0;
-  double dampingCoeff = 5.0;
-  double mass = 1.0;
-  double coefficientOfRestitution = 1.0;
-  double restLengthScale = 0.95;
+  double dampingCoeff = 4.3;
+  double mass = 0.01;
+  double coefficientOfRestitution = 0.01;
+  double restLengthScale = 0.0;
 
   // Cursor force
   bool isClicking = false;
@@ -42,7 +42,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     ball = Ball(
       position: Vector2(150.0, 150.0),
       velocity: Vector2(200.0, 85.0),
-      mass: 10.0,
+      mass: 5.0,
       radius: 30.0,
     );
     controller = AnimationController(
@@ -151,7 +151,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                     label: 'Spring Constant',
                     value: springConstant,
                     min: 0.0,
-                    max: 1000.0,
+                    max: 10000.0,
                     divisions: 900,
                     onChanged: (value) {
                       setState(() {
@@ -202,8 +202,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                   _buildSlider(
                     label: 'Rest Length Scale',
                     value: restLengthScale,
-                    min: 0.9,
-                    max: 1.0,
+                    min: 0.0,
+                    max: 3,
                     divisions: 100,
                     onChanged: (value) {
                       setState(() {

@@ -4,15 +4,15 @@ import '../models/ball.dart';
 import 'physics_utils.dart';
 
 class ElasticBand {
-  final int numPts; // Number of nodes (including fixed posts)
-  double springConstant; // Hooke's law spring constant
-  double dampingCoeff; // Damping coefficient
-  double mass; // Mass of each node
-  double restLength; // Rest length of each spring
-  List<Vector2> points; // Positions of nodes
-  List<Vector2> velocities; // Velocities of nodes
-  final List<int> fixedIndices; // Indices of fixed nodes (posts)
-  double coefficientOfRestitution; // Collision elasticity
+  final int numPts;
+  double springConstant;
+  double dampingCoeff;
+  double mass;
+  double restLength;
+  List<Vector2> points;
+  List<Vector2> velocities;
+  final List<int> fixedIndices;
+  double coefficientOfRestitution;
 
   ElasticBand({
     required this.numPts,
@@ -36,6 +36,7 @@ class ElasticBand {
       final t = i / (numPts - 1);
       return start + (end - start) * t;
     });
+
     for (int i = 1; i < numPts - 1; i++) {
       final offset = Vector2(
         15.0 * sin(i * pi / (numPts - 1)),
@@ -43,10 +44,10 @@ class ElasticBand {
       );
       points[i] += offset;
     }
+
     velocities = List.generate(numPts, (_) => Vector2.zero());
   }
 
-  // Update parameters dynamically
   void updateParameters({
     double? springConstant,
     double? dampingCoeff,
@@ -64,7 +65,7 @@ class ElasticBand {
       this.mass = mass;
     }
     if (restLengthScale != null && restLengthScale > 0) {
-      this.restLength = (restLength / 0.95) * restLengthScale; // Adjust based on original sideLength
+      this.restLength = (restLength / 0.95) * restLengthScale;
     }
     if (coefficientOfRestitution != null && coefficientOfRestitution >= 0) {
       this.coefficientOfRestitution = coefficientOfRestitution;
@@ -75,6 +76,7 @@ class ElasticBand {
     final forces = List.generate(numPts, (_) => Vector2.zero());
     for (int i = 0; i < numPts; i++) {
       if (fixedIndices.contains(i)) continue;
+
       if (i > 0) {
         final prevPt = points[i - 1];
         final currPt = points[i];
@@ -84,6 +86,7 @@ class ElasticBand {
         final forceMag = springConstant * (length - restLength);
         forces[i] += direction.normalized() * forceMag;
       }
+
       if (i < numPts - 1) {
         final nextPt = points[i + 1];
         final currPt = points[i];
@@ -101,6 +104,7 @@ class ElasticBand {
     final hookeForces = _computeHookeForces();
     for (int i = 0; i < numPts; i++) {
       if (fixedIndices.contains(i)) continue;
+
       final dampingForce = velocities[i] * (-dampingCoeff);
       final totalForce = hookeForces[i] + dampingForce;
       final acceleration = totalForce / mass;
@@ -109,17 +113,33 @@ class ElasticBand {
     }
   }
 
+  void _enforceNoSeepIntoBall(Ball ball) {
+    for (int i = 0; i < points.length; i++) {
+      if (fixedIndices.contains(i)) continue;
+
+      final toPoint = points[i] - ball.position;
+      final distance = toPoint.length;
+
+      if (distance < ball.radius) {
+        final correction = toPoint.normalized() * (ball.radius - distance);
+        points[i] += correction;
+        velocities[i] += correction * 5.0;
+      }
+    }
+  }
+
   void handleBallCollision(Ball ball, double deltaT) {
     double minDistance = double.infinity;
     int? closestSegmentIndex;
     Vector2? closestPoint;
 
-    // Find the closest colliding segment
     for (int i = 0; i < numPts - 1; i++) {
       if (fixedIndices.contains(i) && fixedIndices.contains(i + 1)) continue;
+
       final p1 = points[i];
       final p2 = points[i + 1];
-      if (PhysicsUtils.detectBallBandCollision(ball, p1, p2, deltaT, 3.0)) {
+
+      if (PhysicsUtils.detectBallBandCollision(ball, p1, p2, deltaT, 5.0)) {
         final segment = p2 - p1;
         final t = ((ball.position - p1).dot(segment) / segment.dot(segment)).clamp(0.0, 1.0);
         final point = p1 + segment * t;
@@ -132,7 +152,8 @@ class ElasticBand {
       }
     }
 
-    // Resolve only the closest collision
+    _enforceNoSeepIntoBall(ball);
+
     if (closestSegmentIndex != null && closestPoint != null) {
       PhysicsUtils.resolveBallBandCollision(ball, this, closestSegmentIndex, coefficientOfRestitution);
     }
@@ -185,7 +206,6 @@ class Arena {
     ]);
   }
 
-  // Update band parameters
   void updateBandParameters({
     double? springConstant,
     double? dampingCoeff,
