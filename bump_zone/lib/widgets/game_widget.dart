@@ -21,11 +21,11 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   final double sideLength = 400.0;
   final double containerWidth = 600.0;
   final double containerHeight = 600.0;
-  int numPtsPerSide = 15;
+  int numPtsPerSide = 20;
 
   // Settings values
-  double springConstant = 1000.0;
-  double dampingCoeff = 4.3;
+  double springConstant = 5000.0;
+  double dampingCoeff = 1.2;
   double mass = 0.01;
   double coefficientOfRestitution = 0.01;
   double restLengthScale = 0.0;
@@ -42,8 +42,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     ball = Ball(
       position: Vector2(150.0, 150.0),
       velocity: Vector2(200.0, 85.0),
-      mass: 5.0,
-      radius: 30.0,
+      mass: 4.0,
+      radius: 25.0,
     );
     controller = AnimationController(
       vsync: this,

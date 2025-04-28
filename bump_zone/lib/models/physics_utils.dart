@@ -25,23 +25,7 @@ class PhysicsUtils {
 
     // Check if ball's path intersects segment within radius + buffer
     final d = _distanceToSegment(ballStart, ballEnd, closestPoint);
-    if (d > ball.radius + buffer) {
-      return false;
-    }
-
-    // -------- New addition: Check if the ball is moving toward the segment --------
-    final normal = Vector2(-segment.y, segment.x).normalized();
-    final toBall = ball.position - (p1 + p2) / 2;
-    Vector2 correctedNormal = normal;
-    if (normal.dot(toBall) < 0) {
-      correctedNormal.scale(-1);
-    }
-
-    // Ball's velocity relative to normal
-    final velocityAlongNormal = ball.velocity.dot(correctedNormal);
-
-    // If velocityAlongNormal > 0, ball is moving away -> no collision
-    return velocityAlongNormal < 0;
+    return d <= ball.radius + buffer;
   }
 
   // Resolves collision by applying impulses to ball and band nodes
