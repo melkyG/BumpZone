@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../models/arena.dart';
 import '../models/ball.dart';
@@ -33,7 +32,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   // Cursor force
   bool isClicking = false;
   Vector2 cursorPosition = Vector2.zero();
-  final double forceConstant = 10.0;
+  double forceConstant = 10.0;
+  double clickDuration = 0.0; // seconds
 
   @override
   void initState() {
@@ -50,12 +50,19 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       duration: const Duration(days: 1),
     )..addListener(() {
         for (int i = 0; i < subSteps; i++) {
-          // Apply cursor force if clicking
           if (isClicking) {
+            clickDuration += deltaT; // Increase time
             final direction = cursorPosition - ball.position;
             final distance = direction.length;
-            ball.force = direction.normalized() * forceConstant * distance.clamp(0, 100);
+            final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
+            ball.force = direction.normalized() *
+                forceConstant *
+                forceScale *
+                distance.clamp(0, 100);
+          } else {
+            clickDuration = 0.0; // Reset on release
           }
+
           ball.update(deltaT);
           arena.update(deltaT, ball);
         }
@@ -65,7 +72,6 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   }
 
   void _initializeArena() {
-    // Center the arena in the container
     final topLeft = Vector2(
       (containerWidth - sideLength) / 2,
       (containerHeight - sideLength) / 2,
@@ -93,10 +99,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: Row(
         children: [
-          // Game canvas
           Expanded(
             child: Center(
               child: GestureDetector(
@@ -133,7 +137,6 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
               ),
             ),
           ),
-          // Settings panel
           Container(
             width: 500,
             padding: const EdgeInsets.all(16.0),
@@ -164,7 +167,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                     label: 'Damping Coefficient',
                     value: dampingCoeff,
                     min: 0.0,
-                    max: 50,
+                    max: 50.0,
                     divisions: 500,
                     onChanged: (value) {
                       setState(() {
@@ -177,7 +180,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                     label: 'Node Mass',
                     value: mass,
                     min: 0.01,
-                    max: 5,
+                    max: 5.0,
                     divisions: 200,
                     onChanged: (value) {
                       setState(() {
@@ -203,7 +206,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                     label: 'Rest Length Scale',
                     value: restLengthScale,
                     min: 0.0,
-                    max: 3,
+                    max: 3.0,
                     divisions: 100,
                     onChanged: (value) {
                       setState(() {
@@ -215,8 +218,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                   _buildSlider(
                     label: 'Nodes per Side',
                     value: numPtsPerSide.toDouble(),
-                    min: 5,
-                    max: 75,
+                    min: 5.0,
+                    max: 75.0,
                     divisions: 70,
                     onChanged: (value) {
                       setState(() {

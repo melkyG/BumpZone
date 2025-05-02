@@ -100,8 +100,6 @@ class PhysicsUtils {
     Vector2 post,
     double coefficientOfRestitution,
   ) {
-    if (ball.collisionCooldown > 0) return; // Added cooldown check
-
     // Normal points from post to ball
     final toBall = ball.position - post;
     final distance = toBall.length;
@@ -120,14 +118,10 @@ class PhysicsUtils {
     // Relative velocity (post is fixed)
     final relativeVelocity = ball.velocity;
 
-    // Skip micro-collisions
-    if (relativeVelocity.dot(normal).abs() < 0.5) {
-      //print('Skipped post collision: micro-collision, relativeVelocity.dot(normal)=${relativeVelocity.dot(normal)}');
-      return;
-    }
+   
 
     // Impulse (post has infinite mass)
-    final impulseMagnitude = -(1 + coefficientOfRestitution) * relativeVelocity.dot(normal) / (1 / ball.mass);
+    final impulseMagnitude = -(1 + 0.5) * relativeVelocity.dot(normal) / (1 / ball.mass);
 
     // Apply impulse to ball
     ball.velocity += normal * (impulseMagnitude / ball.mass);

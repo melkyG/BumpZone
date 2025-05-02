@@ -5,6 +5,7 @@ import 'physics_utils.dart';
 
 class ElasticBand {
   final int numPts;
+  final int sideIndex;
   double springConstant;
   double dampingCoeff;
   double mass;
@@ -19,6 +20,7 @@ class ElasticBand {
     required double sideLength,
     required Vector2 start,
     required Vector2 end,
+    required this.sideIndex,
     this.springConstant = 75.0,
     this.dampingCoeff = 0.0,
     this.mass = 0.1,
@@ -125,7 +127,10 @@ class ElasticBand {
       if (distance < ball.radius) {
         final correction = toPoint.normalized() * (ball.radius - distance);
         points[i] += correction;
-        velocities[i] += correction * 5.0;
+
+        if (ball.velocity.dot(correction) < 0) {
+          velocities[i] += correction * 5.0;
+        }
       }
     }
   }
@@ -154,19 +159,27 @@ class ElasticBand {
       }
     }
 
-    // Ensure no seep into the ball, i.e., keep the band segments from entering the ball
     _enforceNoSeepIntoBall(ball);
 
-    // If we found the closest segment to the ball, resolve the collision
     if (closestSegmentIndex != null && closestPoint != null) {
+      final preVelocity = ball.velocity.clone();
       PhysicsUtils.resolveBallBandCollision(ball, this, closestSegmentIndex, coefficientOfRestitution);
-      
-      // Prevent the band from sticking to the ball by not applying force to the band.
-      // Here, we ensure that the band segments are only affected by their own spring forces,
-      // not by the ball's velocity or movement.
+      final deltaV = ball.velocity - preVelocity;
+
+      final outwardAxis = switch (sideIndex) {
+        0 => Vector2(0, -1),
+        1 => Vector2(1, 0),
+        2 => Vector2(0, 1),
+        3 => Vector2(-1, 0),
+        _ => Vector2.zero(),
+      };
+
+      if (deltaV.dot(outwardAxis) > 0) {
+        final outwardComponent = outwardAxis.normalized() * deltaV.dot(outwardAxis);
+        ball.velocity -= outwardComponent;
+      }
     }
   }
-
 }
 
 class Arena {
@@ -194,24 +207,28 @@ class Arena {
         sideLength: sideLength,
         start: posts[0],
         end: posts[1],
+        sideIndex: 0,
       ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[1],
         end: posts[2],
+        sideIndex: 1,
       ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[2],
         end: posts[3],
+        sideIndex: 2,
       ),
       ElasticBand(
         numPts: numPtsPerSide,
         sideLength: sideLength,
         start: posts[3],
         end: posts[0],
+        sideIndex: 3,
       ),
     ]);
   }
