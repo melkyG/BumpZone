@@ -23,11 +23,11 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   int numPtsPerSide = 30;
 
   // Settings values
-  double springConstant = 150.0;
-  double dampingCoeff = 0.1;
-  double mass = 0.01;
-  double coefficientOfRestitution = 0.01;
-  double restLengthScale = 0.0;
+  double springConstant = 2900.0;
+  double dampingCoeff = 0.08;
+  double mass = 0.075;
+  double coefficientOfRestitution = 0.85;
+  double restLengthScale = 1.0;
 
   // Cursor force
   bool isClicking = false;
