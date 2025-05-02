@@ -3,6 +3,7 @@ import '../models/arena.dart';
 import '../models/ball.dart';
 import 'game_painter.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
+import 'menu_widget.dart'; // Import MenuWidget for navigation
 
 class GameWidget extends StatefulWidget {
   const GameWidget({super.key});
@@ -49,25 +50,26 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(days: 1),
     )..addListener(() {
-        for (int i = 0; i < subSteps; i++) {
-          if (isClicking) {
-            clickDuration += deltaT; // Increase time
-            final direction = cursorPosition - ball.position;
-            final distance = direction.length;
-            final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
-            ball.force = direction.normalized() *
-                forceConstant *
-                forceScale *
-                distance.clamp(0, 100);
-          } else {
-            clickDuration = 0.0; // Reset on release
-          }
-
-          ball.update(deltaT);
-          arena.update(deltaT, ball);
+      for (int i = 0; i < subSteps; i++) {
+        if (isClicking) {
+          clickDuration += deltaT; // Increase time
+          final direction = cursorPosition - ball.position;
+          final distance = direction.length;
+          final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
+          ball.force =
+              direction.normalized() *
+              forceConstant *
+              forceScale *
+              distance.clamp(0, 100);
+        } else {
+          clickDuration = 0.0; // Reset on release
         }
-        setState(() {});
-      });
+
+        ball.update(deltaT);
+        arena.update(deltaT, ball);
+      }
+      setState(() {});
+    });
     controller.forward();
   }
 
@@ -99,140 +101,180 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          Expanded(
-            child: Center(
-              child: GestureDetector(
-                onPanDown: (details) {
-                  setState(() {
-                    isClicking = true;
-                    cursorPosition = Vector2(
-                      details.localPosition.dx,
-                      details.localPosition.dy,
-                    );
-                  });
-                },
-                onPanUpdate: (details) {
-                  setState(() {
-                    cursorPosition = Vector2(
-                      details.localPosition.dx,
-                      details.localPosition.dy,
-                    );
-                  });
-                },
-                onPanEnd: (_) {
-                  setState(() {
-                    isClicking = false;
-                  });
-                },
-                child: Container(
-                  width: 1000,
-                  height: 1000,
-                  color: Colors.grey[200],
-                  child: CustomPaint(
-                    painter: GamePainter(arena: arena, ball: ball),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Existing game content
+            Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: GestureDetector(
+                      onPanDown: (details) {
+                        setState(() {
+                          isClicking = true;
+                          cursorPosition = Vector2(
+                            details.localPosition.dx,
+                            details.localPosition.dy,
+                          );
+                        });
+                      },
+                      onPanUpdate: (details) {
+                        setState(() {
+                          cursorPosition = Vector2(
+                            details.localPosition.dx,
+                            details.localPosition.dy,
+                          );
+                        });
+                      },
+                      onPanEnd: (_) {
+                        setState(() {
+                          isClicking = false;
+                        });
+                      },
+                      child: Container(
+                        width: 1000,
+                        height: 1000,
+                        color: Colors.grey[200],
+                        child: CustomPaint(
+                          painter: GamePainter(arena: arena, ball: ball),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+                Container(
+                  width: 500,
+                  padding: const EdgeInsets.all(16.0),
+                  color: Colors.white.withOpacity(0.8),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Band Settings',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSlider(
+                          label: 'Spring Constant',
+                          value: springConstant,
+                          min: 0.0,
+                          max: 10000.0,
+                          divisions: 900,
+                          onChanged: (value) {
+                            setState(() {
+                              springConstant = value;
+                              arena.updateBandParameters(springConstant: value);
+                            });
+                          },
+                        ),
+                        _buildSlider(
+                          label: 'Damping Coefficient',
+                          value: dampingCoeff,
+                          min: 0.0,
+                          max: 50.0,
+                          divisions: 500,
+                          onChanged: (value) {
+                            setState(() {
+                              dampingCoeff = value;
+                              arena.updateBandParameters(dampingCoeff: value);
+                            });
+                          },
+                        ),
+                        _buildSlider(
+                          label: 'Node Mass',
+                          value: mass,
+                          min: 0.01,
+                          max: 5.0,
+                          divisions: 200,
+                          onChanged: (value) {
+                            setState(() {
+                              mass = value;
+                              arena.updateBandParameters(mass: value);
+                            });
+                          },
+                        ),
+                        _buildSlider(
+                          label: 'Coefficient of Restitution',
+                          value: coefficientOfRestitution,
+                          min: 0.01,
+                          max: 1.0,
+                          divisions: 200,
+                          onChanged: (value) {
+                            setState(() {
+                              coefficientOfRestitution = value;
+                              arena.updateBandParameters(
+                                coefficientOfRestitution: value,
+                              );
+                            });
+                          },
+                        ),
+                        _buildSlider(
+                          label: 'Rest Length Scale',
+                          value: restLengthScale,
+                          min: 0.0,
+                          max: 3.0,
+                          divisions: 100,
+                          onChanged: (value) {
+                            setState(() {
+                              restLengthScale = value;
+                              arena.updateBandParameters(
+                                restLengthScale: value,
+                              );
+                            });
+                          },
+                        ),
+                        _buildSlider(
+                          label: 'Nodes per Side',
+                          value: numPtsPerSide.toDouble(),
+                          min: 5.0,
+                          max: 75.0,
+                          divisions: 70,
+                          onChanged: (value) {
+                            setState(() {
+                              numPtsPerSide = value.round();
+                              _initializeArena();
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Back button (top-left)
+            Positioned(
+              top: 10,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: 24,
+                ),
+                onPressed: () {
+                  Navigator.pop(context); // Navigate back to MenuWidget
+                },
               ),
             ),
-          ),
-          Container(
-            width: 500,
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.white.withOpacity(0.8),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Band Settings',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSlider(
-                    label: 'Spring Constant',
-                    value: springConstant,
-                    min: 0.0,
-                    max: 10000.0,
-                    divisions: 900,
-                    onChanged: (value) {
-                      setState(() {
-                        springConstant = value;
-                        arena.updateBandParameters(springConstant: value);
-                      });
-                    },
-                  ),
-                  _buildSlider(
-                    label: 'Damping Coefficient',
-                    value: dampingCoeff,
-                    min: 0.0,
-                    max: 50.0,
-                    divisions: 500,
-                    onChanged: (value) {
-                      setState(() {
-                        dampingCoeff = value;
-                        arena.updateBandParameters(dampingCoeff: value);
-                      });
-                    },
-                  ),
-                  _buildSlider(
-                    label: 'Node Mass',
-                    value: mass,
-                    min: 0.01,
-                    max: 5.0,
-                    divisions: 200,
-                    onChanged: (value) {
-                      setState(() {
-                        mass = value;
-                        arena.updateBandParameters(mass: value);
-                      });
-                    },
-                  ),
-                  _buildSlider(
-                    label: 'Coefficient of Restitution',
-                    value: coefficientOfRestitution,
-                    min: 0.01,
-                    max: 1.0,
-                    divisions: 200,
-                    onChanged: (value) {
-                      setState(() {
-                        coefficientOfRestitution = value;
-                        arena.updateBandParameters(coefficientOfRestitution: value);
-                      });
-                    },
-                  ),
-                  _buildSlider(
-                    label: 'Rest Length Scale',
-                    value: restLengthScale,
-                    min: 0.0,
-                    max: 3.0,
-                    divisions: 100,
-                    onChanged: (value) {
-                      setState(() {
-                        restLengthScale = value;
-                        arena.updateBandParameters(restLengthScale: value);
-                      });
-                    },
-                  ),
-                  _buildSlider(
-                    label: 'Nodes per Side',
-                    value: numPtsPerSide.toDouble(),
-                    min: 5.0,
-                    max: 75.0,
-                    divisions: 70,
-                    onChanged: (value) {
-                      setState(() {
-                        numPtsPerSide = value.round();
-                        _initializeArena();
-                      });
-                    },
-                  ),
-                ],
+            // Settings button (top-right)
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: const Icon(Icons.settings, color: Colors.black, size: 24),
+                onPressed: () {
+                  // TODO: Implement settings navigation
+                },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

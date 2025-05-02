@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bump_zone/widgets/game_widget.dart';
+import 'package:bump_zone/widgets/menu_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,10 +10,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: const GameWidget(),
-      ),
-    );
+    return MaterialApp(home: Scaffold(body: const MenuWidget()));
   }
 }
