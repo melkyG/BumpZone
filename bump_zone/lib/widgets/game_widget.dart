@@ -3,7 +3,6 @@ import '../models/arena.dart';
 import '../models/ball.dart';
 import 'game_painter.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
-import 'menu_widget.dart'; // Import MenuWidget for navigation
 
 class GameWidget extends StatefulWidget {
   const GameWidget({super.key});
