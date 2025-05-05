@@ -1,2 +1,2 @@
 # BumpZone
-fun collision game, knock opponents into the death zone
+fun collision game, knock opponents out (far enough) to eliminate them
