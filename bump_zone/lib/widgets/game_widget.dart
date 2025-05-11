@@ -20,14 +20,14 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   final double sideLength = 700.0;
   final double containerWidth = 1000.0;
   final double containerHeight = 1000.0;
-  int numPtsPerSide = 30;
+  int numPtsPerSide = 35;
 
   // Settings values
-  double springConstant = 2900.0;
+  double springConstant = 350.0;
   double dampingCoeff = 0.08;
-  double mass = 0.075;
+  double mass = 0.04;
   double coefficientOfRestitution = 0.85;
-  double restLengthScale = 1.0;
+  double restLengthScale = 0.35;
 
   // Cursor force
   bool isClicking = false;
