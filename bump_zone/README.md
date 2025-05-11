@@ -1,16 +1,18 @@
-# bump_zone
+# Bump Zone
+fun collision game, knock opponents into the death zone
 
-A new Flutter project.
+## Structure
+- `client/`: Flutter project (frontend)
+- `server/`: Node.js backend
+- `server/public/`: Will hold Flutter web build output
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Setup
+1. **Client**: Run `cd client && flutter pub get` to install dependencies.
+2. **Server**: Run `cd server && npm install` to install dependencies.
+3. **Local Testing**:
+   - Client: `cd client && flutter run -d chrome`
+   - Server: `cd server && node server.js`
+4. **Deployment**:
+   - Build Flutter web: `cd client && flutter build web`
+   - Copy `client/build/web/` to `server/public/`
+   - Upload `bump_zone/` to Glitch
