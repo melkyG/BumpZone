@@ -43,7 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
     // Handle connection errors
     _webSocketService.onError = (error) {
       setState(() {
-        _errorMessage = error == 'username_taken' ? 'Unavailable' : 'Failed to connect, try again';
+        _errorMessage =
+            error == 'username_taken'
+                ? 'Unavailable'
+                : 'Failed to connect, try again';
       });
     };
   }
@@ -69,7 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
     // Server will respond with 'welcome' (navigate) or 'error' (show unavailable)
     _webSocketService.onError = (error) {
       setState(() {
-        _errorMessage = error == 'username_taken' ? 'Unavailable' : 'Failed to connect, try again';
+        _errorMessage =
+            error == 'username_taken'
+                ? 'Unavailable'
+                : 'Failed to connect, try again';
       });
     };
   }
@@ -100,13 +106,21 @@ class _LoginScreenState extends State<LoginScreen> {
               Text('Players online: $_playerCount'),
               const SizedBox(height: 10),
               if (_errorMessage != null)
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
+                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _joinGame,
+                onPressed: () {
+                  _joinGame;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => GameWidget(
+                            username: _usernameController.text.trim(),
+                          ),
+                    ),
+                  );
+                },
                 child: const Text('Join Game'),
               ),
             ],
