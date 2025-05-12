@@ -1,2 +1,0 @@
-project: bump-zone
-command: node server/server.js
