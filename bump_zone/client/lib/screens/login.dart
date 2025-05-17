@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     // Use ws://localhost:3000 for local testing
-    _webSocketService = WebSocketService('ws://localhost:3000');
+    _webSocketService = WebSocketService('https://thorn-glory-wanderer.glitch.me');
     _webSocketService.connect();
 
     // Update player count from server
