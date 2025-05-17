@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Use ws://localhost:3000 for local testing
+    //Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService('wss://thorn-glory-wanderer.glitch.me');
     _webSocketService.connect();
 
