@@ -1,2 +1,3 @@
-project: bump-zone
-command: node server/server.jss
+project:
+  env: node
+  run: npm startcd
