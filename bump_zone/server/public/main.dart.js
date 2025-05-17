@@ -34540,7 +34540,7 @@ al(){return new A.KA(new A.H8(B.wI,$.ae()))}}
 A.KA.prototype={
 aB(){var s,r=this
 r.b_()
-s=new A.HI("ws://localhost:3000")
+s=new A.HI("https://thorn-glory-wanderer.glitch.me")
 r.e=s
 s.a8o()
 s=r.e
