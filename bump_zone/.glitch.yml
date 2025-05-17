@@ -1,5 +1,3 @@
 project:
   env: node
-  run: node bump_zone/server/server.js
-install:
-  - cd bump_zone/server && npm install
+  run: npm start
