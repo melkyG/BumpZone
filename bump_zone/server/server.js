@@ -4,95 +4,43 @@ const path = require('path');
 const { GameState } = require('./game/state');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-const server = app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
+const server = app.listen(3000, () => console.log('Server running on port 3000'));
 const wss = new WebSocket.Server({ server });
 const gameState = new GameState();
 
+// Serve static files from bump_zone/server/public/
+app.use(express.static(path.join(__dirname, 'public')));
+
+// WebSocket connection handling
 wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  const playerId = Math.random().toString(36).substring(2, 10);
-  ws.playerId = playerId;
-
-  ws.send(JSON.stringify({
-    type: 'playerList',
-    players: gameState.getPlayers(),
-  }));
-
   ws.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    switch (data.type) {
-      case 'join':
-        const isUsernameTaken = gameState.getPlayers().some(
-          (p) => p.username.toLowerCase() === data.username.toLowerCase()
-        );
-        if (isUsernameTaken) {
-          ws.send(JSON.stringify({
-            type: 'error',
-            reason: 'username_taken',
-          }));
-          return;
-        }
-        gameState.addPlayer(playerId, data.username);
-        ws.send(JSON.stringify({
-          type: 'welcome',
-          playerId,
-          players: gameState.getPlayers(),
-        }));
-        broadcastPlayerList();
-        break;
-      case 'move':
-        gameState.updatePlayerMovement(playerId, data.direction.dx, data.direction.dy);
-        break;
-      case 'leave':
-        gameState.removePlayer(playerId);
-        broadcastPlayerList();
-        break;
+    const data = JSON.parse(message);
+    if (data.type === 'join') {
+      const result = gameState.addPlayer(data.username, ws);
+      if (result.success) {
+        ws.send(JSON.stringify({ type: 'welcome', players: gameState.getPlayers() }));
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'playerList', players: gameState.getPlayers() }));
+          }
+        });
+      } else {
+        ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
+      }
     }
   });
 
   ws.on('close', () => {
-    gameState.removePlayer(playerId);
-    broadcastPlayerList();
-    console.log('Client disconnected');
-  });
-});
-
-setInterval(() => {
-  const state = {
-    type: 'state',
-    players: gameState.getPlayers(),
-  };
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(state));
-    }
-  });
-
-  gameState.checkEliminations((playerId) => {
+    gameState.removePlayer(ws);
     wss.clients.forEach((client) => {
-      if (client.playerId === playerId && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ type: 'eliminated', playerId }));
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'playerList', players: gameState.getPlayers() }));
       }
     });
   });
-}, 1000 / 30);
+});
 
-function broadcastPlayerList() {
-  const playerList = {
-    type: 'playerList',
-    players: gameState.getPlayers(),
-  };
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(playerList));
-    }
-  });
-}
+// Fallback to serve index.html for SPA routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
