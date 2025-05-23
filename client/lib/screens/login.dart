@@ -42,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Handle connection errors
     _webSocketService.onError = (error) {
+      print('WebSocket onError called with: $error (${error.runtimeType})');
       setState(() {
         _errorMessage =
             error == 'username_taken'
