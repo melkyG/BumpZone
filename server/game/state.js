@@ -3,20 +3,16 @@ class GameState {
     this.players = new Map();
   }
 
-  addPlayer(id, username) {
-    if (this.players.has(id)) {
-      return false; // Username already taken
-    }
-
-    this.players.set(id, {
-      id, // usually same as username
-      username,
-      position: { x: 200, y: 200 },
-      velocity: { x: 0, y: 0 },
-    });
-
-    return true;
+  addPlayer(username, ws) {
+  if (this.players.some(p => p.username === username)) {
+    return { success: false };
   }
+
+  const playerId = Date.now().toString(); // ✅ Make sure it's a string
+  this.players.push({ playerId, username, ws });
+
+  return { success: true, playerId };
+}
 
   removePlayer(id) {
     this.players.delete(id);

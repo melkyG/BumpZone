@@ -18,38 +18,35 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    //Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService('wss://thorn-glory-wanderer.glitch.me');
     _webSocketService.connect();
 
+    // Update player count from server
     _webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _playerCount = players.length;
       });
     };
 
-    _webSocketService.onStateUpdate = (players, playerId) {
-      final username = _usernameController.text.trim();
-      if (username.isNotEmpty && playerId != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GameWidget(
-              username: username,
-              webSocketService: _webSocketService,
-              playerId: playerId,
-            ),
-          ),
-        );
-      } else {
-        setState(() {
-          _errorMessage = 'Invalid player data';
-        });
-      }
+    // Handle join response (welcome or error)
+    _webSocketService.onStateUpdate = (players) {
+      // Successful join, navigate to game screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameScreen(webSocketService: _webSocketService),
+        ),
+      );
     };
 
+    // Handle connection errors
     _webSocketService.onError = (error) {
       setState(() {
-        _errorMessage = error == 'username_taken' ? 'Unavailable' : 'Failed to connect, try again';
+        _errorMessage =
+            error == 'username_taken'
+                ? 'Unavailable'
+                : 'Failed to connect, try again';
       });
     };
   }
@@ -70,7 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Send join message and wait for server response
     _webSocketService.join(username);
+    // Server will respond with 'welcome' (navigate) or 'error' (show unavailable)
+    _webSocketService.onError = (error) {
+      setState(() {
+        _errorMessage =
+            error == 'username_taken'
+                ? 'Unavailable'
+                : 'Failed to connect, try again';
+      });
+    };
   }
 
   @override
@@ -102,7 +109,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _joinGame,
+                onPressed: () {
+                  _joinGame();
+                  /*
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => GameWidget(
+                            username: _usernameController.text.trim(),
+                          ),
+                    ),
+                  );
+                  */
+                },
                 child: const Text('Join Game'),
               ),
             ],

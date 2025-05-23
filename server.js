@@ -18,7 +18,7 @@ wss.on('connection', (ws) => {
     if (data.type === 'join') {
       const result = gameState.addPlayer(data.username, ws);
       if (result.success) {
-        ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId, players: gameState.getPlayers() }));
+        ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId.toString(), players: gameState.getPlayers() }));
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify({ type: 'playerList', players: gameState.getPlayers() }));
