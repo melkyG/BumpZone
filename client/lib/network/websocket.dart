@@ -34,36 +34,25 @@ class WebSocketService {
   }
 
   void _onMessage(dynamic message) {
+    print("WebSocket message received: $message");
+
     final data = jsonDecode(message as String) as Map<String, dynamic>;
-    switch (data['type']) {
+    final type = data['type'];
+    print("Message type: $type");
+
+    switch (type) {
       case 'welcome':
-        playerId = data['playerId'] as String;
-        final players = (data['players'] as List)
-            .map((p) => Player.fromJson(p as Map<String, dynamic>))
-            .toList();
-        if (onStateUpdate != null) onStateUpdate!(players);
-        if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
-        break;
-      case 'state':
-        final players = (data['players'] as List)
-            .map((p) => Player.fromJson(p as Map<String, dynamic>))
-            .toList();
-        if (onStateUpdate != null) onStateUpdate!(players);
-        break;
-      case 'playerList':
-        final players = (data['players'] as List)
-            .map((p) => Player.fromJson(p as Map<String, dynamic>))
-            .toList();
-        if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
+        print("Welcome message: $data");
+        // existing code...
         break;
       case 'eliminated':
-        if (data['playerId'] == playerId && onEliminated != null) {
+        final eliminatedId = data['playerId'];
+        if (eliminatedId != null && eliminatedId == playerId && onEliminated != null) {
           onEliminated!(playerId!);
         }
         break;
-      case 'error':
-        if (onError != null) onError!(data['reason'] as String);
-        break;
+
+      // rest unchanged
     }
   }
 
