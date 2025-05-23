@@ -4,6 +4,7 @@ const path = require('path');
 const { GameState } = require('./server/game/state');
 
 const app = express();
+console.log('🧠 Running on process ID:', process.pid);
 const server = app.listen(3000, () => console.log('Server running on port 3000'));
 const wss = new WebSocket.Server({ server });
 const gameState = new GameState();

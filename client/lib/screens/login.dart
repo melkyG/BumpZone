@@ -19,7 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     //Use ws://localhost:3000 for local testing
-    _webSocketService = WebSocketService('wss://thorn-glory-wanderer.glitch.me');
+    _webSocketService = WebSocketService(
+      'wss://thorn-glory-wanderer.glitch.me',
+    );
     _webSocketService.connect();
 
     // Update player count from server
@@ -73,10 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
     // Server will respond with 'welcome' (navigate) or 'error' (show unavailable)
     _webSocketService.onError = (error) {
       setState(() {
-        _errorMessage =
-            error == 'username_taken'
-                ? 'Unavailable'
-                : 'Failed to connect, try again';
+        if (error == 'username_taken') {
+          _errorMessage = 'Unavailable';
+        }
       });
     };
   }
@@ -112,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(
                 onPressed: () {
                   _joinGame();
-                  
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -122,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     ),
                   );
-                  
                 },
                 child: const Text('Join Game'),
               ),
