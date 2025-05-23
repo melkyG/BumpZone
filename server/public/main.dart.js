@@ -34623,8 +34623,7 @@ $1(a){var s=this.a
 s.af(new A.a97(s,a))},
 $S:68}
 A.a97.prototype={
-$0(){var s=this.b==="username_taken"?"Unavailable":"Failed to connect, try again"
-this.a.f=s},
+$0(){if(this.b==="username_taken")this.a.f="Unavailable"},
 $S:0}
 A.a9b.prototype={
 $0(){var s=this.a
