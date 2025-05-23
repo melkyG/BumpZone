@@ -6,7 +6,7 @@ class WebSocketService {
   WebSocketChannel? _channel;
   final String url;
   Function(List<Player>)? onPlayerListUpdate;
-  Function(List<Player>)? onStateUpdate;
+  Function(List<Player>, String?)? onStateUpdate;
   Function(String)? onEliminated;
   Function(String)? onError;
   String? playerId;
@@ -37,22 +37,34 @@ class WebSocketService {
     print("WebSocket message received: $message");
 
     final data = jsonDecode(message as String) as Map<String, dynamic>;
-    final type = data['type'];
+    final type = data['type'] as String?;
     print("Message type: $type");
 
     switch (type) {
       case 'welcome':
         print("Welcome message: $data");
-        // existing code...
+        final players = (data['players'] as List<dynamic>?)
+            ?.map((p) => Player.fromJson(p as Map<String, dynamic>))
+            .toList() ?? [];
+        playerId = data['playerId'] as String?;
+        if (onStateUpdate != null) {
+          onStateUpdate!(players, playerId);
+        }
+        break;
+      case 'playerList':
+        final players = (data['players'] as List<dynamic>?)
+            ?.map((p) => Player.fromJson(p as Map<String, dynamic>))
+            .toList() ?? [];
+        if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
         break;
       case 'eliminated':
-        final eliminatedId = data['playerId'];
+        final eliminatedId = data['playerId'] as String?;
         if (eliminatedId != null && eliminatedId == playerId && onEliminated != null) {
           onEliminated!(playerId!);
         }
         break;
-
-      // rest unchanged
+      default:
+        if (onError != null) onError!('Unknown message type: $type');
     }
   }
 

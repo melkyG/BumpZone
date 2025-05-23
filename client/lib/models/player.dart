@@ -17,12 +17,23 @@ class Player {
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
-      id: json['id'] as String,
-      username: json['username'] as String,
-      positionX: (json['position']['x'] as num).toDouble(),
-      positionY: (json['position']['y'] as num).toDouble(),
-      velocityX: (json['velocity']['x'] as num).toDouble(),
-      velocityY: (json['velocity']['y'] as num).toDouble(),
+      id: json['id'] as String? ?? '',
+      username: json['username'] as String? ?? '',
+      positionX: (json['x'] as num?)?.toDouble() ?? 0.0,
+      positionY: (json['y'] as num?)?.toDouble() ?? 0.0,
+      velocityX: (json['velocityX'] as num?)?.toDouble() ?? 0.0,
+      velocityY: (json['velocityY'] as num?)?.toDouble() ?? 0.0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'x': positionX,
+      'y': positionY,
+      'velocityX': velocityX,
+      'velocityY': velocityY,
+    };
   }
 }

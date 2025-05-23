@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../game/arena.dart';
-import '../game/ball.dart';
-import 'game_painter.dart';
-import 'package:vector_math/vector_math_64.dart' show Vector2;
+import 'package:bump_zone/game/arena.dart';
+import 'package:bump_zone/game/ball.dart';
 import 'package:bump_zone/network/websocket.dart';
+import 'package:bump_zone/screens/game_painter.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector2;
 
 class GameScreen extends StatelessWidget {
   final WebSocketService webSocketService;
@@ -20,8 +20,15 @@ class GameScreen extends StatelessWidget {
 
 class GameWidget extends StatefulWidget {
   final String username;
+  final String playerId;
+  final WebSocketService webSocketService;
 
-  const GameWidget({super.key, required this.username});
+  const GameWidget({
+    super.key,
+    required this.username,
+    required this.playerId,
+    required this.webSocketService,
+  });
 
   @override
   _GameWidgetState createState() => _GameWidgetState();
@@ -49,7 +56,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   bool isClicking = false;
   Vector2 cursorPosition = Vector2.zero();
   double forceConstant = 10.0;
-  double clickDuration = 0.0; // seconds
+  double clickDuration = 0.0;
 
   @override
   void initState() {
@@ -61,23 +68,31 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       mass: 4.0,
       radius: 25.0,
     );
+
+    // Listen for WebSocket updates
+    widget.webSocketService.onStateUpdate = (players, playerId) {
+      for (var player in players) {
+        if (player.id == widget.playerId) {
+          ball.position = Vector2(player.positionX, player.positionY);
+          ball.velocity = Vector2(player.velocityX, player.velocityY);
+        }
+      }
+    };
+
     controller = AnimationController(
       vsync: this,
       duration: const Duration(days: 1),
     )..addListener(() {
       for (int i = 0; i < subSteps; i++) {
         if (isClicking) {
-          clickDuration += deltaT; // Increase time
+          clickDuration += deltaT;
           final direction = cursorPosition - ball.position;
           final distance = direction.length;
-          final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
-          ball.force =
-              direction.normalized() *
-              forceConstant *
-              forceScale *
-              distance.clamp(0, 100);
+          final forceScale = clickDuration.clamp(0.0, 2.0);
+          ball.force = direction.normalized() * forceConstant * forceScale * distance.clamp(0, 100);
+          widget.webSocketService.sendMovement(ball.velocity.x, ball.velocity.y);
         } else {
-          clickDuration = 0.0; // Reset on release
+          clickDuration = 0.0;
         }
 
         ball.update(deltaT);
@@ -110,6 +125,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   @override
   void dispose() {
     controller.dispose();
+    widget.webSocketService.leave();
     super.dispose();
   }
 
@@ -119,7 +135,6 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       body: SafeArea(
         child: Stack(
           children: [
-            // Existing game content
             Row(
               children: [
                 Expanded(
@@ -266,7 +281,6 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            // Back button (top-left)
             Positioned(
               top: 10,
               left: 10,
@@ -277,11 +291,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                   size: 24,
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // Navigate back to MenuWidget
+                  Navigator.pop(context);
                 },
               ),
             ),
-            // Settings button (top-right)
             Positioned(
               top: 10,
               right: 10,
