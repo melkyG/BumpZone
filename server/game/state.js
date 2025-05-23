@@ -4,12 +4,18 @@ class GameState {
   }
 
   addPlayer(id, username) {
+    if (this.players.has(id)) {
+      return false; // Username already taken
+    }
+
     this.players.set(id, {
-      id,
+      id, // usually same as username
       username,
-      position: { x: 200, y: 200 }, // Center of arena
+      position: { x: 200, y: 200 },
       velocity: { x: 0, y: 0 },
     });
+
+    return true;
   }
 
   removePlayer(id) {

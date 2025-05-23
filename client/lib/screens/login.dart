@@ -110,7 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  _joinGame;
+                  _joinGame();
+                  /*
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -120,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     ),
                   );
+                  */
                 },
                 child: const Text('Join Game'),
               ),

@@ -1,7 +1,7 @@
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
-const { GameState } = require('./game/state');
+const { GameState } = require('./server/game/state');
 
 const app = express();
 const server = app.listen(3000, () => console.log('Server running on port 3000'));
@@ -9,7 +9,7 @@ const wss = new WebSocket.Server({ server });
 const gameState = new GameState();
 
 // Serve static files from bump_zone/server/public/
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'server', 'public')));
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
@@ -18,7 +18,7 @@ wss.on('connection', (ws) => {
     if (data.type === 'join') {
       const result = gameState.addPlayer(data.username, ws);
       if (result.success) {
-        ws.send(JSON.stringify({ type: 'welcome', players: gameState.getPlayers() }));
+        ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId, players: gameState.getPlayers() }));
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify({ type: 'playerList', players: gameState.getPlayers() }));
@@ -42,5 +42,5 @@ wss.on('connection', (ws) => {
 
 // Fallback to serve index.html for SPA routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'server', 'public', 'index.html'));
 });
