@@ -1,4 +1,5 @@
 import 'package:vector_math/vector_math_64.dart' show Vector2;
+import 'dart:math';
 
 class Player {
   final String id;
@@ -25,15 +26,15 @@ class Player {
       id: json['id'] as String? ?? '',
       username: json['username'] as String? ?? '',
       position: Vector2(
-        (json['x'] as num?)?.toDouble() ?? 0.0,
-        (json['y'] as num?)?.toDouble() ?? 0.0,
+        (json['x'] as num?)?.toDouble() ?? Random().nextDouble() * 150 + 300.0,
+        (json['y'] as num?)?.toDouble() ?? Random().nextDouble() * 150 + 300.0,
       ),
       velocity: Vector2(
         (json['velocityX'] as num?)?.toDouble() ?? 0.0,
         (json['velocityY'] as num?)?.toDouble() ?? 0.0,
       ),
       mass: (json['mass'] as num?)?.toDouble() ?? 1.0,
-      radius: (json['radius'] as num?)?.toDouble() ?? 1.0,
+      radius: (json['radius'] as num?)?.toDouble() ?? 10.0,
     );
   }
 

@@ -21,7 +21,7 @@ class GameWidget extends StatefulWidget {
 
 class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
-  late List<Player> playerList;
+  late List<Player> playerList = [];
   late AnimationController controller;
   final double deltaT = 0.002;
   final int subSteps = 8;
@@ -47,49 +47,67 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeArena();
-    playerList = [
-      Player(
-        id: 'placeholder',
-        username: widget.username,
-        position: Vector2(400.0, 300.0),
-        velocity: Vector2(200.0, 85.0),
-        mass: 4.0,
-        radius: 25.0,
-      ),
-      Player(
-        id: 'placeholder1',
-        username: 'dummy1',
-        position: Vector2(300.0, 200.0),
-        velocity: Vector2(200.0, 85.0),
-        mass: 4.0,
-        radius: 25.0,
-      ),
-    ];
+    playerList = [];
+
+    widget.webSocketService.onPlayerListUpdate = (players) {
+      setState(() {
+        playerList = players;
+      });
+    };
+
+    widget.webSocketService.onStateUpdate = (players) {
+      setState(() {
+        playerList = players;
+      });
+    };
+
+    widget.webSocketService.onEliminated = (id) {
+      if (id == widget.webSocketService.playerId) {
+        print("You were eliminated!");
+      }
+    };
+
+    widget.webSocketService.onError = (message) {
+      print("WebSocket error: $message");
+    };
+
+    widget.webSocketService.join(widget.username);
+
     controller = AnimationController(
       vsync: this,
       duration: const Duration(days: 1),
     )..addListener(() {
       for (int i = 0; i < subSteps; i++) {
-        if (isClicking) {
-          clickDuration += deltaT; // Increase time
-          final direction = cursorPosition - playerList[0].position;
-          final distance = direction.length;
-          final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
-          playerList[0].force =
-              direction.normalized() *
-              forceConstant *
-              forceScale *
-              distance.clamp(0, 100);
-        } else {
-          clickDuration = 0.0; // Reset on release
-        }
+        final player = currentPlayer;
+        if (player != null) {
+          if (isClicking) {
+            clickDuration += deltaT;
+            final direction = cursorPosition - player.position;
+            final distance = direction.length;
+            final forceScale = clickDuration.clamp(0.0, 2.0);
+            player.force =
+                direction.normalized() *
+                forceConstant *
+                forceScale *
+                distance.clamp(0, 100);
+          } else {
+            clickDuration = 0.0;
+          }
 
-        playerList[0].update(deltaT);
-        arena.update(deltaT, playerList[0]);
+          player.update(deltaT);
+          arena.update(deltaT, player);
+        }
       }
       setState(() {});
     });
+
     controller.forward();
+  }
+
+  Player? get currentPlayer {
+    return playerList.firstWhere(
+      (player) => player.username == widget.username,
+    );
   }
 
   void _initializeArena() {
@@ -114,6 +132,11 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   @override
   void dispose() {
     controller.dispose();
+    widget.webSocketService.onPlayerListUpdate = null;
+    widget.webSocketService.onStateUpdate = null;
+    widget.webSocketService.onEliminated = null;
+    widget.webSocketService.onError = null;
+    super.dispose();
     super.dispose();
   }
 
