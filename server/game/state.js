@@ -1,6 +1,7 @@
 class GameState {
   constructor() {
-    this.players = new Map();
+    //this.players = new Map();
+    this.players = [];
   }
 
   addPlayer(username, ws) {
@@ -8,7 +9,7 @@ class GameState {
     return { success: false };
   }
 
-  const playerId = Date.now().toString(); // ✅ Make sure it's a string
+  const playerId = Date.now().toString(); 
   this.players.push({ playerId, username, ws });
 
   return { success: true, playerId };
