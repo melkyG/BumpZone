@@ -114,7 +114,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
 
           // Send movement to server
           widget.webSocketService.sendMove(
-            player.username,
+            widget.username,
             player.position.x,
             player.position.y,
             player.velocity.x,

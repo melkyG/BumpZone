@@ -37,14 +37,27 @@ class GameState {
   }
 
   updatePlayerMovement(username, posx, posy, dx, dy) {
+    console.log(`📡 Updating movement for username: ${username}, pos: (${posx}, ${posy}), velocity: (${dx}, ${dy})`);
+    let playerFound = false;
     for (const player of this.players.values()) {
-      if (player.username === username) 
-      player.velocity.x = dx;
-      player.velocity.y = dy;
-      player.position.x = posx; 
-      player.position.y = posy;
+      if (player.username === username) {
+        console.log(`✅ Found player: ${username} (ID: ${player.id})`);
+        player.velocity.x = dx;
+        player.velocity.y = dy;
+        player.position.x = posx;
+        player.position.y = posy;
+        playerFound = true;
+        console.log(`Updated player: ${username}, new state: `, {
+          position: { x: player.position.x, y: player.position.y },
+          velocity: { x: player.velocity.x, y: player.velocity.y }
+        });
+        break;
+      }
     }
-  }
+    if (!playerFound) {
+      console.warn(`⚠️ Player not found for username: ${username}`);
+    }
+}
   
   checkEliminations(callback) {
     const arenaRadius = 400;

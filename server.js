@@ -75,9 +75,9 @@ wss.on('connection', (ws) => {
     }
 
     if (data.type === 'move') {
-      const { id, posx, posy, dx, dy } = data.position || {};
+      const { username, posx, posy, dx, dy } = data.position || {};
       if (typeof posx === 'number' && typeof posy === 'number') {
-        gameState.updatePlayerMovement(id, posx, posy, dx, dy);
+        gameState.updatePlayerMovement(username, posx, posy, dx, dy);
         broadcastGameState(); // 🔁 Send updated positions to everyone
       }
     }
