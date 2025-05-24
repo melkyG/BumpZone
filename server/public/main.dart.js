@@ -34636,7 +34636,7 @@ al(){return new A.Ky(new A.H6(B.wI,$.ae()))}}
 A.Ky.prototype={
 aB(){var s,r=this
 r.aZ()
-s=new A.HG("ws://localhost:3000")
+s=new A.HG("wss://thorn-glory-wanderer.glitch.me")
 r.e=s
 s.a8p()
 s=r.e
