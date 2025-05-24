@@ -53,8 +53,7 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
-    gameState.removePlayer(socket.id);
-     io.emit("playersOnline", gameState.players.length);
+    gameState.removePlayer(ws);
 
     const players = gameState.getPlayers();
     console.log('🧑‍🤝‍🧑 Updated players after disconnect:', players);
