@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Handle join response (welcome or error)
     _webSocketService.onStateUpdate = (players) {
+      /*
       // Successful join, navigate to game screen
       Navigator.pushReplacement(
         context,
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context) => GameScreen(webSocketService: _webSocketService),
         ),
       );
+      */
     };
 
     // Handle connection errors
