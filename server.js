@@ -12,12 +12,42 @@ const gameState = new GameState();
 // Serve static files from bump_zone/server/public/
 app.use(express.static(path.join(__dirname, 'server', 'public')));
 
+function broadcastGameState() {
+  const players = gameState.getPlayers().map(p => ({
+    id: p.id,
+    username: p.username,
+    x: p.position.x,
+    y: p.position.y,
+    velocityX: p.velocity.x,
+    velocityY: p.velocity.y,
+    mass: p.mass,
+    radius: p.radius,
+  }));
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({ type: 'playerList', players });
+      console.log("Sending to client:", message); // <-- print here
+      client.send(message);
+    }
+  });
+  
+}
+
 // WebSocket connection handling
 wss.on('connection', (ws) => {
   console.log('🔗 New WebSocket connection established');
 
   ws.on('message', (message) => {
     console.log('📩 Received message:', message);
+
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        const players = gameState.getPlayers();
+        console.log('📡 Broadcasting player list to client');
+        client.send(JSON.stringify({ type: 'playerList', players }));
+      }
+    });
 
     let data;
     try {
@@ -37,28 +67,19 @@ wss.on('connection', (ws) => {
         console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
         const players = gameState.getPlayers();
         console.log('🧑‍🤝‍🧑 Current players:', players);
-
         ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId.toString(), players }));
-
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            console.log('📡 Broadcasting player list to client');
-            client.send(JSON.stringify({ type: 'playerList', players }));
-          }
-        });
       } else {
         console.warn(`⚠️ Username taken: ${data.username}`);
         ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
-      }
+      }      
+    }
 
-      if (data.type === 'move') {
-        const { id, posx, posy, dx, dy } = data.position || {};
-        if (typeof posx === 'number' && typeof posy === 'number') {
-          gameState.updatePlayerMovement(id, posx, posy, dx, dy);
-          broadcastGameState(); // 🔁 Send updated positions to everyone
-        }
+    if (data.type === 'move') {
+      const { id, posx, posy, dx, dy } = data.position || {};
+      if (typeof posx === 'number' && typeof posy === 'number') {
+        gameState.updatePlayerMovement(id, posx, posy, dx, dy);
+        broadcastGameState(); // 🔁 Send updated positions to everyone
       }
-      
     }
   });
 
@@ -83,40 +104,3 @@ app.get('*', (req, res) => {
   console.log(`📄 Serving index.html for route: ${req.url}`);
   res.sendFile(path.join(__dirname, 'server', 'public', 'index.html'));
 });
-
-function broadcastGameState() {
-  const players = gameState.getPlayers().map(p => ({
-    id: p.id,
-    username: p.username,
-    x: p.position.x,
-    y: p.position.y,
-    velocityX: p.velocity.x,
-    velocityY: p.velocity.y,
-    mass: p.mass,
-    radius: p.radius,
-  }));
-
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'playerList', players }));
-    }
-  });
-}
-
-setInterval(() => {
-  gameState.checkEliminations((eliminatedId) => {
-    console.log(`💥 Player eliminated: ${eliminatedId}`);
-    broadcastGameState(); // 🆕 Update everyone when someone is eliminated
-
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({
-          type: 'eliminated',
-          playerId: eliminatedId
-        }));
-      }
-    });
-  });
-
-  broadcastGameState();
-}, 1000 / 30); // 30 FPS

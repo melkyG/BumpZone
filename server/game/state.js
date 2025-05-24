@@ -36,9 +36,9 @@ class GameState {
     return Array.from(this.players.values());
   }
 
-  updatePlayerMovement(playerId, posx, posy, dx, dy) {
-    const player = this.players.get(playerId);
-    if (player) {
+  updatePlayerMovement(username, posx, posy, dx, dy) {
+    for (const player of this.players.values()) {
+      if (player.username === username) 
       player.velocity.x = dx;
       player.velocity.y = dy;
       player.position.x = posx; 

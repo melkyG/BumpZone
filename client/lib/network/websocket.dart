@@ -99,11 +99,27 @@ class WebSocketService {
     _send({'type': 'join', 'username': username});
   }
 
-  void sendMove(String id, double posx, double posy, double dx, double dy) {
-    _send({
+  void sendMove(
+    String username,
+    double posx,
+    double posy,
+    double dx,
+    double dy,
+  ) {
+    final message = {
       'type': 'move',
-      'position': {'id': id, 'posx': posx, 'posy': posy, 'dx': dx, 'dy': dy},
-    });
+      'position': {
+        'username': username,
+        'posx': posx,
+        'posy': posy,
+        'dx': dx,
+        'dy': dy,
+      },
+    };
+
+    print('Sending move message: ${jsonEncode(message)}');
+
+    _send(message);
   }
 
   void leave() {

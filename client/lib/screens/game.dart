@@ -66,6 +66,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     widget.webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         playerList = players;
+        print('OnPlayerList Update');
       });
     };
 
@@ -113,7 +114,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
 
           // Send movement to server
           widget.webSocketService.sendMove(
-            player.id,
+            player.username,
             player.position.x,
             player.position.y,
             player.velocity.x,
