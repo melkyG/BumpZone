@@ -47,12 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Handle connection errors
     _webSocketService.onError = (error) {
-      print('WebSocket onError called with: $error (${error.runtimeType})');
       setState(() {
         _errorMessage =
-            error == 'username_taken'
-                ? 'Unavailable'
-                : 'Failed to connect, try again';
+            'WebSocket onError called with: $error (${error.runtimeType})';
       });
     };
   }
@@ -78,9 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Server will respond with 'welcome' (navigate) or 'error' (show unavailable)
     _webSocketService.onError = (error) {
       setState(() {
-        if (error == 'username_taken') {
-          _errorMessage = 'Unavailable';
-        }
+        _errorMessage = 'Error: $error';
       });
     };
   }

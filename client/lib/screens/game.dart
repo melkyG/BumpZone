@@ -4,6 +4,7 @@ import '../models/player.dart';
 import 'game_painter.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
 import 'package:bump_zone/network/websocket.dart';
+import 'dart:math';
 
 class GameWidget extends StatefulWidget {
   final String username;
@@ -22,6 +23,7 @@ class GameWidget extends StatefulWidget {
 class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
   late List<Player> playerList = [];
+  late Player currentPlayer;
   late AnimationController controller;
   final double deltaT = 0.002;
   final int subSteps = 8;
@@ -47,8 +49,20 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeArena();
-    playerList = [];
 
+    // Create the currentPlayer once here
+    currentPlayer = Player(
+      id: 'temp-${Random().nextInt(10000)}',
+      username: widget.username,
+      position: Vector2(400, 300), // or some default start position
+      velocity: Vector2.zero(),
+      mass: 1.0,
+      radius: 10.0,
+    );
+
+    playerList = [...playerList, currentPlayer];
+
+    // Then, in your WebSocket callbacks:
     widget.webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         playerList = players;
@@ -96,18 +110,24 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
 
           player.update(deltaT);
           arena.update(deltaT, player);
+
+          // Update currentPlayer in playerList
+          final index = playerList.indexWhere(
+            (p) => p.username == player.username,
+          );
+          if (index != -1) {
+            // Replace the old player with the updated one
+            playerList[index] = player;
+          } else {
+            // If not found, add currentPlayer to the list
+            playerList.add(player);
+          }
         }
       }
       setState(() {});
     });
 
     controller.forward();
-  }
-
-  Player? get currentPlayer {
-    return playerList.firstWhere(
-      (player) => player.username == widget.username,
-    );
   }
 
   void _initializeArena() {
@@ -136,7 +156,6 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     widget.webSocketService.onStateUpdate = null;
     widget.webSocketService.onEliminated = null;
     widget.webSocketService.onError = null;
-    super.dispose();
     super.dispose();
   }
 
