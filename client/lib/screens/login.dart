@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     //Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService(
-      'wss://thorn-glory-wanderer.glitch.me',
+      'wss://lush-comet-icicle.glitch.me',
     );
     _webSocketService.connect();
 

@@ -33425,7 +33425,7 @@ ai(){return new A.K3(new A.GD(B.wy,$.ac()))}}
 A.K3.prototype={
 aw(){var s,r=this
 r.aX()
-s=new A.Hd("wss://thorn-glory-wanderer.glitch.me")
+s=new A.Hd("wss://lush-comet-icicle.glitch.me")
 r.e=s
 s.a6u()
 s=r.e
