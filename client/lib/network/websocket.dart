@@ -60,18 +60,16 @@ class WebSocketService {
         }
 
         if (data['players'] is List) {
-          final players = (data['players'] as List)
-              .map((p) => Player.fromJson(p))
-              .toList();
+          final players =
+              (data['players'] as List).map((p) => Player.fromJson(p)).toList();
           if (onStateUpdate != null) onStateUpdate!(players);
         }
         break;
 
       case 'playerList':
         if (data['players'] is List) {
-          final players = (data['players'] as List)
-              .map((p) => Player.fromJson(p))
-              .toList();
+          final players =
+              (data['players'] as List).map((p) => Player.fromJson(p)).toList();
           if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
         }
         break;
@@ -101,8 +99,11 @@ class WebSocketService {
     _send({'type': 'join', 'username': username});
   }
 
-  void sendMovement(double dx, double dy) {
-    _send({'type': 'move', 'direction': {'dx': dx, 'dy': dy}});
+  void sendMove(String id, double posx, double posy, double dx, double dy) {
+    _send({
+      'type': 'move',
+      'position': {'id': id, 'posx': posx, 'posy': posy, 'dx': dx, 'dy': dy},
+    });
   }
 
   void leave() {

@@ -36,16 +36,16 @@ class GameState {
     return Array.from(this.players.values());
   }
 
-  updatePlayerMovement(id, dx, dy) {
-    const player = this.players.get(id);
+  updatePlayerMovement(playerId, posx, posy, dx, dy) {
+    const player = this.players.get(playerId);
     if (player) {
-      player.velocity.x = dx * 100;
-      player.velocity.y = dy * 100;
-      player.position.x += player.velocity.x / 30;
-      player.position.y += player.velocity.y / 30;
+      player.velocity.x = dx;
+      player.velocity.y = dy;
+      player.position.x = posx; 
+      player.position.y = posy;
     }
   }
-
+  
   checkEliminations(callback) {
     const arenaRadius = 400;
     for (const [id, player] of this.players.entries()) {

@@ -111,6 +111,15 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
           player.update(deltaT);
           arena.update(deltaT, player);
 
+          // Send movement to server
+          widget.webSocketService.sendMove(
+            player.id,
+            player.position.x,
+            player.position.y,
+            player.velocity.x,
+            player.velocity.y,
+          );
+
           // Update currentPlayer in playerList
           final index = playerList.indexWhere(
             (p) => p.username == player.username,
