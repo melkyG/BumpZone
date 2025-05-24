@@ -16,8 +16,10 @@ class GameState {
 }
 
   removePlayer(id) {
-    this.players.delete(id);
-  }
+  // Safely reassigns players without the one matching the given id
+  this.players = this.players.filter(player => player.id !== id);
+}
+
 
   updatePlayerMovement(id, dx, dy) {
     const player = this.players.get(id);
