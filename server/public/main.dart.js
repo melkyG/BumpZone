@@ -34398,7 +34398,7 @@ A.a8m.prototype={
 $1(a){A.dk("WebSocket error: "+a)},
 $S:43}
 A.a8n.prototype={
-$0(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c
+$0(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b
 for(s=this.a,r=t.N,q=t.K,p=t.zU,o=0;o<8;++o){n=s.f
 n===$&&A.a()
 if(s.cx){s.dx+=0.002
@@ -34469,27 +34469,29 @@ n.r=new A.aj(new Float64Array(2))
 m=s.d
 m===$&&A.a()
 m.ci(0.002,n)
-m=s.a.d
-l=n.c.a
-k=l[0]
-l=l[1]
-f=n.d.a
-e=A.af(["type","move","position",A.af(["username",n.b,"posx",k,"posy",l,"dx",f[0],"dy",f[1]],r,q)],r,q)
-A.aee("Sending move message: "+B.bJ.vF(e,null))
-m=m.a
-if(m!=null){d=m.w
-if(d===$){l=m.r.b
+m=s.a
+l=m.d
+m=m.c
+k=n.c.a
+f=k[0]
+k=k[1]
+e=n.d.a
+d=A.af(["type","move","position",A.af(["username",m,"posx",f,"posy",k,"dx",e[0],"dy",e[1]],r,q)],r,q)
+A.aee("Sending move message: "+B.bJ.vF(d,null))
+m=l.a
+if(m!=null){c=m.w
+if(c===$){l=m.r.b
 l===$&&A.a()
 l=l.a
 l===$&&A.a()
-d!==$&&A.a6()
-d=m.w=new A.Oq(m,l)}d.a.D(0,B.bJ.vF(e,null))}else A.aee("WebSocket channel is not connected.")
-d=s.e
-if(d===$)d=s.e=A.c([],p)
-c=B.b.abM(d,new A.a8f(n))
-d=s.e
-if(c!==-1)(d===$?s.e=A.c([],p):d)[c]=n
-else B.b.D(d===$?s.e=A.c([],p):d,n)}s.ac(new A.a8g())},
+c!==$&&A.a6()
+c=m.w=new A.Oq(m,l)}c.a.D(0,B.bJ.vF(d,null))}else A.aee("WebSocket channel is not connected.")
+c=s.e
+if(c===$)c=s.e=A.c([],p)
+b=B.b.abM(c,new A.a8f(n))
+c=s.e
+if(b!==-1)(c===$?s.e=A.c([],p):c)[b]=n
+else B.b.D(c===$?s.e=A.c([],p):c,n)}s.ac(new A.a8g())},
 $S:0}
 A.a8f.prototype={
 $1(a){return a.b===this.a.b},
@@ -34634,7 +34636,7 @@ al(){return new A.Ky(new A.H6(B.wI,$.ae()))}}
 A.Ky.prototype={
 aB(){var s,r=this
 r.aZ()
-s=new A.HG("wss://thorn-glory-wanderer.glitch.me")
+s=new A.HG("ws://localhost:3000")
 r.e=s
 s.a8p()
 s=r.e
