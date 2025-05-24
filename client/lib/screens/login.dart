@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   _joinGame();
 
-                  /*
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     ),
                   );
-                  */
+                  
 
                 },
                 child: const Text('Join Game'),
