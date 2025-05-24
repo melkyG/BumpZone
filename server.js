@@ -9,8 +9,10 @@ const server = app.listen(3000, () => console.log('🚀 Server running on port 3
 const wss = new WebSocket.Server({ server });
 const gameState = new GameState();
 
+// Serve static files from bump_zone/server/public/
 app.use(express.static(path.join(__dirname, 'server', 'public')));
 
+// WebSocket connection handling
 wss.on('connection', (ws) => {
   console.log('🔗 New WebSocket connection established');
 
@@ -28,8 +30,6 @@ wss.on('connection', (ws) => {
 
     if (data.type === 'join') {
       console.log(`👤 Attempting to add player: ${data.username}`);
-
-      // Add player with ws as unique identifier
       const result = gameState.addPlayer(data.username, ws);
       if (result.success) {
         console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
@@ -38,9 +38,9 @@ wss.on('connection', (ws) => {
 
         ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId.toString(), players }));
 
-        // Broadcast updated player list to all clients
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
+            console.log('📡 Broadcasting player list to client');
             client.send(JSON.stringify({ type: 'playerList', players }));
           }
         });
@@ -53,22 +53,22 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
-
-    // Remove player by ws reference
-    gameState.removePlayerByWS(ws);
+    gameState.removePlayer(socket.id);
+     io.emit("playersOnline", gameState.players.length);
 
     const players = gameState.getPlayers();
     console.log('🧑‍🤝‍🧑 Updated players after disconnect:', players);
 
-    // Broadcast updated player list after disconnect
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
+        console.log('📡 Broadcasting updated player list after disconnect');
         client.send(JSON.stringify({ type: 'playerList', players }));
       }
     });
   });
 });
 
+// Fallback to serve index.html for SPA routing
 app.get('*', (req, res) => {
   console.log(`📄 Serving index.html for route: ${req.url}`);
   res.sendFile(path.join(__dirname, 'server', 'public', 'index.html'));
