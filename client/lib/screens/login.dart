@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _webSocketService.disconnect();
+    //_webSocketService.disconnect();
     super.dispose();
   }
 
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   );
                   */
-                  
+
                 },
                 child: const Text('Join Game'),
               ),
