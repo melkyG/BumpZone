@@ -4,19 +4,13 @@ import '../models/player.dart';
 
 class GamePainter extends CustomPainter {
   final Arena arena;
-  final Player ball;
-  final String username;
+  final List<Player> players;
 
-  GamePainter({
-    required this.arena,
-    required this.ball,
-    required this.username,
-  });
+  GamePainter({required this.arena, required this.players});
 
   @override
   void paint(Canvas canvas, Size size) {
     final postPaint = Paint()..color = const Color.fromARGB(255, 0, 0, 0);
-    //..style = PaintingStyle.fill;
     final bandPaint =
         Paint()
           ..color = Colors.blue
@@ -42,29 +36,32 @@ class GamePainter extends CustomPainter {
       canvas.drawCircle(Offset(post.x, post.y), 5.0, postPaint);
     }
 
-    // Draw ball
-    canvas.drawCircle(
-      Offset(ball.position.x, ball.position.y),
-      ball.radius,
-      ballPaint,
-    );
+    // Draw each player
+    for (var player in players) {
+      // Draw player circle
+      canvas.drawCircle(
+        Offset(player.position.x, player.position.y),
+        player.radius,
+        ballPaint,
+      );
 
-    // Draw username below the ball
-    final textSpan = TextSpan(
-      text: username,
-      style: TextStyle(color: Colors.black, fontSize: 14),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    final offset = Offset(
-      ball.position.x - textPainter.width / 2,
-      ball.position.y + ball.radius + 4,
-    );
-    textPainter.paint(canvas, offset);
+      // Draw username below the player
+      final textSpan = TextSpan(
+        text: player.username,
+        style: TextStyle(color: Colors.black, fontSize: 14),
+      );
+      final textPainter = TextPainter(
+        text: textSpan,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      final offset = Offset(
+        player.position.x - textPainter.width / 2,
+        player.position.y + player.radius + 4,
+      );
+      textPainter.paint(canvas, offset);
+    }
   }
 
   @override

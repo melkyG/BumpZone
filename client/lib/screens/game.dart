@@ -21,7 +21,7 @@ class GameWidget extends StatefulWidget {
 
 class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
-  late Player ball;
+  late List<Player> playerList;
   late AnimationController controller;
   final double deltaT = 0.002;
   final int subSteps = 8;
@@ -47,14 +47,24 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeArena();
-    ball = Player(
-      id: 'placeholder',
-      username: widget.username,
-      position: Vector2(400.0, 300.0),
-      velocity: Vector2(200.0, 85.0),
-      mass: 4.0,
-      radius: 25.0,
-    );
+    playerList = [
+      Player(
+        id: 'placeholder',
+        username: widget.username,
+        position: Vector2(400.0, 300.0),
+        velocity: Vector2(200.0, 85.0),
+        mass: 4.0,
+        radius: 25.0,
+      ),
+      Player(
+        id: 'placeholder1',
+        username: 'dummy1',
+        position: Vector2(300.0, 200.0),
+        velocity: Vector2(200.0, 85.0),
+        mass: 4.0,
+        radius: 25.0,
+      ),
+    ];
     controller = AnimationController(
       vsync: this,
       duration: const Duration(days: 1),
@@ -62,10 +72,10 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
       for (int i = 0; i < subSteps; i++) {
         if (isClicking) {
           clickDuration += deltaT; // Increase time
-          final direction = cursorPosition - ball.position;
+          final direction = cursorPosition - playerList[0].position;
           final distance = direction.length;
           final forceScale = clickDuration.clamp(0.0, 2.0); // limit growth
-          ball.force =
+          playerList[0].force =
               direction.normalized() *
               forceConstant *
               forceScale *
@@ -74,8 +84,8 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
           clickDuration = 0.0; // Reset on release
         }
 
-        ball.update(deltaT);
-        arena.update(deltaT, ball);
+        playerList[0].update(deltaT);
+        arena.update(deltaT, playerList[0]);
       }
       setState(() {});
     });
@@ -148,8 +158,7 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
                         child: CustomPaint(
                           painter: GamePainter(
                             arena: arena,
-                            ball: ball,
-                            username: widget.username,
+                            players: playerList,
                           ),
                         ),
                       ),
