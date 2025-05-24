@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 import '../game/arena.dart';
-import '../game/ball.dart';
+import '../models/player.dart';
 import 'game_painter.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
 import 'package:bump_zone/network/websocket.dart';
 
-class GameScreen extends StatelessWidget {
-  final WebSocketService webSocketService;
-
-  const GameScreen({super.key, required this.webSocketService});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: const Center(child: Text('Game Screen (Placeholder)')),
-    );
-  }
-}
-
 class GameWidget extends StatefulWidget {
   final String username;
+  final WebSocketService webSocketService;
 
-  const GameWidget({super.key, required this.username});
+  const GameWidget({
+    super.key,
+    required this.username,
+    required this.webSocketService,
+  });
 
   @override
   _GameWidgetState createState() => _GameWidgetState();
@@ -29,7 +21,7 @@ class GameWidget extends StatefulWidget {
 
 class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   late Arena arena;
-  late Ball ball;
+  late Player ball;
   late AnimationController controller;
   final double deltaT = 0.002;
   final int subSteps = 8;
@@ -55,7 +47,9 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeArena();
-    ball = Ball(
+    ball = Player(
+      id: 'placeholder',
+      username: widget.username,
       position: Vector2(400.0, 300.0),
       velocity: Vector2(200.0, 85.0),
       mass: 4.0,

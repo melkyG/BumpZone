@@ -33,15 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Handle join response (welcome or error)
     _webSocketService.onStateUpdate = (players) {
-      /*
-      // Successful join, navigate to game screen
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GameScreen(webSocketService: _webSocketService),
+          builder:
+              (_) => GameWidget(
+                username: _usernameController.text.trim(),
+                webSocketService: _webSocketService,
+              ),
         ),
       );
-      */
     };
 
     // Handle connection errors
@@ -116,18 +117,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   _joinGame();
 
-                  
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => GameWidget(
-                            username: _usernameController.text.trim(),
-                          ),
-                    ),
-                  );
-                  
-
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder:
+                  //         (_) => GameWidget(
+                  //           username: _usernameController.text.trim(),
+                  //         ),
+                  //   ),
+                  // );
                 },
                 child: const Text('Join Game'),
               ),

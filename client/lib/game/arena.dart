@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
-import 'ball.dart';
+import '../models/player.dart';
 import 'physics.dart';
 
 class ElasticBand {
@@ -117,7 +117,7 @@ class ElasticBand {
     }
   }
 
-  void _enforceNoSeepIntoBall(Ball ball) {
+  void _enforceNoSeepIntoBall(Player ball) {
     for (int i = 0; i < points.length; i++) {
       if (fixedIndices.contains(i)) continue;
 
@@ -135,7 +135,7 @@ class ElasticBand {
     }
   }
 
-  void handleBallCollision(Ball ball, double deltaT) {
+  void handleBallCollision(Player ball, double deltaT) {
     double minDistance = double.infinity;
     int? closestSegmentIndex;
     Vector2? closestPoint;
@@ -258,7 +258,7 @@ class Arena {
     }
   }
 
-  void update(double deltaT, Ball? ball) {
+  void update(double deltaT, Player? ball) {
     for (var band in bands) {
       band.updateState(deltaT);
       if (ball != null) {

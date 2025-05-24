@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../game/arena.dart';
-import '../game/ball.dart';
+import '../models/player.dart';
 
 class GamePainter extends CustomPainter {
   final Arena arena;
-  final Ball ball;
+  final Player ball;
   final String username;
 
   GamePainter({

@@ -1,10 +1,10 @@
 import 'package:vector_math/vector_math_64.dart' show Vector2;
-import 'ball.dart';
+import '../models/player.dart';
 import 'arena.dart';
 
 class Physics {
   static bool detectBallBandCollision(
-    Ball ball,
+    Player ball,
     Vector2 p1,
     Vector2 p2,
     double deltaT,
@@ -31,7 +31,7 @@ class Physics {
   }
 
   static bool detectBallPostCollision(
-    Ball ball,
+    Player ball,
     Vector2 post,
     double deltaT,
     double buffer,
@@ -50,7 +50,7 @@ class Physics {
   }
 
   static void resolveBallBandCollision(
-    Ball ball,
+    Player ball,
     ElasticBand band,
     int segmentIndex,
     double coefficientOfRestitution,
@@ -109,7 +109,7 @@ class Physics {
   }
 
   static void resolveBallPostCollision(
-    Ball ball,
+    Player ball,
     Vector2 post,
     double coefficientOfRestitution,
   ) {
