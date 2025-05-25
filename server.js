@@ -5,7 +5,8 @@ const { GameState } = require('./server/game/state');
 
 const app = express();
 console.log('🧠 Running on process ID:', process.pid);
-const server = app.listen(3002, () => console.log('🚀 Server running on port 3002'));
+const PORT = process.env.PORT || 3002;
+const server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 const wss = new WebSocket.Server({ server });
 const gameState = new GameState();
 
