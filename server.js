@@ -37,21 +37,22 @@ wss.on('connection', (ws) => {
         const players = gameState.getPlayers();
         console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
+        // 👇 Move this here so it's available for both ws.send and broadcast
+        const simplifiedPlayers = players.map(p => ({
+          playerId: p.playerId,
+          username: p.username
+        }));
+
         ws.send(JSON.stringify({
           type: 'welcome',
           playerId: result.playerId.toString(),
           players: simplifiedPlayers
         }));
 
-
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             console.log('📡 Broadcasting player list to client');
-            const simplifiedPlayers = players.map(p => ({
-            playerId: p.playerId,
-            username: p.username
-          }));
-          client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
+            client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
           }
         });
       } else {
