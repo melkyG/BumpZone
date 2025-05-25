@@ -35,7 +35,7 @@ wss.on('connection', (ws) => {
       if (result.success) {
         console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
         const players = gameState.getPlayers();
-        console.log('🧑‍🤝‍🧑 Current players:', players);
+        console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
         ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId.toString(), players }));
 
@@ -57,7 +57,7 @@ wss.on('connection', (ws) => {
     gameState.removePlayer(ws);
 
     const players = gameState.getPlayers();
-    console.log('🧑‍🤝‍🧑 Updated players after disconnect:', players);
+    console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
