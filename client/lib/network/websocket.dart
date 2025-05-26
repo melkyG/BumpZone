@@ -34,68 +34,79 @@ class WebSocketService {
   }
 
   void _onMessage(dynamic message) {
-    print("WebSocket message received: $message");
+  print("WebSocket message received: $message");
 
-    final data = jsonDecode(message as String);
-    if (data is! Map<String, dynamic>) {
-      print('Unexpected message format.');
-      return;
-    }
+  final data = jsonDecode(message as String);
+  if (data is! Map<String, dynamic>) {
+    print('Unexpected message format.');
+    return;
+  }
 
-    final type = data['type'];
-    print("Message type: $type");
+  final type = data['type'];
+  print("Message type: $type");
 
-    switch (type) {
-      case 'welcome':
-        print("Welcome message: $data");
+  switch (type) {
+    case 'welcome':
+      print("✅ Welcome message: $data");
 
-        final id = data['playerId'];
-        if (id is String) {
-          playerId = id;
-          print("Assigned playerId: $playerId");
-        } else {
-          print('Error: playerId is not a string. Received: $id');
-          if (onError != null) onError!("invalid_player_id");
+      final id = data['playerId'];
+      if (id is String) {
+        playerId = id;
+        print("🎯 Assigned playerId: $playerId");
+      } else {
+        print('❌ Error: playerId is not a string. Received: $id');
+        onError?.call("invalid_player_id");
+        return;
+      }
+
+      if (data['players'] is List) {
+        final players = (data['players'] as List)
+            .map((p) => Player.fromJson(p))
+            .toList();
+        print("👥 Players from welcome: ${players.map((p) => p.username)}");
+        onStateUpdate?.call(players);
+      }
+      break;
+
+    case 'playerList':
+      if (data['players'] is List) {
+        final players = (data['players'] as List)
+            .map((p) => Player.fromJson(p))
+            .toList();
+
+        if (playerId == null) {
+          print('⚠️ playerId not yet assigned! Ignoring early playerList.');
           return;
         }
 
-        if (data['players'] is List) {
-          final players = (data['players'] as List)
-              .map((p) => Player.fromJson(p))
-              .toList();
-          if (onStateUpdate != null) onStateUpdate!(players);
-        }
-        break;
+        print("📃 PlayerList update received. Current playerId: $playerId");
+        onPlayerListUpdate?.call(players);
+      }
+      break;
 
-      case 'playerList':
-        if (data['players'] is List) {
-          final players = (data['players'] as List)
-              .map((p) => Player.fromJson(p))
-              .toList();
-          if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
-        }
-        break;
+    case 'eliminated':
+      final eliminatedId = data['playerId'];
+      print("💀 Eliminated message: $eliminatedId vs current: $playerId");
 
-      case 'eliminated':
-        final eliminatedId = data['playerId'];
-        if (eliminatedId != null &&
-            eliminatedId == playerId &&
-            onEliminated != null) {
-          onEliminated!(playerId!);
-        }
-        break;
+      if (eliminatedId != null &&
+          playerId != null &&
+          eliminatedId == playerId) {
+        onEliminated?.call(playerId!);
+      }
+      break;
 
-      case 'error':
-        final msg = data['message'] ?? 'unknown_error';
-        print('Server error: $msg');
-        if (onError != null) onError!(msg);
-        break;
+    case 'error':
+      final msg = data['message'] ?? 'unknown_error';
+      print('❌ Server error: $msg');
+      onError?.call(msg);
+      break;
 
-      default:
-        print("Unhandled message type: $type");
-        break;
-    }
+    default:
+      print("❓ Unhandled message type: $type");
+      break;
   }
+}
+
 
   void join(String username) {
     _send({'type': 'join', 'username': username});
