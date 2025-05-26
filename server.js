@@ -18,42 +18,43 @@ wss.on('connection', (ws) => {
   console.log('🔗 New WebSocket connection established');
 
   ws.on('message', (message) => {
-    console.log('📩 Received message:', message);
-
-    let data;
     try {
-      data = JSON.parse(message);
-    } catch (err) {
-      console.error('❌ Failed to parse message JSON:', err);
-      ws.send(JSON.stringify({ type: 'error', message: 'invalid_json' }));
-      return;
-    }
+      // Convert Buffer to string if necessary
+      const jsonString = typeof message === 'string' ? message : message.toString('utf8');
+      console.log('📩 Received message:', jsonString);
 
-    if (data.type === 'join') {
-      console.log(`👤 Attempting to add player: ${data.username}`);
-      const result = gameState.addPlayer(data.username, ws);
-      if (result.success) {
-        console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
-        const players = gameState.getPlayers();
-        console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
+      const data = JSON.parse(jsonString);
 
-        const simplifiedPlayers = players.map(p => ({
-          playerId: p.playerId,
-          username: p.username
-        }));
+      if (data.type === 'join') {
+        console.log(`👤 Attempting to add player: ${data.username}`);
+        const result = gameState.addPlayer(data.username, ws);
+        if (result.success) {
+          console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
+          const players = gameState.getPlayers();
+          console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            console.log('📡 Broadcasting player list to client');
-            client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
-          }
-        });
-      } else {
-        console.warn(`⚠️ Username taken: ${data.username}`);
-        ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
+          const simplifiedPlayers = players.map(p => ({
+            playerId: p.playerId,
+            username: p.username
+          }));
+
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              console.log('📡 Broadcasting player list to client');
+              client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
+            }
+          });
+        } else {
+          console.warn(`⚠️ Username taken: ${data.username}`);
+          ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
+        }
       }
+    } catch (err) {
+      console.error('❌ Failed to parse message:', err);
+      ws.send(JSON.stringify({ type: 'error', message: 'invalid_json' }));
     }
-  });
+});
+
 
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
