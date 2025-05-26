@@ -44,11 +44,19 @@ wss.on('connection', (ws) => {
         }));
 
         wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            console.log('📡 Broadcasting player list to client');
-            client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
-          }
-        });
+        if (client.readyState === WebSocket.OPEN) {
+          const player = gameState.getPlayerBySocket(client); // You may already have this
+          const playerId = player?.playerId?.toString();
+
+          console.log('📡 Broadcasting player list to client');
+          client.send(JSON.stringify({
+            type: 'playerList',
+            players: simplifiedPlayers,
+            playerId: playerId
+          }));
+        }
+      });
+
       } else {
         console.warn(`⚠️ Username taken: ${data.username}`);
         ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
@@ -57,19 +65,32 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('❎ WebSocket connection closed');
-    gameState.removePlayer(ws);
+  console.log('❎ WebSocket connection closed');
+  gameState.removePlayer(ws);
 
-    const players = gameState.getPlayers();
-    console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
+  const players = gameState.getPlayers();
+  const simplifiedPlayers = players.map(p => ({
+    playerId: p.playerId,
+    username: p.username
+  }));
 
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        console.log('📡 Broadcasting updated player list after disconnect');
-        client.send(JSON.stringify({ type: 'playerList', players }));
-      }
-    });
+  console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      const player = gameState.getPlayerBySocket(client);
+      const playerId = player?.playerId?.toString();
+
+      console.log('📡 Broadcasting updated player list after disconnect');
+      client.send(JSON.stringify({
+        type: 'playerList',
+        players: simplifiedPlayers,
+        playerId: playerId
+      }));
+    }
   });
+});
+
 });
 
 // Fallback to serve index.html for SPA routing
