@@ -10,7 +10,7 @@ const server = app.listen(PORT, () => console.log(`🚀 Server running on port $
 const wss = new WebSocket.Server({ server });
 const gameState = new GameState();
 
-// Serve static files from bump_zone/server/public/
+// Serve static files
 app.use(express.static(path.join(__dirname, 'server', 'public')));
 
 // WebSocket connection handling
@@ -37,27 +37,24 @@ wss.on('connection', (ws) => {
         const players = gameState.getPlayers();
         console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
-        // 👇 Move this here so it's available for both ws.send and broadcast
         const simplifiedPlayers = players.map(p => ({
           playerId: p.playerId,
           username: p.username
         }));
 
         wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          const player = gameState.getPlayerBySocket(client); // You may already have this
-          const playerId = player && player.playerId ? player.playerId.toString() : null;
+          if (client.readyState === WebSocket.OPEN) {
+            const player = gameState.getPlayerBySocket(client);
+            const playerId = player && player.playerId ? player.playerId.toString() : null;
 
-
-          console.log('📡 Broadcasting player list to client');
-          client.send(JSON.stringify({
-            type: 'playerList',
-            players: simplifiedPlayers,
-            playerId: playerId
-          }));
-        }
-      });
-
+            console.log('📡 Broadcasting player list to client');
+            client.send(JSON.stringify({
+              type: 'playerList',
+              players: simplifiedPlayers,
+              playerId: playerId
+            }));
+          }
+        });
       } else {
         console.warn(`⚠️ Username taken: ${data.username}`);
         ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
@@ -66,33 +63,31 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-  console.log('❎ WebSocket connection closed');
-  gameState.removePlayer(ws);
+    console.log('❎ WebSocket connection closed');
+    gameState.removePlayer(ws);
 
-  const players = gameState.getPlayers();
-  const simplifiedPlayers = players.map(p => ({
-    playerId: p.playerId,
-    username: p.username
-  }));
+    const players = gameState.getPlayers();
+    const simplifiedPlayers = players.map(p => ({
+      playerId: p.playerId,
+      username: p.username
+    }));
 
-  console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
+    console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      const player = gameState.getPlayerBySocket(client);
-      const playerId = player && player.playerId ? player.playerId.toString() : null;
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        const player = gameState.getPlayerBySocket(client);
+        const playerId = player && player.playerId ? player.playerId.toString() : null;
 
-
-      console.log('📡 Broadcasting updated player list after disconnect');
-      client.send(JSON.stringify({
-        type: 'playerList',
-        players: simplifiedPlayers,
-        playerId: playerId
-      }));
-    }
+        console.log('📡 Broadcasting updated player list after disconnect');
+        client.send(JSON.stringify({
+          type: 'playerList',
+          players: simplifiedPlayers,
+          playerId: playerId
+        }));
+      }
+    });
   });
-});
-
 });
 
 // Fallback to serve index.html for SPA routing
