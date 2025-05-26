@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+
     // Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService(
       'wss://thorn-glory-wanderer.glitch.me',
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _webSocketService.disconnect();
+    // Do not disconnect the WebSocket here to allow reuse in GameScreen
     super.dispose();
   }
 
