@@ -68,10 +68,16 @@ wss.on('connection', (ws) => {
   console.log('gameState instanceof GameState:', gameState instanceof GameState);
   console.log('gameState.getPlayers:', gameState.getPlayers);
   gameState.removePlayer(ws);
+  if (typeof gameState.getPlayers !== 'function') {
+    console.error('gameState.getPlayers is not a function, reinitializing');
+    delete require.cache[require.resolve('./server/game/state')];
+    const { GameState } = require('./server/game/state');
+    global.gameState = new GameState(); // Update module-level gameState
+  }
   const players = gameState.getPlayers();
-    const simplifiedPlayers = players.map(p => ({
-      playerId: p.playerId,
-      username: p.username
+  const simplifiedPlayers = players.map(p => ({
+    playerId: p.playerId,
+    username: p.username
     }));
 
     console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
