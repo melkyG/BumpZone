@@ -44,19 +44,11 @@ wss.on('connection', (ws) => {
         }));
 
         wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          const player = gameState.getPlayerBySocket(client); // You may already have this
-          const playerId = player?.playerId?.toString();
-
-          console.log('📡 Broadcasting player list to client');
-          client.send(JSON.stringify({
-            type: 'playerList',
-            players: simplifiedPlayers,
-            playerId: playerId
-          }));
-        }
-      });
-
+          if (client.readyState === WebSocket.OPEN) {
+            console.log('📡 Broadcasting player list to client');
+            client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
+          }
+        });
       } else {
         console.warn(`⚠️ Username taken: ${data.username}`);
         ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
