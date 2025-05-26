@@ -6,10 +6,7 @@ class WebSocketService {
   WebSocketChannel? _channel;
   final String url;
   Function(List<Player>)? onPlayerListUpdate;
-  Function(List<Player>)? onStateUpdate;
-  Function(String)? onEliminated;
   Function(String)? onError;
-  String? playerId;
 
   WebSocketService(this.url);
 
@@ -20,16 +17,16 @@ class WebSocketService {
         _onMessage,
         onError: (error) {
           print('WebSocket error: $error');
-          if (onError != null) onError!('connection_failed');
+          onError?.call('connection_failed');
         },
         onDone: () {
           print('WebSocket connection closed');
-          if (onError != null) onError!('connection_closed');
+          onError?.call('connection_closed');
         },
       );
     } catch (e) {
       print('WebSocket connection failed: $e');
-      if (onError != null) onError!('connection_failed');
+      onError?.call('connection_failed');
     }
   }
 
@@ -46,49 +43,19 @@ class WebSocketService {
     print("Message type: $type");
 
     switch (type) {
-      case 'welcome':
-        print("Welcome message: $data");
-
-        final id = data['playerId'];
-        if (id is String) {
-          playerId = id;
-          print("Assigned playerId: $playerId");
-        } else {
-          print('Error: playerId is not a string. Received: $id');
-          if (onError != null) onError!("invalid_player_id");
-          return;
-        }
-
-        if (data['players'] is List) {
-          final players = (data['players'] as List)
-              .map((p) => Player.fromJson(p))
-              .toList();
-          if (onStateUpdate != null) onStateUpdate!(players);
-        }
-        break;
-
       case 'playerList':
         if (data['players'] is List) {
           final players = (data['players'] as List)
               .map((p) => Player.fromJson(p))
               .toList();
-          if (onPlayerListUpdate != null) onPlayerListUpdate!(players);
-        }
-        break;
-
-      case 'eliminated':
-        final eliminatedId = data['playerId'];
-        if (eliminatedId != null &&
-            eliminatedId == playerId &&
-            onEliminated != null) {
-          onEliminated!(playerId!);
+          onPlayerListUpdate?.call(players);
         }
         break;
 
       case 'error':
         final msg = data['message'] ?? 'unknown_error';
         print('Server error: $msg');
-        if (onError != null) onError!(msg);
+        onError?.call(msg);
         break;
 
       default:
@@ -99,10 +66,6 @@ class WebSocketService {
 
   void join(String username) {
     _send({'type': 'join', 'username': username});
-  }
-
-  void sendMovement(double dx, double dy) {
-    _send({'type': 'move', 'direction': {'dx': dx, 'dy': dy}});
   }
 
   void leave() {
