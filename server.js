@@ -63,10 +63,12 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('❎ WebSocket connection closed');
-    gameState.removePlayer(ws);
-
-    const players = gameState.getPlayers();
+  console.log('❎ WebSocket connection closed');
+  console.log('gameState:', gameState);
+  console.log('gameState instanceof GameState:', gameState instanceof GameState);
+  console.log('gameState.getPlayers:', gameState.getPlayers);
+  gameState.removePlayer(ws);
+  const players = gameState.getPlayers();
     const simplifiedPlayers = players.map(p => ({
       playerId: p.playerId,
       username: p.username
