@@ -2,8 +2,9 @@ class GameState {
   constructor() {
     this.players = [];
   }
+
   getPlayerBySocket(ws) {
-    return this.players.find(p => p.socket === ws);
+    return this.players.find(p => p.ws === ws);
   }
 
   addPlayer(username, ws) {
@@ -18,8 +19,8 @@ class GameState {
     return { success: true, playerId };
   }
 
-  removePlayer(id) {
-    this.players = this.players.filter(player => player.playerId !== id);
+  removePlayer(ws) {
+    this.players = this.players.filter(player => player.ws !== ws);
   }
 
   getPlayers() {
