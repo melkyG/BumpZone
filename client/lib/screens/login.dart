@@ -14,13 +14,14 @@ class _LoginScreenState extends State<LoginScreen> {
   late WebSocketService _webSocketService;
   String? _errorMessage;
   int _playerCount = 0;
+  bool _joining = false;
 
   @override
   void initState() {
     super.initState();
-    //Use ws://localhost:3000 for local testing
+    // Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService(
-      'wss://thorn-glory-wanderer.glitch.me', //wss://lush-comet-icicle.glitch.me
+      'wss://thorn-glory-wanderer.glitch.me',
     );
     _webSocketService.connect();
 
@@ -31,27 +32,15 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     };
 
-    // Handle join response (welcome or error)
-    _webSocketService.onStateUpdate = (players) {
-      
-      // Successful join, navigate to game screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameScreen(webSocketService: _webSocketService),
-        ),
-      );
-      
-    };
-
     // Handle connection errors
     _webSocketService.onError = (error) {
-      print('WebSocket onError called with: $error (${error.runtimeType})');
+      if (!_joining) return;
+      print('WebSocket onError called with: $error');
       setState(() {
-        _errorMessage =
-            error == 'username_taken'
-                ? 'Unavailable'
-                : 'Failed to connect, try again';
+        _joining = false;
+        _errorMessage = error == 'username_taken'
+            ? 'Username unavailable'
+            : 'Failed to connect, try again';
       });
     };
   }
@@ -59,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    //_webSocketService.disconnect();
+    _webSocketService.disconnect();
     super.dispose();
   }
 
@@ -72,16 +61,25 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Send join message and wait for server response
+    setState(() {
+      _errorMessage = null;
+      _joining = true;
+    });
+
     _webSocketService.join(username);
-    // Server will respond with 'welcome' (navigate) or 'error' (show unavailable)
-    _webSocketService.onError = (error) {
-      setState(() {
-        if (error == 'username_taken') {
-          _errorMessage = 'Unavailable';
-        }
-      });
-    };
+
+    // Wait briefly to confirm no error occurred before proceeding
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && _errorMessage == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                GameScreen(webSocketService: _webSocketService),
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -110,25 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
               Text('Players online: $_playerCount'),
               const SizedBox(height: 10),
               if (_errorMessage != null)
-                Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  _joinGame();
-
-                  /*
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => GameWidget(
-                            username: _usernameController.text.trim(),
-                          ),
-                    ),
-                  );
-                  */
-
-                },
+                onPressed: _joining ? null : _joinGame,
                 child: const Text('Join Game'),
               ),
             ],
