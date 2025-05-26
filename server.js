@@ -46,7 +46,8 @@ wss.on('connection', (ws) => {
         wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           const player = gameState.getPlayerBySocket(client); // You may already have this
-          const playerId = player?.playerId?.toString();
+          const playerId = player && player.playerId ? player.playerId.toString() : null;
+
 
           console.log('📡 Broadcasting player list to client');
           client.send(JSON.stringify({
@@ -79,7 +80,8 @@ wss.on('connection', (ws) => {
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const player = gameState.getPlayerBySocket(client);
-      const playerId = player?.playerId?.toString();
+      const playerId = player && player.playerId ? player.playerId.toString() : null;
+
 
       console.log('📡 Broadcasting updated player list after disconnect');
       client.send(JSON.stringify({
