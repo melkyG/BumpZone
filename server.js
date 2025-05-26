@@ -43,12 +43,6 @@ wss.on('connection', (ws) => {
           username: p.username
         }));
 
-        ws.send(JSON.stringify({
-          type: 'welcome',
-          playerId: result.playerId.toString(),
-          players: simplifiedPlayers
-        }));
-
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             console.log('📡 Broadcasting player list to client');
