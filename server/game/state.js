@@ -42,4 +42,4 @@ class GameState {
   }
 }
 
-module.exports = new GameState(); // Singleton instance
+module.exports = { GameState };
