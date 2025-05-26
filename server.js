@@ -37,7 +37,6 @@ wss.on('connection', (ws) => {
         const players = gameState.getPlayers();
         console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
-        // 👇 Move this here so it's available for both ws.send and broadcast
         const simplifiedPlayers = players.map(p => ({
           playerId: p.playerId,
           username: p.username
@@ -58,15 +57,20 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
-    gameState.removePlayer(ws);
+    const removed = gameState.removePlayer(ws);
 
     const players = gameState.getPlayers();
     console.log('🧑‍🤝‍🧑 Players remaining:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
+    const simplifiedPlayers = players.map(p => ({
+      playerId: p.playerId,
+      username: p.username
+    }));
+
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         console.log('📡 Broadcasting updated player list after disconnect');
-        client.send(JSON.stringify({ type: 'playerList', players }));
+        client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
       }
     });
   });
