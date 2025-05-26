@@ -40,7 +40,7 @@ class WebSocketService {
     }
 
     final type = data['type'];
-    print("Message type: $type");
+    //print("Message type: $type");
 
     switch (type) {
       case 'playerList':
