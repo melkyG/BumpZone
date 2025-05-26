@@ -1,44 +1,30 @@
 class GameState {
   constructor() {
-    this.players = []; // List of all player data
-    this.socketMap = new Map(); // Map WebSocket -> player
+    this.players = [];
+  }
+  getPlayerBySocket(ws) {
+    return this.players.find(p => p.socket === ws);
   }
 
-  addPlayer(username, socket) {
-    const playerId = Date.now(); // Or use a UUID if preferred
-    const player = {
-      playerId,
-      username,
-      socket,
-    };
-
-    this.players.push(player);
-    this.socketMap.set(socket, player);
-    return player;
-  }
-
-  removePlayer(socket) {
-    const player = this.socketMap.get(socket);
-    if (player) {
-      this.players = this.players.filter(p => p !== player);
-      this.socketMap.delete(socket);
+  addPlayer(username, ws) {
+    // Prevent duplicate usernames
+    if (this.players.some(p => p.username === username)) {
+      return { success: false };
     }
+
+    const playerId = Date.now().toString();
+    this.players.push({ playerId, username, ws });
+
+    return { success: true, playerId };
   }
 
-  getAllPlayers() {
-    // Return just public info (no socket)
-    return this.players.map(({ playerId, username }) => ({
-      playerId,
-      username,
-    }));
+  removePlayer(id) {
+    this.players = this.players.filter(player => player.playerId !== id);
   }
 
-  getPlayerBySocket(socket) {
-    return this.socketMap.get(socket); // Reliable lookup
-  }
-
-  getPlayerById(id) {
-    return this.players.find(p => p.playerId === id);
+  getPlayers() {
+    // Return player info without WebSocket object
+    return this.players.map(({ playerId, username }) => ({ playerId, username }));
   }
 }
 
