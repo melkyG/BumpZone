@@ -24,7 +24,14 @@ class _LoginScreenState extends State<LoginScreen> {
     _webSocketService = WebSocketService(
       'wss://thorn-glory-wanderer.glitch.me',
     );
-    _webSocketService.connect();    // Update player count from server and handle navigation after successful join
+    _webSocketService.connect();
+    
+    // Request initial player list
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _webSocketService.requestPlayerList();
+    });
+    
+    // Update player count from server and handle navigation after successful join
     _webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _playerCount = players.length;
