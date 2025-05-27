@@ -65,21 +65,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _errorMessage = null;
       _joining = true;
-    });
-
-    _webSocketService.join(username);
+    });    _webSocketService.join(username);
     
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      if (_errorMessage == null && _webSocketService != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => GameScreen(webSocketService: _webSocketService!),
-          ),
-        );
-      }
-    });
+    // Navigate immediately if no error occurs
+    if (_errorMessage == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GameScreen(webSocketService: _webSocketService),
+        ),
+      );
+    }
   }
 
   @override
