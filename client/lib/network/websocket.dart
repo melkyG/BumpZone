@@ -73,12 +73,16 @@ class WebSocketService {
   }
 
   void _send(Map<String, dynamic> message) {
+    final encoded = jsonEncode(message);
+    print("🔹 Sending WebSocket message: $encoded"); // ✅ Debug output
+
     if (_channel != null) {
-      _channel!.sink.add(jsonEncode(message));
+      _channel!.sink.add(encoded);
     } else {
-      print("WebSocket channel is not connected.");
+      print("❌ WebSocket channel is not connected.");
     }
   }
+
 
   void disconnect() {
     _channel?.sink.close();
