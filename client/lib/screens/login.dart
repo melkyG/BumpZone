@@ -24,13 +24,21 @@ class _LoginScreenState extends State<LoginScreen> {
     _webSocketService = WebSocketService(
       'wss://thorn-glory-wanderer.glitch.me',
     );
-    _webSocketService.connect();
-
-    // Update player count from server
+    _webSocketService.connect();    // Update player count from server and handle navigation after successful join
     _webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _playerCount = players.length;
       });
+      
+      // If we're joining and got a player list update, it means join was successful
+      if (_joining && _errorMessage == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GameScreen(webSocketService: _webSocketService),
+          ),
+        );
+      }
     };
 
     // Handle connection errors
@@ -60,22 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = 'Username must be 1-15 characters';
       });
       return;
-    }
-
-    setState(() {
+    }    setState(() {
       _errorMessage = null;
       _joining = true;
-    });    _webSocketService.join(username);
+    });
     
-    // Navigate immediately if no error occurs
-    if (_errorMessage == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GameScreen(webSocketService: _webSocketService),
-        ),
-      );
-    }
+    // Send join request and wait for server confirmation
+    _webSocketService.join(username);
   }
 
   @override
