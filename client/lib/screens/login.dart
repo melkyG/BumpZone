@@ -20,37 +20,23 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
+    // Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService(
       'wss://thorn-glory-wanderer.glitch.me',
     );
     _webSocketService.connect();
 
-    // When player list updates, update count and navigate if joining
+    // Update player count from server
     _webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _playerCount = players.length;
       });
-
-      // If we are joining and have received player list => join succeeded
-      if (_joining && mounted) {
-        setState(() {
-          _joining = false;
-          _errorMessage = null;
-        });
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                GameScreen(webSocketService: _webSocketService),
-          ),
-        );
-      }
     };
 
-    // Handle errors
+    // Handle connection errors
     _webSocketService.onError = (error) {
       if (!_joining) return;
-
+      print('WebSocket onError called with: $error');
       setState(() {
         _joining = false;
         _errorMessage = error == 'username_taken'
@@ -63,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    // Keep WebSocket open to reuse in GameScreen
+    // Do not disconnect the WebSocket here to allow reuse in GameScreen
     super.dispose();
   }
 
@@ -82,6 +68,18 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     _webSocketService.join(username);
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (_errorMessage == null && _webSocketService != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GameScreen(webSocketService: _webSocketService!),
+          ),
+        );
+      }
+    });
   }
 
   @override
