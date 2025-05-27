@@ -72,6 +72,10 @@ class WebSocketService {
     _send({'type': 'leave'});
   }
 
+  void requestPlayerList() {
+    _send({'type': 'getPlayers'});
+  }
+
   void _send(Map<String, dynamic> message) {
     final encoded = jsonEncode(message);
     print("🔹 Sending WebSocket message: $encoded"); // ✅ Debug output
@@ -82,7 +86,6 @@ class WebSocketService {
       print("❌ WebSocket channel is not connected.");
     }
   }
-
 
   void disconnect() {
     _channel?.sink.close();

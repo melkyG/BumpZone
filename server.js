@@ -21,23 +21,30 @@ wss.on('connection', (ws) => {
     try {
       // Convert Buffer to string if necessary
       const jsonString = typeof message === 'string' ? message : message.toString('utf8');
-      console.log('📩 Received message:', jsonString);
-
-      const data = JSON.parse(jsonString);
-
-      if (data.type === 'join') {
-        console.log(`👤 Attempting to add player: ${data.username}`);
-        const result = gameState.addPlayer(data.username, ws);
-        if (result.success) {
+      console.log('📩 Received message:', jsonString);      const data = JSON.parse(jsonString);
+      
+      if (data.type === 'join' || data.type === 'getPlayers') {
+        if (data.type === 'join') {
+          console.log(`👤 Attempting to add player: ${data.username}`);
+          const result = gameState.addPlayer(data.username, ws);
+          if (!result.success) {
+            console.warn(`⚠️ Username taken: ${data.username}`);
+            ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
+            return;
+          }
           console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
-          const players = gameState.getPlayers();
-          console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
+        }
 
-          const simplifiedPlayers = players.map(p => ({
-            playerId: p.playerId,
-            username: p.username
-          }));
+        const players = gameState.getPlayers();
+        console.log('🧑‍🤝‍🧑 Players online:', players.length, '| Usernames:', players.map(p => p.username).join(', '));
 
+        const simplifiedPlayers = players.map(p => ({
+          playerId: p.playerId,
+          username: p.username
+        }));
+
+        // For join, broadcast to all. For getPlayers, send only to requester
+        if (data.type === 'join') {
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
               console.log('📡 Broadcasting player list to client');
@@ -45,8 +52,7 @@ wss.on('connection', (ws) => {
             }
           });
         } else {
-          console.warn(`⚠️ Username taken: ${data.username}`);
-          ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
+          ws.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
         }
       }
     } catch (err) {

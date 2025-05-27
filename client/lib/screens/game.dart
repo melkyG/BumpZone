@@ -17,7 +17,6 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   List<Player> _players = [];
-
   @override
   void initState() {
     super.initState();
@@ -26,6 +25,9 @@ class _GameScreenState extends State<GameScreen> {
         _players = players;
       });
     };
+    
+    // Request current player list when screen initializes
+    widget.webSocketService.requestPlayerList();
   }
 
   @override
