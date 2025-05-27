@@ -1,19 +1,47 @@
 import 'package:flutter/material.dart';
 import '../game/arena.dart';
 import '../game/ball.dart';
+import '../models/player.dart';
 import 'game_painter.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector2;
 import 'package:bump_zone/network/websocket.dart';
 
-class GameScreen extends StatelessWidget {
+class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
 
   const GameScreen({super.key, required this.webSocketService});
 
   @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  List<Player> _players = [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.webSocketService.onPlayerListUpdate = (players) {
+      setState(() {
+        _players = players;
+      });
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Center(child: Text('Game Screen (Placeholder)')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Players online: ${_players.length}'),
+            const SizedBox(height: 20),
+            for (final player in _players)
+              Text(player.username),
+          ],
+        ),
+      ),
     );
   }
 }
