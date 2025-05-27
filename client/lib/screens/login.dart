@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     _webSocketService.join(username);
+    /*
 
     // Wait briefly to confirm no error occurred before proceeding
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -80,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-    });
+    });*/
   }
 
   @override
