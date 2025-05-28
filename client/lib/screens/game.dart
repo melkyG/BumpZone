@@ -1,4 +1,57 @@
 import 'package:flutter/material.dart';
+// import '../game/arena.dart';
+// import '../game/ball.dart';
+import '../models/player.dart';
+
+// import 'package:vector_math/vector_math_64.dart' show Vector2;
+import 'package:bump_zone/network/websocket.dart';
+
+class GameScreen extends StatefulWidget {
+  final WebSocketService webSocketService;
+
+  const GameScreen({super.key, required this.webSocketService});
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  List<Player> _players = [];
+  @override
+  void initState() {
+    super.initState();
+    widget.webSocketService.onPlayerListUpdate = (players) {
+      setState(() {
+        _players = players;
+      });
+    };
+    
+    // Request current player list when screen initializes
+    widget.webSocketService.requestPlayerList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Players online: ${_players.length}'),
+            const SizedBox(height: 20),
+            for (final player in _players)
+              Text(player.username),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/*
+
+import 'package:flutter/material.dart';
 import '../game/arena.dart';
 import '../game/ball.dart';
 import '../models/player.dart';
@@ -357,3 +410,4 @@ class _GameWidgetState extends State<GameWidget> with TickerProviderStateMixin {
     );
   }
 }
+*/

@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import '../game/arena.dart';
 import '../game/ball.dart';
@@ -70,3 +71,4 @@ class GamePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+*/
