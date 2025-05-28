@@ -17,6 +17,10 @@ app.use(express.static(path.join(__dirname, 'server', 'public')));
 wss.on('connection', (ws) => {
   console.log('🔗 New WebSocket connection established');
 
+  // --- Ping/Pong keep-alive mechanism ---
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+
   ws.on('message', (message) => {
     try {
       // Convert Buffer to string if necessary
@@ -59,6 +63,22 @@ wss.on('connection', (ws) => {
       console.error('❌ Failed to parse message:', err);
       ws.send(JSON.stringify({ type: 'error', message: 'invalid_json' }));
     }
+});
+
+// Set up ping interval for all clients
+const interval = setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) {
+      console.log('Terminating unresponsive client');
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000); // 30 seconds
+
+wss.on('close', function close() {
+  clearInterval(interval);
 });
 
 
