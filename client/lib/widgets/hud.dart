@@ -26,7 +26,7 @@ class PlayerListHUD extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
-                      ..strokeWidth = 2
+                      ..strokeWidth = 2.5
                       ..color = Colors.black,
                   ),
                 ),
@@ -47,7 +47,7 @@ class PlayerListHUD extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 150, minHeight: 100),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(7),
               ),
               child: Column(
@@ -57,7 +57,7 @@ class PlayerListHUD extends StatelessWidget {
                   for (final player in players)
                     Text(
                       player.username,
-                      style: const TextStyle(color: Color.fromARGB(255, 243, 243, 243), fontSize: 13),
+                      style: const TextStyle(color: Color.fromARGB(255, 243, 243, 243), fontSize: 13, fontWeight: FontWeight.w300,),
                     ),
                 ],
               ),
