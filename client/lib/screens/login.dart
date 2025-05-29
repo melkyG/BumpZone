@@ -70,9 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _joinGame() {
     final username = _usernameController.text.trim();
-    if (username.isEmpty || username.length > 15) {
+    if (username.isEmpty || username.length > 20) {
       setState(() {
-        _errorMessage = 'Username must be 1-15 characters';
+        _errorMessage = 'Username must be 1-20 characters';
       });
       return;
     }    setState(() {
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                   labelText: 'Username',
                 ),
-                maxLength: 15,
+                maxLength: 20,
               ),
               const SizedBox(height: 10),
               Text('Players online: $_playerCount'),

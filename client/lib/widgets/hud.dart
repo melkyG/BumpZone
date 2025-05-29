@@ -44,11 +44,11 @@ class PlayerListHUD extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Container(
-              constraints: const BoxConstraints(minWidth: 135, minHeight: 100),
+              constraints: const BoxConstraints(minWidth: 150, minHeight: 100),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(9),
+                borderRadius: BorderRadius.circular(7),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -57,7 +57,7 @@ class PlayerListHUD extends StatelessWidget {
                   for (final player in players)
                     Text(
                       player.username,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      style: const TextStyle(color: Color.fromARGB(255, 243, 243, 243), fontSize: 13),
                     ),
                 ],
               ),
