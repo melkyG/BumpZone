@@ -10,7 +10,7 @@ class PlayerListHUD extends StatelessWidget {
     return Align(
       alignment: Alignment.topRight,
       child: Container(
-        margin: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(top: 8, right: 20, left: 20, bottom: 0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -21,15 +21,16 @@ class PlayerListHUD extends StatelessWidget {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 4),
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              constraints: const BoxConstraints(minWidth: 120),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(9),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -38,7 +39,7 @@ class PlayerListHUD extends StatelessWidget {
                   for (final player in players)
                     Text(
                       player.username,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
                     ),
                 ],
               ),
