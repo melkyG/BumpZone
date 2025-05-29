@@ -11,29 +11,38 @@ class PlayerListHUD extends StatelessWidget {
       alignment: Alignment.topRight,
       child: Container(
         margin: const EdgeInsets.all(20),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(12),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              'Players',
+              'Leaderboard',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 13,
               ),
             ),
-            const SizedBox(height: 8),
-            for (final player in players)
-              Text(
-                player.username,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final player in players)
+                    Text(
+                      player.username,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
