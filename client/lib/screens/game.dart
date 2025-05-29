@@ -62,9 +62,10 @@ class _GameScreenState extends State<GameScreen> {
       body: Stack(
         children: [
           Center(
-            child: SizedBox(
+            child: Container(
               width: displaySize,
               height: displaySize,
+              color: Colors.white,
               child: CustomPaint(
                 size: Size(_arenaLogicalSize, _arenaLogicalSize),
                 painter: _ArenaPainter(),
