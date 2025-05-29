@@ -33521,7 +33521,7 @@ $S:0}
 A.EZ.prototype={
 T(a){var s,r,q,p,o,n,m,l=null,k=$.a0().b2()
 k.sdX(B.aT)
-k.sj7(1)
+k.sj7(2)
 k.sav(B.l)
 s=t.E
 k=A.n9(B.cu,A.c([A.h5("Leaderboard",l,l,l,A.hU(l,l,l,l,l,l,l,l,l,l,l,14,l,l,B.bL,k,l,!0,l,l,l,l,l,l,l,l),B.ec,l),B.Of],s),B.a7,B.cm)
@@ -71385,7 +71385,7 @@ B.iJ=new A.F6(null)
 B.xA=new A.rN(B.Hi,B.iJ)
 B.vt=new A.FT(1,"fast")
 B.xB=new A.rN(B.vt,B.iJ)
-B.xC=new A.ah(120,1/0,240,1/0)
+B.xC=new A.ah(135,1/0,100,1/0)
 B.jV=new A.ah(1/0,1/0,1/0,1/0)
 B.zr=new A.y(0.23529411764705882,0,0,0,B.h)
 B.Fu=new A.h(0,4)

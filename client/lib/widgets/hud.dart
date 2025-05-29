@@ -26,7 +26,7 @@ class PlayerListHUD extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
-                      ..strokeWidth = 1
+                      ..strokeWidth = 2
                       ..color = Colors.black,
                   ),
                 ),
@@ -44,7 +44,7 @@ class PlayerListHUD extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Container(
-              constraints: const BoxConstraints(minWidth: 120, minHeight: 240),
+              constraints: const BoxConstraints(minWidth: 135, minHeight: 100),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.3),
