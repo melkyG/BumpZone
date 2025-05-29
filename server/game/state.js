@@ -1,3 +1,6 @@
+// Arena/game configuration (shared with all clients)
+const ARENA_SIZE = 1000; // Logical units (e.g., pixels)
+
 class GameState {
   constructor() {
     this.players = [];
@@ -29,4 +32,4 @@ class GameState {
   }
 }
 
-module.exports = { GameState };
+module.exports = { GameState, ARENA_SIZE };

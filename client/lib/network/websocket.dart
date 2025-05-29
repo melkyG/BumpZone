@@ -1,12 +1,18 @@
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 import 'package:bump_zone/models/player.dart';
+
+// Add a callback for arena info
+typedef ArenaInfoCallback = void Function(double size);
 
 class WebSocketService {
   WebSocketChannel? _channel;
   final String url;
   Function(List<Player>)? onPlayerListUpdate;
   Function(String)? onError;
+
+  ArenaInfoCallback? onArenaInfo;
 
   WebSocketService(this.url);
 
@@ -40,6 +46,13 @@ class WebSocketService {
     }
 
     final type = data['type'];
+    if (type == 'arenaInfo' && data['size'] != null) {
+      final size = (data['size'] as num).toDouble();
+      if (onArenaInfo != null) {
+        onArenaInfo!(size);
+      }
+      return;
+    }
     //print("Message type: $type");
 
     switch (type) {

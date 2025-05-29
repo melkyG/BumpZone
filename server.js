@@ -1,7 +1,7 @@
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
-const { GameState } = require('./server/game/state');
+const { GameState, ARENA_SIZE } = require('./server/game/state');
 
 const app = express();
 console.log('🧠 Running on process ID:', process.pid);
@@ -15,6 +15,8 @@ app.use(express.static(path.join(__dirname, 'server', 'public')));
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
+  // Send arena size to the client on connect
+  ws.send(JSON.stringify({ type: 'arenaInfo', size: ARENA_SIZE }));
   console.log('🔗 New WebSocket connection established');
 
   // --- Ping/Pong keep-alive mechanism ---
