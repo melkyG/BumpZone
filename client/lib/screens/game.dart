@@ -58,7 +58,7 @@ class _GameScreenState extends State<GameScreen> {
     final double displaySize = _arenaLogicalSize * scale;
 
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: const Color.fromARGB(255, 148, 148, 148),
       body: Stack(
         children: [
           Center(
