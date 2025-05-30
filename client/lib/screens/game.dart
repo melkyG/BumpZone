@@ -74,7 +74,7 @@ class _GameScreenState extends State<GameScreen> {
               color: Colors.white,
               child: CustomPaint(
                 size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                painter: _ArenaPainter(balls: _balls),
+                painter: _ArenaPainter(balls: _balls, arenaLogicalSize: _arenaLogicalSize),
                 isComplex: false,
                 willChange: false,
               ),
@@ -89,7 +89,8 @@ class _GameScreenState extends State<GameScreen> {
 
 class _ArenaPainter extends CustomPainter {
   final List<Ball> balls;
-  _ArenaPainter({required this.balls});
+  final double arenaLogicalSize;
+  _ArenaPainter({required this.balls, required this.arenaLogicalSize});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -108,7 +109,7 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
-    final double scale = size.width / 1000.0; // assuming ARENA_SIZE = 1000
+    final double scale = size.width / arenaLogicalSize;
     for (final ball in balls) {
       canvas.drawCircle(
         Offset(ball.x * scale, ball.y * scale),
