@@ -1,5 +1,6 @@
 import '../models/ball.dart';
 import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter/material.dart';
 // import '../game/arena.dart';
 // import '../game/ball.dart';
@@ -19,6 +20,60 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  Timer? _moveTimer;
+  Offset? _lastPointerLogical;
+
+  // Helper: Convert global pointer position to logical arena coordinates
+  Offset _getLogicalFromGlobal(Offset globalPosition, BuildContext context) {
+    final RenderBox stackBox = context.findRenderObject() as RenderBox;
+    final Offset globalOffset = stackBox.globalToLocal(globalPosition);
+    final double margin = 8.0;
+    final double availableHeight = MediaQuery.of(context).size.height - margin * 2;
+    final double availableWidth = MediaQuery.of(context).size.width - margin * 2;
+    final double scale = (availableHeight < availableWidth)
+        ? availableHeight / _arenaLogicalSize
+        : availableWidth / _arenaLogicalSize;
+    final double displaySize = _arenaLogicalSize * scale;
+    final double arenaLeft = (MediaQuery.of(context).size.width - displaySize) / 2;
+    final double arenaTop = (MediaQuery.of(context).size.height - displaySize) / 2;
+    final double logicalX = (globalOffset.dx - arenaLeft) / scale;
+    final double logicalY = (globalOffset.dy - arenaTop) / scale;
+    return Offset(logicalX, logicalY);
+  }
+
+  void _startSendingMovement(Offset logicalTarget) {
+    _lastPointerLogical = logicalTarget;
+    _moveTimer?.cancel();
+    _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      _sendMovementTo(logicalTarget);
+    });
+    _sendMovementTo(logicalTarget); // Send immediately
+  }
+
+  void _updateSendingMovement(Offset logicalTarget) {
+    _lastPointerLogical = logicalTarget;
+    // Next timer tick will use updated target
+  }
+
+  void _stopSendingMovement() {
+    _moveTimer?.cancel();
+    _moveTimer = null;
+    _lastPointerLogical = null;
+    // Optionally, send a stop command (zero vector)
+    widget.webSocketService.sendMovement(0, 0);
+  }
+
+  void _sendMovementTo(Offset logicalTarget) {
+    if (_balls.isNotEmpty) {
+      final Ball myBall = _balls[0];
+      final double dx = logicalTarget.dx - myBall.x;
+      final double dy = logicalTarget.dy - myBall.y;
+      final double length = math.sqrt(dx * dx + dy * dy);
+      final double dirX = length > 0 ? dx / length : 0;
+      final double dirY = length > 0 ? dy / length : 0;
+      widget.webSocketService.sendMovement(dirX, dirY);
+    }
+  }
   List<Ball> _balls = [];
   List<Player> _players = [];
   @override
@@ -68,34 +123,26 @@ class _GameScreenState extends State<GameScreen> {
       backgroundColor: const Color.fromARGB(255, 148, 148, 148),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
+        onPanStart: (DragStartDetails details) {
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          _startSendingMovement(logicalTarget);
+        },
+        onPanUpdate: (DragUpdateDetails details) {
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          _updateSendingMovement(logicalTarget);
+        },
+        onPanEnd: (DragEndDetails details) {
+          _stopSendingMovement();
+        },
+        onPanCancel: () {
+          _stopSendingMovement();
+        },
         onTapDown: (TapDownDetails details) {
-          // Get the global click position
-          final RenderBox stackBox = context.findRenderObject() as RenderBox;
-          final Offset globalOffset = stackBox.globalToLocal(details.globalPosition);
-          // Calculate the offset of the arena inside the window
-          final double margin = 8.0;
-          final double availableHeight = MediaQuery.of(context).size.height - margin * 2;
-          final double availableWidth = MediaQuery.of(context).size.width - margin * 2;
-          final double scale = (availableHeight < availableWidth)
-              ? availableHeight / _arenaLogicalSize
-              : availableWidth / _arenaLogicalSize;
-          final double displaySize = _arenaLogicalSize * scale;
-          final double arenaLeft = (MediaQuery.of(context).size.width - displaySize) / 2;
-          final double arenaTop = (MediaQuery.of(context).size.height - displaySize) / 2;
-          // Convert the click to logical coordinates (can be outside arena)
-          final double logicalX = (globalOffset.dx - arenaLeft) / scale;
-          final double logicalY = (globalOffset.dy - arenaTop) / scale;
-          if (_balls.isNotEmpty) {
-            // For now, assume the first ball is the local player
-            final Ball myBall = _balls[0];
-            final double dx = logicalX - myBall.x;
-            final double dy = logicalY - myBall.y;
-            final double length = math.sqrt(dx * dx + dy * dy);
-            final double dirX = length > 0 ? dx / length : 0;
-            final double dirY = length > 0 ? dy / length : 0;
-            debugPrint('Clicked at logical: ($logicalX, $logicalY), direction: ($dirX, $dirY)');
-            widget.webSocketService.sendMovement(dirX, dirY);
-          }
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          _startSendingMovement(logicalTarget);
+        },
+        onTapUp: (TapUpDetails details) {
+          _stopSendingMovement();
         },
         child: Stack(
           children: [
@@ -117,6 +164,11 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
     );
+  @override
+  void dispose() {
+    _moveTimer?.cancel();
+    super.dispose();
+  }
   }
 }
 
