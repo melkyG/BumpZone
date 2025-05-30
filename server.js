@@ -1,3 +1,15 @@
+// Broadcast all balls to all clients at a fixed interval
+function broadcastBalls() {
+  const balls = gameState.getBalls();
+  const msg = JSON.stringify({ type: 'balls', balls });
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(msg);
+    }
+  });
+}
+
+setInterval(broadcastBalls, 50); // 20 times per second
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');

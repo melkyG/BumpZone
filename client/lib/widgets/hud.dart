@@ -47,7 +47,7 @@ class PlayerListHUD extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 150, minHeight: 100),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.04),
                 borderRadius: BorderRadius.circular(7),
               ),
               child: Column(
