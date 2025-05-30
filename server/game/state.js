@@ -76,6 +76,32 @@ class GameState {
     // Return player info without WebSocket object
     return this.players.map(({ playerId, username }) => ({ playerId, username }));
   }
+  
+  // Set the velocity of a player's ball based on input direction (dx, dy)
+  handleMove(playerId, dx, dy) {
+    const ball = this.balls[playerId];
+    if (!ball) return;
+    // Scale for reasonable speed (tweak as needed)
+    const SPEED = 6.0;
+    ball.vx = dx * SPEED;
+    ball.vy = dy * SPEED;
+  }
+
+  // Update all balls' positions based on their velocities, apply friction
+  updateBalls(dt) {
+    const FRICTION = 0.96; // 1 = no friction, <1 = slows down
+    for (const ball of Object.values(this.balls)) {
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+      // Apply friction
+      ball.vx *= FRICTION;
+      ball.vy *= FRICTION;
+      // Clamp to arena bounds
+      const r = 18;
+      ball.x = Math.max(r, Math.min(ARENA_SIZE - r, ball.x));
+      ball.y = Math.max(r, Math.min(ARENA_SIZE - r, ball.y));
+    }
+  }
 }
 
 module.exports = { GameState, ARENA_SIZE };

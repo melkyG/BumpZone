@@ -1,5 +1,12 @@
-// Broadcast all balls to all clients at a fixed interval
-function broadcastBalls() {
+// Game loop: update balls and broadcast state at fixed interval
+const TICK_RATE = 20; // 20 times per second
+const TICK_INTERVAL = 1000 / TICK_RATE;
+let lastTick = Date.now();
+function gameLoop() {
+  const now = Date.now();
+  const dt = (now - lastTick) / 50; // dt in "ticks" (50ms base)
+  lastTick = now;
+  gameState.updateBalls(dt);
   const balls = gameState.getBalls();
   const msg = JSON.stringify({ type: 'balls', balls });
   wss.clients.forEach((client) => {
@@ -8,8 +15,7 @@ function broadcastBalls() {
     }
   });
 }
-
-setInterval(broadcastBalls, 50); // 20 times per second
+setInterval(gameLoop, TICK_INTERVAL);
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
@@ -39,8 +45,9 @@ wss.on('connection', (ws) => {
     try {
       // Convert Buffer to string if necessary
       const jsonString = typeof message === 'string' ? message : message.toString('utf8');
-      console.log('📩 Received message:', jsonString);      const data = JSON.parse(jsonString);
-      
+      console.log('📩 Received message:', jsonString);
+      const data = JSON.parse(jsonString);
+
       if (data.type === 'join' || data.type === 'getPlayers') {
         if (data.type === 'join') {
           console.log(`👤 Attempting to add player: ${data.username}`);
@@ -72,12 +79,18 @@ wss.on('connection', (ws) => {
         } else {
           ws.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
         }
+      } else if (data.type === 'move') {
+        // Find playerId by socket
+        const player = gameState.getPlayerBySocket(ws);
+        if (player) {
+          gameState.handleMove(player.playerId, data.dx, data.dy);
+        }
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);
       ws.send(JSON.stringify({ type: 'error', message: 'invalid_json' }));
     }
-});
+  });
 
 // Set up ping interval for all clients
 const interval = setInterval(() => {
