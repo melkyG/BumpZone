@@ -94,6 +94,7 @@ class _GameScreenState extends State<GameScreen> {
             final double dirX = length > 0 ? dx / length : 0;
             final double dirY = length > 0 ? dy / length : 0;
             debugPrint('Clicked at logical: ($logicalX, $logicalY), direction: ($dirX, $dirY)');
+            widget.webSocketService.sendMovement(dirX, dirY);
           }
         },
         child: Stack(

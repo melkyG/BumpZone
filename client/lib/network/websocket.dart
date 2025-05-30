@@ -1,11 +1,10 @@
 import 'package:bump_zone/models/ball.dart';
-
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 import 'package:bump_zone/models/player.dart';
 
-// Add a callback for arena info
 typedef ArenaInfoCallback = void Function(double size);
+
 
 class WebSocketService {
   Function(List<Ball>)? onBallsUpdate;
@@ -13,10 +12,13 @@ class WebSocketService {
   final String url;
   Function(List<Player>)? onPlayerListUpdate;
   Function(String)? onError;
-
   ArenaInfoCallback? onArenaInfo;
 
   WebSocketService(this.url);
+
+  void sendMovement(double dx, double dy) {
+    _send({'type': 'move', 'direction': {'dx': dx, 'dy': dy}});
+  }
 
   void connect() {
     try {
