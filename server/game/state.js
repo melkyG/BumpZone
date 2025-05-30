@@ -68,8 +68,15 @@ class GameState {
     this.players = this.players.filter(player => player.ws !== ws);
   }
   getBalls() {
-    // Return an array of all balls
-    return Object.values(this.balls);
+    // Return an array of all balls with valid numeric properties only
+    return Object.values(this.balls).filter(ball => {
+      return (
+        typeof ball.x === 'number' &&
+        typeof ball.y === 'number' &&
+        typeof ball.vx === 'number' &&
+        typeof ball.vy === 'number'
+      );
+    });
   }
 
   getPlayers() {
