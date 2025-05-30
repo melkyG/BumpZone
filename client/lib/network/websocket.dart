@@ -1,3 +1,4 @@
+import 'package:bump_zone/models/ball.dart';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
@@ -7,6 +8,7 @@ import 'package:bump_zone/models/player.dart';
 typedef ArenaInfoCallback = void Function(double size);
 
 class WebSocketService {
+  Function(List<Ball>)? onBallsUpdate;
   WebSocketChannel? _channel;
   final String url;
   Function(List<Player>)? onPlayerListUpdate;
@@ -46,6 +48,15 @@ class WebSocketService {
     }
 
     final type = data['type'];
+    if (type == 'balls' && data['balls'] is List) {
+      final balls = (data['balls'] as List)
+          .map((b) => Ball.fromJson(b))
+          .toList();
+      if (onBallsUpdate != null) {
+        onBallsUpdate!(balls);
+      }
+      return;
+    }
     if (type == 'arenaInfo' && data['size'] != null) {
       final size = (data['size'] as num).toDouble();
       if (onArenaInfo != null) {

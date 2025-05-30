@@ -1,3 +1,4 @@
+import '../models/ball.dart';
 import 'package:flutter/material.dart';
 // import '../game/arena.dart';
 // import '../game/ball.dart';
@@ -17,6 +18,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  List<Ball> _balls = [];
   List<Player> _players = [];
   @override
   void initState() {
@@ -26,7 +28,11 @@ class _GameScreenState extends State<GameScreen> {
         _players = players;
       });
     };
-    
+    widget.webSocketService.onBallsUpdate = (balls) {
+      setState(() {
+        _balls = balls;
+      });
+    };
     // Request current player list when screen initializes
     widget.webSocketService.requestPlayerList();
   }
@@ -68,7 +74,7 @@ class _GameScreenState extends State<GameScreen> {
               color: Colors.white,
               child: CustomPaint(
                 size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                painter: _ArenaPainter(),
+                painter: _ArenaPainter(balls: _balls),
                 isComplex: false,
                 willChange: false,
               ),
@@ -82,6 +88,9 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 class _ArenaPainter extends CustomPainter {
+  final List<Ball> balls;
+  _ArenaPainter({required this.balls});
+
   @override
   void paint(Canvas canvas, Size size) {
     final Paint borderPaint = Paint()
@@ -93,8 +102,17 @@ class _ArenaPainter extends CustomPainter {
       Rect.fromLTWH(0, 0, size.width, size.height),
       borderPaint,
     );
+
+    // Draw all balls
+    final Paint ballPaint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.fill;
+    const double ballRadius = 18;
+    for (final ball in balls) {
+      canvas.drawCircle(Offset(ball.x, ball.y), ballRadius, ballPaint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
