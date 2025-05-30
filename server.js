@@ -82,8 +82,8 @@ wss.on('connection', (ws) => {
       } else if (data.type === 'move') {
         // Find playerId by socket
         const player = gameState.getPlayerBySocket(ws);
-        if (player) {
-          gameState.handleMove(player.playerId, data.dx, data.dy);
+        if (player && data.direction) {
+          gameState.handleMove(player.playerId, data.direction.dx, data.direction.dy);
         }
       }
     } catch (err) {
