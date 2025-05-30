@@ -103,13 +103,18 @@ class _ArenaPainter extends CustomPainter {
       borderPaint,
     );
 
-    // Draw all balls
+    // Draw all balls, scaling logical coordinates to display coordinates
     final Paint ballPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
-    const double ballRadius = 18;
+    const double logicalRadius = 18;
+    final double scale = size.width / 1000.0; // assuming ARENA_SIZE = 1000
     for (final ball in balls) {
-      canvas.drawCircle(Offset(ball.x, ball.y), ballRadius, ballPaint);
+      canvas.drawCircle(
+        Offset(ball.x * scale, ball.y * scale),
+        logicalRadius * scale,
+        ballPaint,
+      );
     }
   }
 
