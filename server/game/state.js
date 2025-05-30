@@ -22,11 +22,37 @@ class GameState {
     const playerId = Date.now().toString();
     this.players.push({ playerId, username, ws });
 
-    // Spawn a ball for this player in the center of the arena
+    // Spawn a ball for this player at a random spot near the center, not overlapping others
+    const radius = 18; // must match client
+    const maxAttempts = 20;
+    let spawnX, spawnY, attempts = 0;
+    let safe = false;
+    while (!safe && attempts < maxAttempts) {
+      // Random offset within 120px of center
+      const offset = () => (Math.random() - 0.5) * 240;
+      spawnX = ARENA_SIZE / 2 + offset();
+      spawnY = ARENA_SIZE / 2 + offset();
+      safe = true;
+      for (const ball of Object.values(this.balls)) {
+        const dx = spawnX - ball.x;
+        const dy = spawnY - ball.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radius * 2 + 4) { // 4px buffer
+          safe = false;
+          break;
+        }
+      }
+      attempts++;
+    }
+    // fallback to center if no safe spot found
+    if (!safe) {
+      spawnX = ARENA_SIZE / 2;
+      spawnY = ARENA_SIZE / 2;
+    }
     this.balls[playerId] = {
       id: playerId,
-      x: ARENA_SIZE / 2,
-      y: ARENA_SIZE / 2,
+      x: spawnX,
+      y: spawnY,
       vx: 0,
       vy: 0
     };
