@@ -3,6 +3,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 import 'package:bump_zone/models/player.dart';
 import 'dart:typed_data';
+import 'dart:js_util' as js_util; // Add this for JS interop
+import 'package:bump_zone/network/ball_binary.dart'; // <-- Add this
 
 typedef ArenaInfoCallback = void Function(double size);
 
@@ -46,21 +48,19 @@ class WebSocketService {
   void _onMessage(dynamic message) {
     print('WebSocket raw message type: ${message.runtimeType}');
 
-    // --- Handle binary balls update ---
+    // --- Handle binary balls update for Dart VM (List<int>) ---
     if (message is List<int>) {
-      final bytes = Uint8List.fromList(message);
-      final byteData = ByteData.sublistView(bytes);
-      final count = byteData.getUint32(0, Endian.little);
-      final balls = <Ball>[];
-      for (int i = 0; i < count; i++) {
-        final base = 4 + i * 16;
-        final x = byteData.getFloat32(base + 0, Endian.little);
-        final y = byteData.getFloat32(base + 4, Endian.little);
-        final vx = byteData.getFloat32(base + 8, Endian.little);
-        final vy = byteData.getFloat32(base + 12, Endian.little);
-        // NOTE: id is not sent, so use a placeholder or match by order
-        balls.add(Ball(id: '$i', x: x, y: y, vx: vx, vy: vy));
+      final balls = decodeBalls(Uint8List.fromList(message));
+      if (onBallsUpdate != null) {
+        onBallsUpdate!(balls);
       }
+      return;
+    }
+
+    // --- Handle binary balls update for Flutter web (ByteBuffer or JS-interop) ---
+    if (js_util.hasProperty(message, 'buffer')) {
+      final buffer = js_util.getProperty(message, 'buffer');
+      final balls = decodeBalls(Uint8List.view(buffer));
       if (onBallsUpdate != null) {
         onBallsUpdate!(balls);
       }

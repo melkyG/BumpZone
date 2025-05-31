@@ -8,28 +8,11 @@ function gameLoop() {
   lastTick = now;
   gameState.updateBalls(dt);
   const balls = gameState.getBalls();
-
-  // --- Typed array encoding for balls ---
-  // Each ball: id (as string, not encoded here), x, y, vx, vy (all float32)
-  // We'll send: [count, id1, x1, y1, vx1, vy1, id2, x2, ...]
-  // For now, assume id is not encoded, just send x, y, vx, vy for each ball
-  const count = balls.length;
-  const buffer = Buffer.allocUnsafe(4 + count * 16); // 4 bytes for count, 16 bytes per ball (4 floats)
-  buffer.writeUInt32LE(count, 0);
-  balls.forEach((b, i) => {
-    buffer.writeFloatLE(b.x, 4 + i * 16 + 0);
-    buffer.writeFloatLE(b.y, 4 + i * 16 + 4);
-    buffer.writeFloatLE(b.vx, 4 + i * 16 + 8);
-    buffer.writeFloatLE(b.vy, 4 + i * 16 + 12);
-    // NOTE: id is not sent in this minimal example
-  });
-
-  // Send as binary
+  // Use utility to encode balls as binary
+  const buffer = encodeBalls(balls);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(buffer);
-      // TEMP: Also send JSON for debugging
-      // client.send(JSON.stringify({ type: 'balls', balls }));
     }
   });
 }
@@ -38,6 +21,7 @@ const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
 const { GameState, ARENA_SIZE } = require('./server/game/state');
+const { encodeBalls } = require('./server/game/ballBinary'); // <-- Add this
 
 const app = express();
 console.log('🧠 Running on process ID:', process.pid);
