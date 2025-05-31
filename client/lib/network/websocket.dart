@@ -13,6 +13,7 @@ class WebSocketService {
   Function(List<Player>)? onPlayerListUpdate;
   Function(String)? onError;
   ArenaInfoCallback? onArenaInfo;
+  void Function(String playerId)? onWelcome;
 
   WebSocketService(this.url);
 
@@ -66,7 +67,11 @@ class WebSocketService {
       }
       return;
     }
-    //print("Message type: $type");
+    // Call the onWelcome callback when a welcome message is received
+    if (type == 'welcome' && data['playerId'] != null) {
+      print('Welcome message received with playerId: ${data['playerId']}');
+      if (onWelcome != null) onWelcome!(data['playerId'] as String);
+    }
 
     switch (type) {
       case 'playerList':

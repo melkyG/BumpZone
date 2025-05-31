@@ -23,6 +23,8 @@ class _GameScreenState extends State<GameScreen> {
   Timer? _moveTimer;
   Offset? _lastPointerLogical;
 
+  String? _myPlayerId; // Track the local player's ID
+
   // Helper: Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition, BuildContext context) {
     final RenderBox stackBox = context.findRenderObject() as RenderBox;
@@ -59,21 +61,28 @@ class _GameScreenState extends State<GameScreen> {
     _moveTimer?.cancel();
     _moveTimer = null;
     _lastPointerLogical = null;
-    // Optionally, send a stop command (zero vector)
     widget.webSocketService.sendMovement(0, 0);
   }
 
   void _sendMovementTo(Offset logicalTarget) {
-    if (_balls.isNotEmpty) {
-      final Ball myBall = _balls[0];
-      final double dx = logicalTarget.dx - myBall.x;
-      final double dy = logicalTarget.dy - myBall.y;
-      final double length = math.sqrt(dx * dx + dy * dy);
-      final double dirX = length > 0 ? dx / length : 0;
-      final double dirY = length > 0 ? dy / length : 0;
-      widget.webSocketService.sendMovement(dirX, dirY);
+    if (_myPlayerId == null) return;
+    // Find the ball that matches the local player's ID
+    Ball? myBall;
+    try {
+      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+    } catch (_) {
+      myBall = null;
     }
+    if (myBall == null) return;
+
+    final double dx = logicalTarget.dx - myBall.x;
+    final double dy = logicalTarget.dy - myBall.y;
+    final double length = math.sqrt(dx * dx + dy * dy);
+    final double dirX = length > 0 ? dx / length : 0;
+    final double dirY = length > 0 ? dy / length : 0;
+    widget.webSocketService.sendMovement(dirX, dirY);
   }
+
   List<Ball> _balls = [];
   List<Player> _players = [];
   @override
@@ -87,6 +96,12 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.onBallsUpdate = (balls) {
       setState(() {
         _balls = balls;
+      });
+    };
+    // Listen for welcome message to get playerId
+    widget.webSocketService.onWelcome = (playerId) {
+      setState(() {
+        _myPlayerId = playerId;
       });
     };
     // Request current player list when screen initializes
@@ -164,11 +179,12 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
     );
+  }
+
   @override
   void dispose() {
     _moveTimer?.cancel();
     super.dispose();
-  }
   }
 }
 
