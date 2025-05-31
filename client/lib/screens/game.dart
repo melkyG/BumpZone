@@ -2,12 +2,8 @@ import '../models/ball.dart';
 import 'dart:math' as math;
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import '../game/arena.dart';
-// import '../game/ball.dart';
 import '../models/player.dart';
 import '../widgets/hud.dart';
-
-// import 'package:vector_math/vector_math_64.dart' show Vector2;
 import 'package:bump_zone/network/websocket.dart';
 
 class GameScreen extends StatefulWidget {
@@ -23,10 +19,13 @@ class _GameScreenState extends State<GameScreen> {
   Timer? _moveTimer;
   Offset? _lastPointerLogical;
   String? _myPlayerId;
+  final GlobalKey _arenaKey = GlobalKey();
 
-  final GlobalKey _arenaKey = GlobalKey(); // Add this line
+  List<Ball> _balls = [];
+  List<Player> _players = [];
+  double _arenaLogicalSize = 1000.0;
 
-  // Helper: Convert global pointer position to logical arena coordinates
+  // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
@@ -37,11 +36,6 @@ class _GameScreenState extends State<GameScreen> {
 
   void _startSendingMovement(Offset logicalTarget) {
     _lastPointerLogical = logicalTarget;
-    // Only start movement if my ball exists
-    if (_myPlayerId == null || !_balls.any((b) => b.id == _myPlayerId)) {
-      print('Ball not ready yet, ignoring movement.');
-      return;
-    }
     _moveTimer?.cancel();
     _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       _sendMovementTo(_lastPointerLogical!);
@@ -88,8 +82,6 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.sendMovement(dirX, dirY);
   }
 
-  List<Ball> _balls = [];
-  List<Player> _players = [];
   @override
   void initState() {
     super.initState();
@@ -102,23 +94,22 @@ class _GameScreenState extends State<GameScreen> {
       setState(() {
         _balls = balls;
       });
+      // If user is holding/tapping, try to send movement again when balls update
+      if (_lastPointerLogical != null) {
+        _sendMovementTo(_lastPointerLogical!);
+      }
     };
-    // Listen for welcome message to get playerId
     widget.webSocketService.onWelcome = (playerId) {
       setState(() {
         _myPlayerId = playerId;
       });
     };
-    // Request current player list when screen initializes
     widget.webSocketService.requestPlayerList();
   }
 
-  // Arena size, defaults to 1000.0 but will update if server provides a value
-  double _arenaLogicalSize = 1000.0;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Listen for arenaInfo messages from the server
     widget.webSocketService.onArenaInfo = (double size) {
       if (size > 0 && size != _arenaLogicalSize) {
         setState(() {
@@ -130,7 +121,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the available size for the arena (fit to height, with margin)
     final double margin = 8.0;
     final double availableHeight = MediaQuery.of(context).size.height - margin * 2;
     final double availableWidth = MediaQuery.of(context).size.width - margin * 2;
@@ -168,7 +158,7 @@ class _GameScreenState extends State<GameScreen> {
           children: [
             Center(
               child: Container(
-                key: _arenaKey, // Attach the key here
+                key: _arenaKey,
                 width: displaySize,
                 height: displaySize,
                 color: Colors.white,
@@ -205,13 +195,11 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8;
-    // Draw the outer square (arena)
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       borderPaint,
     );
 
-    // Draw all balls, scaling logical coordinates to display coordinates
     final Paint ballPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
