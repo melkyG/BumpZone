@@ -58,6 +58,8 @@ wss.on('connection', (ws) => {
             return;
           }
           console.log(`✅ Player added: ${data.username} (ID: ${result.playerId})`);
+          // Send welcome message with playerId to the joining client
+          ws.send(JSON.stringify({ type: 'welcome', playerId: result.playerId }));
         }
 
         const players = gameState.getPlayers();
