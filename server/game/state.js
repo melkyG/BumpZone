@@ -1,12 +1,15 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 1000; // Logical units (e.g., pixels)
 
+const ACCELERATION = 600; // units per second^2
 
 class GameState {
   constructor() {
     this.players = [];
     // Balls keyed by playerId: { [playerId]: { x, y, vx, vy } }
     this.balls = {};
+    // Store input direction for each player
+    this.inputDirections = {}; // { playerId: {dx, dy} }
   }
 
   getPlayerBySocket(ws) {
@@ -86,27 +89,29 @@ class GameState {
   
   // Set the velocity of a player's ball based on input direction (dx, dy)
   handleMove(playerId, dx, dy) {
-    const ball = this.balls[playerId];
-    if (!ball) return;
-    // Scale for reasonable speed (tweak as needed)
-    const SPEED = 6.0;
-    ball.vx = dx * SPEED;
-    ball.vy = dy * SPEED;
+    // Save the latest input direction for this player
+    this.inputDirections[playerId] = { dx, dy };
   }
 
   // Update all balls' positions based on their velocities, apply friction
   updateBalls(dt) {
-    const FRICTION = 0.96; // 1 = no friction, <1 = slows down
-    for (const ball of Object.values(this.balls)) {
-      ball.x += ball.vx * dt;
-      ball.y += ball.vy * dt;
-      // Apply friction
-      ball.vx *= FRICTION;
-      ball.vy *= FRICTION;
-      // Clamp to arena bounds
-      const r = 18;
-      ball.x = Math.max(r, Math.min(ARENA_SIZE - r, ball.x));
-      ball.y = Math.max(r, Math.min(ARENA_SIZE - r, ball.y));
+    // dt is in "ticks" (e.g., 1 = 50ms)
+    for (const ball of this.balls) {
+      const input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
+      // Apply acceleration if input is held or was just clicked
+      if (input.dx !== 0 || input.dy !== 0) {
+        const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
+        if (len > 0) {
+          const ax = (input.dx / len) * ACCELERATION;
+          const ay = (input.dy / len) * ACCELERATION;
+          ball.vx += ax * dt * 0.05; // 0.05 = 50ms in seconds
+          ball.vy += ay * dt * 0.05;
+        }
+      }
+      // No friction, no max speed
+      ball.x += ball.vx * dt * 0.05;
+      ball.y += ball.vy * dt * 0.05;
+      // Optionally: handle arena boundaries here
     }
   }
 }
