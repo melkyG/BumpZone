@@ -36,6 +36,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _startSendingMovement(Offset logicalTarget) {
     _lastPointerLogical = logicalTarget;
+    // Wait until _myPlayerId is set before starting movement
+    if (_myPlayerId == null) {
+      print('No playerId yet, delaying movement start.');
+      return;
+    }
     _moveTimer?.cancel();
     _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       _sendMovementTo(_lastPointerLogical!);
@@ -95,7 +100,7 @@ class _GameScreenState extends State<GameScreen> {
         _balls = balls;
       });
       // If user is holding/tapping, try to send movement again when balls update
-      if (_lastPointerLogical != null) {
+      if (_lastPointerLogical != null && _myPlayerId != null) {
         _sendMovementTo(_lastPointerLogical!);
       }
     };
@@ -103,6 +108,10 @@ class _GameScreenState extends State<GameScreen> {
       setState(() {
         _myPlayerId = playerId;
       });
+      // If user is holding/tapping, start movement now that playerId is available
+      if (_lastPointerLogical != null) {
+        _startSendingMovement(_lastPointerLogical!);
+      }
     };
     widget.webSocketService.requestPlayerList();
   }
