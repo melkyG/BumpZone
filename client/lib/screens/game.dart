@@ -66,7 +66,6 @@ class _GameScreenState extends State<GameScreen> {
 
   void _sendMovementTo(Offset logicalTarget) {
     if (_myPlayerId == null) return;
-    // Find the ball that matches the local player's ID
     Ball? myBall;
     try {
       myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
@@ -75,11 +74,14 @@ class _GameScreenState extends State<GameScreen> {
     }
     if (myBall == null) return;
 
+    print('My ball position: (${myBall.x}, ${myBall.y}), Target: (${logicalTarget.dx}, ${logicalTarget.dy})');
+
     final double dx = logicalTarget.dx - myBall.x;
     final double dy = logicalTarget.dy - myBall.y;
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
+    print('Sending direction: ($dirX, $dirY)');
     widget.webSocketService.sendMovement(dirX, dirY);
   }
 
