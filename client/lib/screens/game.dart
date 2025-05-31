@@ -37,16 +37,20 @@ class _GameScreenState extends State<GameScreen> {
 
   void _startSendingMovement(Offset logicalTarget) {
     _lastPointerLogical = logicalTarget;
+    // Only start movement if my ball exists
+    if (_myPlayerId == null || !_balls.any((b) => b.id == _myPlayerId)) {
+      print('Ball not ready yet, ignoring movement.');
+      return;
+    }
     _moveTimer?.cancel();
     _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
-      _sendMovementTo(logicalTarget);
+      _sendMovementTo(_lastPointerLogical!);
     });
     _sendMovementTo(logicalTarget); // Send immediately
   }
 
   void _updateSendingMovement(Offset logicalTarget) {
     _lastPointerLogical = logicalTarget;
-    // Next timer tick will use updated target
   }
 
   void _stopSendingMovement() {
@@ -57,14 +61,21 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _sendMovementTo(Offset logicalTarget) {
-    if (_myPlayerId == null) return;
+    if (_myPlayerId == null) {
+      print('No playerId yet.');
+      return;
+    }
     Ball? myBall;
     try {
       myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
     } catch (_) {
-      myBall = null;
+      print('My ball not found in _balls.');
+      return;
     }
-    if (myBall == null) return;
+    if (myBall == null) {
+      print('My ball is null.');
+      return;
+    }
 
     print('My ball position: (${myBall.x}, ${myBall.y}), Target: (${logicalTarget.dx}, ${logicalTarget.dy})');
 
