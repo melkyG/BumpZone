@@ -14,6 +14,7 @@ class WebSocketService {
   Function(String)? onError;
   ArenaInfoCallback? onArenaInfo;
   void Function(String playerId)? onWelcome;
+  String? playerId; // <-- Add this
 
   WebSocketService(this.url);
 
@@ -70,7 +71,8 @@ class WebSocketService {
     // Call the onWelcome callback when a welcome message is received
     if (type == 'welcome' && data['playerId'] != null) {
       print('Welcome message received with playerId: ${data['playerId']}');
-      if (onWelcome != null) onWelcome!(data['playerId'] as String);
+      playerId = data['playerId'] as String; // <-- Store playerId
+      if (onWelcome != null) onWelcome!(playerId!);
     }
 
     switch (type) {

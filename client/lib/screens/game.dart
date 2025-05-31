@@ -18,7 +18,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   Timer? _moveTimer;
   Offset? _lastPointerLogical;
-  String? _myPlayerId;
+  String? get _myPlayerId => widget.webSocketService.playerId;
   final GlobalKey _arenaKey = GlobalKey();
 
   List<Ball> _balls = [];
@@ -105,9 +105,6 @@ class _GameScreenState extends State<GameScreen> {
       }
     };
     widget.webSocketService.onWelcome = (playerId) {
-      setState(() {
-        _myPlayerId = playerId;
-      });
       // If user is holding/tapping, start movement now that playerId is available
       if (_lastPointerLogical != null) {
         _startSendingMovement(_lastPointerLogical!);
