@@ -44,6 +44,8 @@ class WebSocketService {
   }
 
   void _onMessage(dynamic message) {
+    print('WebSocket raw message type: ${message.runtimeType}');
+
     // --- Handle binary balls update ---
     if (message is List<int>) {
       final bytes = Uint8List.fromList(message);
