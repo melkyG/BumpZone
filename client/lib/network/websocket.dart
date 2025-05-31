@@ -58,7 +58,7 @@ class WebSocketService {
     }
 
     // --- Handle binary balls update for Flutter web (ByteBuffer or JS-interop) ---
-    if (js_util.hasProperty(message, 'buffer')) {
+    if (message is! String && js_util.hasProperty(message, 'buffer')) {
       final buffer = js_util.getProperty(message, 'buffer');
       final balls = decodeBalls(Uint8List.view(buffer));
       if (onBallsUpdate != null) {
@@ -67,6 +67,7 @@ class WebSocketService {
       return;
     }
 
+    // Now it's safe to assume it's a String (JSON)
     print("WebSocket message received: $message");
 
     final data = jsonDecode(message as String);

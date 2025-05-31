@@ -33483,7 +33483,7 @@ A.cF("WebSocket raw message type: "+J.L(a).k(0))
 if(t.Cm.b(a)){s=A.alU(new Uint8Array(A.nL(a)))
 r=k.a
 if(r!=null)r.$1(s)
-return}if("buffer" in a){s=A.alU(J.fD(a.buffer,0,null))
+return}if(typeof a!="string"&&"buffer" in a){s=A.alU(J.fD(a.buffer,0,null))
 r=k.a
 if(r!=null)r.$1(s)
 return}A.cF("WebSocket message received: "+A.l(a))
