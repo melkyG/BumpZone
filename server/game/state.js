@@ -10,6 +10,7 @@ class GameState {
     this.balls = {};
     // Store input direction for each player
     this.inputDirections = {}; // { playerId: {dx, dy} }
+    this.pendingImpulses = {}; // { playerId: {dx, dy} }
   }
 
   getPlayerBySocket(ws) {
@@ -89,7 +90,11 @@ class GameState {
   
   // Set the velocity of a player's ball based on input direction (dx, dy)
   handleMove(playerId, dx, dy) {
-    // Save the latest input direction for this player
+    // If this is a nonzero input, store as a pending impulse
+    if (dx !== 0 || dy !== 0) {
+      this.pendingImpulses[playerId] = { dx, dy };
+    }
+    // Always store the latest input direction
     this.inputDirections[playerId] = { dx, dy };
   }
 
@@ -97,14 +102,26 @@ class GameState {
   updateBalls(dt) {
     // dt is in "ticks" (e.g., 1 = 50ms)
     for (const ball of Object.values(this.balls)) {
-      const input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
-      // Apply acceleration if input is held or was just clicked
-      if (input.dx !== 0 || input.dy !== 0) {
+      // Check for a pending impulse (from a quick tap/click)
+      let input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
+      let impulse = this.pendingImpulses[ball.id];
+      if (impulse) {
+        // Apply the impulse once
+        const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
+        if (len > 0) {
+          const ax = (impulse.dx / len) * ACCELERATION;
+          const ay = (impulse.dy / len) * ACCELERATION;
+          ball.vx += ax * dt * 0.05;
+          ball.vy += ay * dt * 0.05;
+        }
+        delete this.pendingImpulses[ball.id];
+      } else if (input.dx !== 0 || input.dy !== 0) {
+        // Apply acceleration if input is held
         const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
         if (len > 0) {
           const ax = (input.dx / len) * ACCELERATION;
           const ay = (input.dy / len) * ACCELERATION;
-          ball.vx += ax * dt * 0.05; // 0.05 = 50ms in seconds
+          ball.vx += ax * dt * 0.05;
           ball.vy += ay * dt * 0.05;
         }
       }
