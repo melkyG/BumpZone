@@ -22,25 +22,17 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   Timer? _moveTimer;
   Offset? _lastPointerLogical;
+  String? _myPlayerId;
 
-  String? _myPlayerId; // Track the local player's ID
+  final GlobalKey _arenaKey = GlobalKey(); // Add this line
 
   // Helper: Convert global pointer position to logical arena coordinates
-  Offset _getLogicalFromGlobal(Offset globalPosition, BuildContext context) {
-    final RenderBox stackBox = context.findRenderObject() as RenderBox;
-    final Offset globalOffset = stackBox.globalToLocal(globalPosition);
-    final double margin = 8.0;
-    final double availableHeight = MediaQuery.of(context).size.height - margin * 2;
-    final double availableWidth = MediaQuery.of(context).size.width - margin * 2;
-    final double scale = (availableHeight < availableWidth)
-        ? availableHeight / _arenaLogicalSize
-        : availableWidth / _arenaLogicalSize;
-    final double displaySize = _arenaLogicalSize * scale;
-    final double arenaLeft = (MediaQuery.of(context).size.width - displaySize) / 2;
-    final double arenaTop = (MediaQuery.of(context).size.height - displaySize) / 2;
-    final double logicalX = (globalOffset.dx - arenaLeft) / scale;
-    final double logicalY = (globalOffset.dy - arenaTop) / scale;
-    return Offset(logicalX, logicalY);
+  Offset _getLogicalFromGlobal(Offset globalPosition) {
+    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return Offset.zero;
+    final Offset local = box.globalToLocal(globalPosition);
+    final double scale = box.size.width / _arenaLogicalSize;
+    return Offset(local.dx / scale, local.dy / scale);
   }
 
   void _startSendingMovement(Offset logicalTarget) {
@@ -141,11 +133,11 @@ class _GameScreenState extends State<GameScreen> {
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onPanStart: (DragStartDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
           _startSendingMovement(logicalTarget);
         },
         onPanUpdate: (DragUpdateDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
           _updateSendingMovement(logicalTarget);
         },
         onPanEnd: (DragEndDetails details) {
@@ -155,7 +147,7 @@ class _GameScreenState extends State<GameScreen> {
           _stopSendingMovement();
         },
         onTapDown: (TapDownDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition, context);
+          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
           _startSendingMovement(logicalTarget);
         },
         onTapUp: (TapUpDetails details) {
@@ -165,6 +157,7 @@ class _GameScreenState extends State<GameScreen> {
           children: [
             Center(
               child: Container(
+                key: _arenaKey, // Attach the key here
                 width: displaySize,
                 height: displaySize,
                 color: Colors.white,
