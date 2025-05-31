@@ -18,6 +18,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   Timer? _moveTimer;
   Offset? _lastPointerLogical;
+  // Instead of a field, _myPlayerId is now a getter that reads from the WebSocketService
   String? get _myPlayerId => widget.webSocketService.playerId;
   final GlobalKey _arenaKey = GlobalKey();
 
@@ -125,6 +126,7 @@ class _GameScreenState extends State<GameScreen> {
     };
   }
 
+  // In build(), input is now only enabled if _myPlayerId is set
   @override
   Widget build(BuildContext context) {
     final double margin = 8.0;
@@ -134,51 +136,66 @@ class _GameScreenState extends State<GameScreen> {
         ? availableHeight / _arenaLogicalSize
         : availableWidth / _arenaLogicalSize;
     final double displaySize = _arenaLogicalSize * scale;
+    final bool ready = _myPlayerId != null;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 148, 148, 148),
-      body: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onPanStart: (DragStartDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-          _startSendingMovement(logicalTarget);
-        },
-        onPanUpdate: (DragUpdateDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-          _updateSendingMovement(logicalTarget);
-        },
-        onPanEnd: (DragEndDetails details) {
-          _stopSendingMovement();
-        },
-        onPanCancel: () {
-          _stopSendingMovement();
-        },
-        onTapDown: (TapDownDetails details) {
-          final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-          _startSendingMovement(logicalTarget);
-        },
-        onTapUp: (TapUpDetails details) {
-          _stopSendingMovement();
-        },
-        child: Stack(
-          children: [
-            Center(
-              child: Container(
-                key: _arenaKey,
-                width: displaySize,
-                height: displaySize,
-                color: Colors.white,
-                child: CustomPaint(
-                  size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                  painter: _ArenaPainter(balls: _balls, arenaLogicalSize: _arenaLogicalSize),
-                  isComplex: false,
-                  willChange: false,
-                ),
+      body: Stack(
+        children: [
+          Center(
+            child: Container(
+              key: _arenaKey,
+              width: displaySize,
+              height: displaySize,
+              color: Colors.white,
+              child: CustomPaint(
+                size: Size(_arenaLogicalSize, _arenaLogicalSize),
+                painter: _ArenaPainter(balls: _balls, arenaLogicalSize: _arenaLogicalSize),
+                isComplex: false,
+                willChange: false,
               ),
             ),
-            PlayerListHUD(players: _players),
-          ],
-        ),
+          ),
+          PlayerListHUD(players: _players),
+          if (!ready)
+            // Show a loading overlay until playerId is set
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          if (ready)
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (DragStartDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget);
+              },
+              onPanUpdate: (DragUpdateDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updateSendingMovement(logicalTarget);
+              },
+              onPanEnd: (DragEndDetails details) {
+                _stopSendingMovement();
+              },
+              onPanCancel: () {
+                _stopSendingMovement();
+              },
+              onTapDown: (TapDownDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget);
+              },
+              onTapUp: (TapUpDetails details) {
+                _stopSendingMovement();
+              },
+              child: Container(
+                color: Colors.transparent,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+        ],
       ),
     );
   }
