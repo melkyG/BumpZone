@@ -96,7 +96,7 @@ class GameState {
   // Update all balls' positions based on their velocities, apply friction
   updateBalls(dt) {
     // dt is in "ticks" (e.g., 1 = 50ms)
-    for (const ball of this.balls) {
+    for (const ball of Object.values(this.balls)) {
       const input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
       // Apply acceleration if input is held or was just clicked
       if (input.dx !== 0 || input.dy !== 0) {
