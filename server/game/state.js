@@ -248,7 +248,7 @@ class GameState {
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist !== 0) {
+          if (dist !== 0 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
             forces[i].x += (dx / dist) * forceMag;
             forces[i].y += (dy / dist) * forceMag;
@@ -261,7 +261,7 @@ class GameState {
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist !== 0) {
+          if (dist !== 0 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
             forces[i].x += (dx / dist) * forceMag;
             forces[i].y += (dy / dist) * forceMag;
@@ -277,23 +277,27 @@ class GameState {
         // Total force
         const fx = forces[i].x + dampingForceX;
         const fy = forces[i].y + dampingForceY;
-        // Acceleration
+        // Defensive: skip if any math is not finite
         if (!isFinite(mass) || mass === 0) continue;
         if (!isFinite(fx) || !isFinite(fy)) continue;
+        // Acceleration
         const ax = fx / mass;
         const ay = fy / mass;
+        if (!isFinite(ax) || !isFinite(ay)) continue;
         // Update velocity
         velocities[i].x += ax * dt * 0.05;
         velocities[i].y += ay * dt * 0.05;
+        if (!isFinite(velocities[i].x) || !isFinite(velocities[i].y)) {
+          velocities[i].x = 0;
+          velocities[i].y = 0;
+        }
         // Update position
         segments[i].x += velocities[i].x * dt * 0.05;
         segments[i].y += velocities[i].y * dt * 0.05;
-
-        // NaN check
         if (!isFinite(segments[i].x) || !isFinite(segments[i].y)) {
           segments[i].x = 0;
           segments[i].y = 0;
-          console.error(`[ERROR] Band segment ${i} became NaN, reset to 0`);
+          console.error(`[ERROR] Band segment ${i} became non-finite, reset to 0`);
         }
       }
     }
