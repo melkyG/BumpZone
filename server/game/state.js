@@ -278,6 +278,8 @@ class GameState {
         const fx = forces[i].x + dampingForceX;
         const fy = forces[i].y + dampingForceY;
         // Acceleration
+        if (!isFinite(mass) || mass === 0) continue;
+        if (!isFinite(fx) || !isFinite(fy)) continue;
         const ax = fx / mass;
         const ay = fy / mass;
         // Update velocity
