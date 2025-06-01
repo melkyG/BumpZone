@@ -376,7 +376,7 @@ class GameState {
       }
     }
 
-    // In updateBands, after updating positions, add:
+    // Print all ball positions and first segment of each band every tick
     for (const ball of Object.values(this.balls)) {
       console.log(`[TICK] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)})`);
     }
