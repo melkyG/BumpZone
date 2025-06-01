@@ -322,13 +322,14 @@ class GameState {
           const closestX = p1.x + segDx * t;
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
-          // DEBUG: print when close to a band even if not colliding
-          if (dist < BALL_RADIUS + 20) {
-            // Uncomment for debugging proximity
-            // console.log(`Ball near band: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
+
+          // DEBUG: print always for diagnostics
+          if (i % 5 === 0) { // Reduce spam: print every 5th segment
+            console.log(`[DEBUG] Ball (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) to band seg ${i} (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)}`);
           }
+
           if (dist < BALL_RADIUS + 6) {
-            console.log(`Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
+            console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             // Push ball out
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
