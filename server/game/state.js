@@ -244,21 +244,25 @@ class GameState {
         if (i > 0) {
           const prev = segments[i - 1];
           const curr = segments[i];
+          // Defensive: check for valid numbers before math
+          if (!isFinite(prev.x) || !isFinite(prev.y) || !isFinite(curr.x) || !isFinite(curr.y)) {
+            console.error(`[DEBUG] [prev] segment NaN at band ${i}: prev=(${prev.x},${prev.y}), curr=(${curr.x},${curr.y})`);
+            continue;
+          }
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (!isFinite(dx) || !isFinite(dy)) {
-            console.error(`[DEBUG] [prev] dx/dy not finite at band ${i}: dx=${dx}, dy=${dy}`);
-          }
-          if (!isFinite(dist)) {
+          if (!isFinite(dist) || dist === Infinity) {
             console.error(`[DEBUG] [prev] dist not finite at band ${i}: dist=${dist}`);
+            continue;
           }
-          if (dist > 1e-6 && isFinite(dist)) {
+          if (dist > 1e-6) {
             const forceMag = springConstant * (dist - restLength);
             const normX = dx / dist;
             const normY = dy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
               console.error(`[DEBUG] [prev] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+              continue;
             }
             forces[i].x += normX * forceMag;
             forces[i].y += normY * forceMag;
@@ -268,21 +272,24 @@ class GameState {
         if (i < numPts - 1) {
           const next = segments[i + 1];
           const curr = segments[i];
+          if (!isFinite(next.x) || !isFinite(next.y) || !isFinite(curr.x) || !isFinite(curr.y)) {
+            console.error(`[DEBUG] [next] segment NaN at band ${i}: next=(${next.x},${next.y}), curr=(${curr.x},${curr.y})`);
+            continue;
+          }
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (!isFinite(dx) || !isFinite(dy)) {
-            console.error(`[DEBUG] [next] dx/dy not finite at band ${i}: dx=${dx}, dy=${dy}`);
-          }
-          if (!isFinite(dist)) {
+          if (!isFinite(dist) || dist === Infinity) {
             console.error(`[DEBUG] [next] dist not finite at band ${i}: dist=${dist}`);
+            continue;
           }
-          if (dist > 1e-6 && isFinite(dist)) {
+          if (dist > 1e-6) {
             const forceMag = springConstant * (dist - restLength);
             const normX = dx / dist;
             const normY = dy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
               console.error(`[DEBUG] [next] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+              continue;
             }
             forces[i].x += normX * forceMag;
             forces[i].y += normY * forceMag;
@@ -300,6 +307,7 @@ class GameState {
         const fy = forces[i].y + dampingForceY;
         if (!isFinite(fx) || !isFinite(fy)) {
           console.error(`[DEBUG] fx/fy not finite at band ${i}: fx=${fx}, fy=${fy}`);
+          continue;
         }
         // Defensive: skip if any math is not finite
         if (!isFinite(mass) || mass === 0) {
