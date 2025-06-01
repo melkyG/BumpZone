@@ -315,15 +315,14 @@ class GameState {
       // --- Ball-Band collisions (elastic) ---
       for (const band of this.bands) {
         const { segments, velocities, mass, coefficientOfRestitution, fixedIndices } = band;
-        if (segments.length < 2) continue; // <-- Add this guard
+        if (!segments || segments.length < 2) continue;
         for (let i = 0; i < segments.length - 1; i++) {
-          // Don't collide with fixed segments at both ends
           if (fixedIndices.includes(i) && fixedIndices.includes(i + 1)) continue;
           const p1 = segments[i], p2 = segments[i + 1];
+          if (!p1 || !p2) continue;
           const segDx = p2.x - p1.x, segDy = p2.y - p1.y;
           const segLen2 = segDx * segDx + segDy * segDy;
-          if (segLen2 === 0) continue;
-          // Use the ball's position after movement (current tick)
+          if (!isFinite(segDx) || !isFinite(segDy) || segLen2 === 0) continue;
           const t = GameState._clamp(
             ((ball.x - p1.x) * segDx + (ball.y - p1.y) * segDy) / segLen2,
             0, 1
@@ -336,7 +335,8 @@ class GameState {
             console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
           }
           if (dist < 100) {
-            console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
+            // Uncomment for more verbose proximity debug
+            // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
           }
           if (dist < BALL_RADIUS + 6) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
@@ -390,6 +390,7 @@ class GameState {
     this.updateBalls(dt);
     this.updateBands(dt);
   }
+
   // Helper: distance between two points
   static _dist(x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
