@@ -258,15 +258,18 @@ class GameState {
           }
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          // PATCH: Clamp dx/dy to a reasonable range to avoid huge values
+          const safeDx = Math.max(Math.min(dx, 1000), -1000);
+          const safeDy = Math.max(Math.min(dy, 1000), -1000);
+          const dist = Math.sqrt(safeDx * safeDx + safeDy * safeDy);
           if (!isFinite(dist) || dist === Infinity) {
             console.error(`[DEBUG] [prev] dist not finite at band ${bandIdx} seg ${i}: dist=${dist}`);
             continue;
           }
           if (dist > 1e-6) {
             const forceMag = springConstant * (dist - restLength);
-            const normX = dx / dist;
-            const normY = dy / dist;
+            const normX = safeDx / dist;
+            const normY = safeDy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
               console.error(`[DEBUG] [prev] normX/normY not finite at band ${bandIdx} seg ${i}: normX=${normX}, normY=${normY}`);
               continue;
@@ -285,15 +288,18 @@ class GameState {
           }
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          // PATCH: Clamp dx/dy to a reasonable range to avoid huge values
+          const safeDx = Math.max(Math.min(dx, 1000), -1000);
+          const safeDy = Math.max(Math.min(dy, 1000), -1000);
+          const dist = Math.sqrt(safeDx * safeDx + safeDy * safeDy);
           if (!isFinite(dist) || dist === Infinity) {
             console.error(`[DEBUG] [next] dist not finite at band ${bandIdx} seg ${i}: dist=${dist}`);
             continue;
           }
           if (dist > 1e-6) {
             const forceMag = springConstant * (dist - restLength);
-            const normX = dx / dist;
-            const normY = dy / dist;
+            const normX = safeDx / dist;
+            const normY = safeDy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
               console.error(`[DEBUG] [next] normX/normY not finite at band ${bandIdx} seg ${i}: normX=${normX}, normY=${normY}`);
               continue;
