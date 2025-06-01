@@ -7,9 +7,11 @@ function gameLoop() {
   const dt = (now - lastTick) / 50;
   lastTick = now;
   gameState.updateBalls(dt);
+  // --- Send balls, bands, and posts as binary ---
   const balls = gameState.getBalls();
-  // Use utility to encode balls as binary
-  const buffer = encodeBalls(balls);
+  const bands = gameState.bands;
+  const posts = gameState.posts;
+  const buffer = encodeArenaState(balls, bands, posts);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(buffer);
@@ -21,7 +23,61 @@ const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
 const { GameState, ARENA_SIZE } = require('./server/game/state');
-const { encodeBalls } = require('./server/game/ballBinary'); // <-- Add this
+const { encodeBalls } = require('./server/game/ballBinary');
+// Add this utility for bands and posts:
+function encodeArenaState(balls, bands, posts) {
+  // Format:
+  // [ballCount, ...balls, bandCount, ...bands, postCount, ...posts]
+  // Each ball: id (16 bytes), x, y, vx, vy (4x float32)
+  // Each band: segmentCount, ...segments (x, y float32)
+  // Each post: x, y (float32)
+  const idLen = 16;
+  const ballCount = balls.length;
+  const bandCount = bands.length;
+  const postCount = posts.length;
+  let bandSegmentsTotal = 0;
+  for (const band of bands) bandSegmentsTotal += band.segments.length;
+
+  // Calculate total buffer size
+  const ballBytes = 4 + ballCount * (idLen + 16);
+  const bandBytes = 4 + bands.reduce((sum, band) => sum + 4 + band.segments.length * 8, 0);
+  const postBytes = 4 + postCount * 8;
+  const totalBytes = ballBytes + bandBytes + postBytes;
+
+  const buffer = Buffer.allocUnsafe(totalBytes);
+  let offset = 0;
+
+  // Balls
+  buffer.writeUInt32LE(ballCount, offset); offset += 4;
+  balls.forEach(b => {
+    const idBuf = Buffer.alloc(idLen);
+    idBuf.write(b.id ? String(b.id) : '', 0, idLen, 'utf8');
+    idBuf.copy(buffer, offset); offset += idLen;
+    buffer.writeFloatLE(b.x, offset); offset += 4;
+    buffer.writeFloatLE(b.y, offset); offset += 4;
+    buffer.writeFloatLE(b.vx, offset); offset += 4;
+    buffer.writeFloatLE(b.vy, offset); offset += 4;
+  });
+
+  // Bands
+  buffer.writeUInt32LE(bandCount, offset); offset += 4;
+  bands.forEach(band => {
+    buffer.writeUInt32LE(band.segments.length, offset); offset += 4;
+    band.segments.forEach(seg => {
+      buffer.writeFloatLE(seg.x, offset); offset += 4;
+      buffer.writeFloatLE(seg.y, offset); offset += 4;
+    });
+  });
+
+  // Posts
+  buffer.writeUInt32LE(postCount, offset); offset += 4;
+  posts.forEach(post => {
+    buffer.writeFloatLE(post.x, offset); offset += 4;
+    buffer.writeFloatLE(post.y, offset); offset += 4;
+  });
+
+  return buffer;
+}
 
 const app = express();
 console.log('🧠 Running on process ID:', process.pid);

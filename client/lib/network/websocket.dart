@@ -5,6 +5,7 @@ import 'package:bump_zone/models/player.dart';
 import 'dart:typed_data';
 import 'dart:js_util' as js_util; // Add this for JS interop
 import 'package:bump_zone/network/ball_binary.dart'; // <-- Add this
+import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 
 typedef ArenaInfoCallback = void Function(double size);
 
@@ -18,6 +19,7 @@ class WebSocketService {
   ArenaInfoCallback? onArenaInfo;
   void Function(String playerId)? onWelcome;
   String? playerId; // <-- Add this
+  Function(ArenaState)? onArenaUpdate; // <-- Add this callback
 
   WebSocketService(this.url);
 
@@ -48,21 +50,28 @@ class WebSocketService {
   void _onMessage(dynamic message) {
     print('WebSocket raw message type: ${message.runtimeType}');
 
-    // --- Handle binary balls update for Dart VM (List<int>) ---
+    // --- Handle binary arena update for Dart VM (List<int>) ---
     if (message is List<int>) {
-      final balls = decodeBalls(Uint8List.fromList(message));
+      final arena = decodeArenaState(Uint8List.fromList(message));
+      if (onArenaUpdate != null) {
+        onArenaUpdate!(arena);
+      }
+      // Optionally: also call onBallsUpdate for legacy code
       if (onBallsUpdate != null) {
-        onBallsUpdate!(balls);
+        onBallsUpdate!(arena.balls);
       }
       return;
     }
 
-    // --- Handle binary balls update for Flutter web (ByteBuffer or JS-interop) ---
+    // --- Handle binary arena update for Flutter web (ByteBuffer or JS-interop) ---
     if (message is! String && js_util.hasProperty(message, 'buffer')) {
       final buffer = js_util.getProperty(message, 'buffer');
-      final balls = decodeBalls(Uint8List.view(buffer));
+      final arena = decodeArenaState(Uint8List.view(buffer));
+      if (onArenaUpdate != null) {
+        onArenaUpdate!(arena);
+      }
       if (onBallsUpdate != null) {
-        onBallsUpdate!(balls);
+        onBallsUpdate!(arena.balls);
       }
       return;
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../widgets/hud.dart';
 import 'package:bump_zone/network/websocket.dart';
+import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -24,6 +25,8 @@ class _GameScreenState extends State<GameScreen> {
 
   List<Ball> _balls = [];
   List<Player> _players = [];
+  List<Band> _bands = [];
+  List<BandSegment> _posts = [];
   double _arenaLogicalSize = 1000.0;
 
   // Convert global pointer position to logical arena coordinates
@@ -96,14 +99,21 @@ class _GameScreenState extends State<GameScreen> {
         _players = players;
       });
     };
-    widget.webSocketService.onBallsUpdate = (balls) {
+    widget.webSocketService.onArenaUpdate = (arena) {
       setState(() {
-        _balls = balls;
+        _balls = arena.balls;
+        _bands = arena.bands;
+        _posts = arena.posts;
       });
       // If user is holding/tapping, try to send movement again when balls update
       if (_lastPointerLogical != null && _myPlayerId != null) {
         _sendMovementTo(_lastPointerLogical!);
       }
+    };
+    widget.webSocketService.onBallsUpdate = (balls) {
+      setState(() {
+        _balls = balls;
+      });
     };
     widget.webSocketService.onWelcome = (playerId) {
       // If user is holding/tapping, start movement now that playerId is available
@@ -150,7 +160,12 @@ class _GameScreenState extends State<GameScreen> {
               color: Colors.white,
               child: CustomPaint(
                 size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                painter: _ArenaPainter(balls: _balls, arenaLogicalSize: _arenaLogicalSize),
+                painter: _ArenaPainter(
+                  balls: _balls,
+                  bands: _bands,
+                  posts: _posts,
+                  arenaLogicalSize: _arenaLogicalSize,
+                ),
                 isComplex: false,
                 willChange: false,
               ),
@@ -209,8 +224,15 @@ class _GameScreenState extends State<GameScreen> {
 
 class _ArenaPainter extends CustomPainter {
   final List<Ball> balls;
+  final List<Band> bands;
+  final List<BandSegment> posts;
   final double arenaLogicalSize;
-  _ArenaPainter({required this.balls, required this.arenaLogicalSize});
+  _ArenaPainter({
+    required this.balls,
+    required this.bands,
+    required this.posts,
+    required this.arenaLogicalSize,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -223,11 +245,41 @@ class _ArenaPainter extends CustomPainter {
       borderPaint,
     );
 
+    final double scale = size.width / arenaLogicalSize;
+
+    // Draw bands
+    final Paint bandPaint = Paint()
+      ..color = Colors.orange
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8;
+    for (final band in bands) {
+      final path = Path();
+      if (band.segments.isNotEmpty) {
+        path.moveTo(band.segments[0].x * scale, band.segments[0].y * scale);
+        for (final seg in band.segments.skip(1)) {
+          path.lineTo(seg.x * scale, seg.y * scale);
+        }
+        canvas.drawPath(path, bandPaint);
+      }
+    }
+
+    // Draw posts
+    final Paint postPaint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+    for (final post in posts) {
+      canvas.drawCircle(
+        Offset(post.x * scale, post.y * scale),
+        22 * scale, // POST_RADIUS
+        postPaint,
+      );
+    }
+
+    // Draw balls
     final Paint ballPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
-    final double scale = size.width / arenaLogicalSize;
     for (final ball in balls) {
       canvas.drawCircle(
         Offset(ball.x * scale, ball.y * scale),
