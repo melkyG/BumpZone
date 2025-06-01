@@ -315,6 +315,7 @@ class GameState {
       // --- Ball-Band collisions (elastic) ---
       for (const band of this.bands) {
         const { segments, velocities, mass, coefficientOfRestitution, fixedIndices } = band;
+        if (segments.length < 2) continue; // <-- Add this guard
         for (let i = 0; i < segments.length - 1; i++) {
           // Don't collide with fixed segments at both ends
           if (fixedIndices.includes(i) && fixedIndices.includes(i + 1)) continue;
