@@ -44,7 +44,7 @@ class GameState {
       const sideLength = Math.sqrt(
         Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
       );
-      const restLength = (sideLength / (BAND_SEGMENTS_PER_SIDE - 1)) * BAND_REST_LENGTH_SCALE;
+      const restLength = sideLength / (BAND_SEGMENTS_PER_SIDE - 1); // REMOVE * BAND_REST_LENGTH_SCALE
       for (let j = 0; j < BAND_SEGMENTS_PER_SIDE; j++) {
         const t = j / (BAND_SEGMENTS_PER_SIDE - 1);
         // Initial position: evenly spaced between start and end, NO wiggle
