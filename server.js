@@ -10,8 +10,6 @@ function gameLoop() {
   // --- Send balls, bands, and posts as binary ---
   const balls = gameState.getBalls();
   const bands = gameState.bands;
-  // Add this debug print:
-  console.log('[DEBUG] Bands to send:', bands.map(b => b.segments.length));
   const posts = gameState.posts;
   const buffer = encodeArenaState(balls, bands, posts);
   wss.clients.forEach((client) => {

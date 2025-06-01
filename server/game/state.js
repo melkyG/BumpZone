@@ -16,7 +16,7 @@ const POST_RADIUS = 22; // for collision, slightly larger than ball
 
 class GameState {
   constructor() {
-    console.log('[DEBUG] GameState constructor called');
+    // console.log('[DEBUG] GameState constructor called');
     this.players = [];
     // Balls keyed by playerId: { [playerId]: { x, y, vx, vy } }
     this.balls = {};
@@ -71,8 +71,8 @@ class GameState {
     }
 
     // After initializing balls and bands, add:
-    console.log('Initial ball positions:', Object.values(this.balls));
-    console.log('Initial band segment positions:', this.bands.map(b => b.segments.map(s => [s.x, s.y])));
+    // console.log('Initial ball positions:', Object.values(this.balls));
+    // console.log('Initial band segment positions:', this.bands.map(b => b.segments.map(s => [s.x, s.y])));
   }
 
   getPlayerBySocket(ws) {
@@ -122,13 +122,13 @@ class GameState {
       vx: 0,
       vy: 0
     };
-    console.log('[DEBUG] Ball added:', this.balls[playerId]);
+    // console.log('[DEBUG] Ball added:', this.balls[playerId]);
 
     return { success: true, playerId };
   }
 
   removePlayer(ws) {
-    console.log('[DEBUG] removePlayer called for ws:', ws && ws.readyState);
+    // console.log('[DEBUG] removePlayer called for ws:', ws && ws.readyState);
     const player = this.getPlayerBySocket(ws);
     if (player) {
       delete this.balls[player.playerId];
@@ -144,7 +144,7 @@ class GameState {
         typeof ball.vy === 'number'
       );
     });
-    console.log('[DEBUG] getBalls:', balls);
+    // console.log('[DEBUG] getBalls:', balls);
     return balls;
   }
 
@@ -233,7 +233,7 @@ class GameState {
 
   // Add this method to update band physics
   updateBands(dt) {
-    console.log('[DEBUG] updateBands called, balls:', Object.keys(this.balls));
+    // console.log('[DEBUG] updateBands called, balls:', Object.keys(this.balls));
     for (const band of this.bands) {
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
@@ -331,13 +331,12 @@ class GameState {
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
 
-          if (i === 0 && ball.id) {
-            console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
-          }
-          if (dist < 100) {
-            // Uncomment for more verbose proximity debug
-            // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
-          }
+          // if (i === 0 && ball.id) {
+          //   console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
+          // }
+          // if (dist < 100) {
+          //   // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
+          // }
           if (dist < BALL_RADIUS + 6) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             const nx = (ball.x - closestX) / (dist || 1e-8);
@@ -377,13 +376,13 @@ class GameState {
     }
 
     // Print all ball positions and first segment of each band every tick
-    for (const ball of Object.values(this.balls)) {
-      console.log(`[TICK] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)})`);
-    }
-    for (let b = 0; b < this.bands.length; b++) {
-      const seg = this.bands[b].segments[0];
-      console.log(`[TICK] Band ${b} seg0 at (${seg.x.toFixed(1)},${seg.y.toFixed(1)})`);
-    }
+    // for (const ball of Object.values(this.balls)) {
+    //   console.log(`[TICK] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)})`);
+    // }
+    // for (let b = 0; b < this.bands.length; b++) {
+    //   const seg = this.bands[b].segments[0];
+    //   console.log(`[TICK] Band ${b} seg0 at (${seg.x.toFixed(1)},${seg.y.toFixed(1)})`);
+    // }
   }
 
   update(dt) {

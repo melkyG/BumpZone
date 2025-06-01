@@ -257,13 +257,15 @@ class _ArenaPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8;
     for (final band in bands) {
-      final path = Path();
       if (band.segments.isNotEmpty) {
-        path.moveTo(band.segments[0].x * scale, band.segments[0].y * scale);
-        for (final seg in band.segments.skip(1)) {
-          path.lineTo(seg.x * scale, seg.y * scale);
+        final path = Path();
+        if (band.segments.isNotEmpty) {
+          path.moveTo(band.segments[0].x * scale, band.segments[0].y * scale);
+          for (final seg in band.segments.skip(1)) {
+            path.lineTo(seg.x * scale, seg.y * scale);
+          }
+          canvas.drawPath(path, bandPaint);
         }
-        canvas.drawPath(path, bandPaint);
       }
     }
 
