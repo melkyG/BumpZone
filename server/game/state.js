@@ -323,9 +323,14 @@ class GameState {
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
 
-          // DEBUG: print always for diagnostics
-          if (i % 5 === 0) { // Reduce spam: print every 5th segment
-            console.log(`[DEBUG] Ball (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) to band seg ${i} (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)}`);
+          // Print min/max/typical values for debugging
+          if (i === 0 && ball.id) {
+            console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
+          }
+
+          // Print if the ball is within 100 units of any band segment
+          if (dist < 100) {
+            console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
           }
 
           if (dist < BALL_RADIUS + 6) {
