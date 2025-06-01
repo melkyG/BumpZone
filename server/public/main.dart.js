@@ -33733,11 +33733,11 @@ q.scU(B.aB)
 q.sdL(8)
 for(e=f.c,s=e.length,p=0;p<e.length;e.length===s||(0,A.C)(e),++p){o=e[p].a
 if(o.length!==0){n=$.W().bF()
-if(o.length!==0){m=o[0]
+m=o[0]
 n.iq(m.a*r,m.b*r)
 for(m=A.a_(o),l=m.j("e8<1>"),k=new A.e8(o,1,null,l),k.oC(o,1,null,m.c),k=new A.bh(k,k.gE(0),l.j("bh<ap.E>")),l=l.j("ap.E");k.p();){o=k.d
 if(o==null)o=l.a(o)
-n.cT(o.a*r,o.b*r)}a.h0(n,q)}}}j=$.W().aV()
+n.cT(o.a*r,o.b*r)}a.h0(n,q)}}j=$.W().aV()
 j.sae(B.qG)
 j.scU(B.bx)
 for(e=f.d,s=e.length,o=22*r,p=0;p<e.length;e.length===s||(0,A.C)(e),++p){i=e[p]

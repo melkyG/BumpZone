@@ -259,13 +259,12 @@ class _ArenaPainter extends CustomPainter {
     for (final band in bands) {
       if (band.segments.isNotEmpty) {
         final path = Path();
-        if (band.segments.isNotEmpty) {
-          path.moveTo(band.segments[0].x * scale, band.segments[0].y * scale);
-          for (final seg in band.segments.skip(1)) {
-            path.lineTo(seg.x * scale, seg.y * scale);
-          }
-          canvas.drawPath(path, bandPaint);
+        path.moveTo(band.segments[0].x * scale, band.segments[0].y * scale);
+        for (final seg in band.segments.skip(1)) {
+          path.lineTo(seg.x * scale, seg.y * scale);
         }
+        // print('[DEBUG] Band path bounds: ${path.getBounds()}');
+        canvas.drawPath(path, bandPaint);
       }
     }
 
