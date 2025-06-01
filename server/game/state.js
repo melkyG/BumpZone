@@ -247,11 +247,21 @@ class GameState {
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          // Defensive: avoid division by zero and infinities
+          if (!isFinite(dx) || !isFinite(dy)) {
+            console.error(`[DEBUG] [prev] dx/dy not finite at band ${i}: dx=${dx}, dy=${dy}`);
+          }
+          if (!isFinite(dist)) {
+            console.error(`[DEBUG] [prev] dist not finite at band ${i}: dist=${dist}`);
+          }
           if (dist > 1e-6 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
-            forces[i].x += (dx / dist) * forceMag;
-            forces[i].y += (dy / dist) * forceMag;
+            const normX = dx / dist;
+            const normY = dy / dist;
+            if (!isFinite(normX) || !isFinite(normY)) {
+              console.error(`[DEBUG] [prev] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+            }
+            forces[i].x += normX * forceMag;
+            forces[i].y += normY * forceMag;
           }
         }
         // Spring to next point
@@ -261,11 +271,21 @@ class GameState {
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          // Defensive: avoid division by zero and infinities
+          if (!isFinite(dx) || !isFinite(dy)) {
+            console.error(`[DEBUG] [next] dx/dy not finite at band ${i}: dx=${dx}, dy=${dy}`);
+          }
+          if (!isFinite(dist)) {
+            console.error(`[DEBUG] [next] dist not finite at band ${i}: dist=${dist}`);
+          }
           if (dist > 1e-6 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
-            forces[i].x += (dx / dist) * forceMag;
-            forces[i].y += (dy / dist) * forceMag;
+            const normX = dx / dist;
+            const normY = dy / dist;
+            if (!isFinite(normX) || !isFinite(normY)) {
+              console.error(`[DEBUG] [next] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+            }
+            forces[i].x += normX * forceMag;
+            forces[i].y += normY * forceMag;
           }
         }
       }
@@ -278,17 +298,26 @@ class GameState {
         // Total force
         const fx = forces[i].x + dampingForceX;
         const fy = forces[i].y + dampingForceY;
+        if (!isFinite(fx) || !isFinite(fy)) {
+          console.error(`[DEBUG] fx/fy not finite at band ${i}: fx=${fx}, fy=${fy}`);
+        }
         // Defensive: skip if any math is not finite
-        if (!isFinite(mass) || mass === 0) continue;
-        if (!isFinite(fx) || !isFinite(fy)) continue;
+        if (!isFinite(mass) || mass === 0) {
+          console.error(`[DEBUG] mass not finite or zero at band ${i}: mass=${mass}`);
+          continue;
+        }
         // Acceleration
         const ax = fx / mass;
         const ay = fy / mass;
-        if (!isFinite(ax) || !isFinite(ay)) continue;
+        if (!isFinite(ax) || !isFinite(ay)) {
+          console.error(`[DEBUG] ax/ay not finite at band ${i}: ax=${ax}, ay=${ay}`);
+          continue;
+        }
         // Update velocity
         velocities[i].x += ax * dt * 0.05;
         velocities[i].y += ay * dt * 0.05;
         if (!isFinite(velocities[i].x) || !isFinite(velocities[i].y)) {
+          console.error(`[DEBUG] velocity not finite at band ${i}: vx=${velocities[i].x}, vy=${velocities[i].y}`);
           velocities[i].x = 0;
           velocities[i].y = 0;
         }
@@ -296,9 +325,9 @@ class GameState {
         segments[i].x += velocities[i].x * dt * 0.05;
         segments[i].y += velocities[i].y * dt * 0.05;
         if (!isFinite(segments[i].x) || !isFinite(segments[i].y)) {
+          console.error(`[ERROR] Band segment ${i} became non-finite, reset to 0`);
           segments[i].x = 0;
           segments[i].y = 0;
-          console.error(`[ERROR] Band segment ${i} became non-finite, reset to 0`);
         }
       }
     }
