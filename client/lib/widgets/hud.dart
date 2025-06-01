@@ -165,3 +165,50 @@ class BandSettingsHUD extends StatelessWidget {
     );
   }
 }
+
+class HUD extends StatelessWidget {
+  final List<Player> players;
+  final double springConstant;
+  final double dampingCoeff;
+  final double mass;
+  final double restitution;
+  final ValueChanged<double> onSpringChanged;
+  final ValueChanged<double> onDampingChanged;
+  final ValueChanged<double> onMassChanged;
+  final ValueChanged<double> onRestitutionChanged;
+
+  const HUD({
+    super.key,
+    required this.players,
+    required this.springConstant,
+    required this.dampingCoeff,
+    required this.mass,
+    required this.restitution,
+    required this.onSpringChanged,
+    required this.onDampingChanged,
+    required this.onMassChanged,
+    required this.onRestitutionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        PlayerListHUD(players: players),
+        Align(
+          alignment: Alignment.topLeft,
+          child: BandSettingsHUD(
+            springConstant: springConstant,
+            dampingCoeff: dampingCoeff,
+            mass: mass,
+            restitution: restitution,
+            onSpringChanged: onSpringChanged,
+            onDampingChanged: onDampingChanged,
+            onMassChanged: onMassChanged,
+            onRestitutionChanged: onRestitutionChanged,
+          ),
+        ),
+      ],
+    );
+  }
+}
