@@ -68,6 +68,10 @@ class GameState {
         fixedIndices: [0, BAND_SEGMENTS_PER_SIDE - 1], // ends fixed to posts
       });
     }
+
+    // After initializing balls and bands, add:
+    console.log('Initial ball positions:', Object.values(this.balls));
+    console.log('Initial band segment positions:', this.bands.map(b => b.segments.map(s => [s.x, s.y])));
   }
 
   getPlayerBySocket(ws) {
@@ -370,6 +374,15 @@ class GameState {
           }
         }
       }
+    }
+
+    // In updateBands, after updating positions, add:
+    for (const ball of Object.values(this.balls)) {
+      console.log(`[TICK] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)})`);
+    }
+    for (let b = 0; b < this.bands.length; b++) {
+      const seg = this.bands[b].segments[0];
+      console.log(`[TICK] Band ${b} seg0 at (${seg.x.toFixed(1)},${seg.y.toFixed(1)})`);
     }
   }
 
