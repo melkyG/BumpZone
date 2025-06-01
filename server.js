@@ -40,8 +40,8 @@ function encodeArenaState(balls, bands, posts) {
   for (const band of bands) bandSegmentsTotal += band.segments.length;
 
   // Calculate total buffer size
-  const ballBytes = 4 + ballCount * (idLen + 4 * 4); // <-- FIXED
-  const bandBytes = 4 + bands.reduce((sum, band) => sum + 4 + band.segments.length * 8, 0);
+  const ballBytes = 4 + ballCount * (idLen + 4 * 4); // 4 bytes for count, idLen for id, 4 floats (x, y, vx, vy)
+  const bandBytes = 4 + bands.reduce((sum, band) => sum + 4 + band.segments.length * 8, 0); // 4 bytes for count, 4 for segCount, 8 per segment
   const postBytes = 4 + postCount * 8;
   const totalBytes = ballBytes + bandBytes + postBytes;
 
