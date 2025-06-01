@@ -16,6 +16,7 @@ const POST_RADIUS = 22; // for collision, slightly larger than ball
 
 class GameState {
   constructor() {
+    console.log('[DEBUG] GameState constructor called');
     this.players = [];
     // Balls keyed by playerId: { [playerId]: { x, y, vx, vy } }
     this.balls = {};
@@ -121,11 +122,13 @@ class GameState {
       vx: 0,
       vy: 0
     };
+    console.log('[DEBUG] Ball added:', this.balls[playerId]);
 
     return { success: true, playerId };
   }
 
   removePlayer(ws) {
+    console.log('[DEBUG] removePlayer called for ws:', ws && ws.readyState);
     const player = this.getPlayerBySocket(ws);
     if (player) {
       delete this.balls[player.playerId];
@@ -133,8 +136,7 @@ class GameState {
     this.players = this.players.filter(player => player.ws !== ws);
   }
   getBalls() {
-    // Return an array of all balls with valid numeric properties only
-    return Object.values(this.balls).filter(ball => {
+    const balls = Object.values(this.balls).filter(ball => {
       return (
         typeof ball.x === 'number' &&
         typeof ball.y === 'number' &&
@@ -142,6 +144,8 @@ class GameState {
         typeof ball.vy === 'number'
       );
     });
+    console.log('[DEBUG] getBalls:', balls);
+    return balls;
   }
 
   getPlayers() {
@@ -315,7 +319,6 @@ class GameState {
           // Don't collide with fixed segments at both ends
           if (fixedIndices.includes(i) && fixedIndices.includes(i + 1)) continue;
           const p1 = segments[i], p2 = segments[i + 1];
-          // Find closest point on segment to ball
           const segDx = p2.x - p1.x, segDy = p2.y - p1.y;
           const segLen2 = segDx * segDx + segDy * segDy;
           if (segLen2 === 0) continue;
@@ -328,19 +331,14 @@ class GameState {
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
 
-          // Print min/max/typical values for debugging
           if (i === 0 && ball.id) {
             console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
           }
-
-          // Print if the ball is within 100 units of any band segment
           if (dist < 100) {
             console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
           }
-
           if (dist < BALL_RADIUS + 6) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
-            // Push ball out
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
             const overlap = BALL_RADIUS + 6 - dist;
@@ -391,7 +389,6 @@ class GameState {
     this.updateBalls(dt);
     this.updateBands(dt);
   }
-
   // Helper: distance between two points
   static _dist(x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
@@ -405,3 +402,4 @@ class GameState {
 }
 
 module.exports = { GameState, ARENA_SIZE };
+

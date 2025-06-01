@@ -23,6 +23,7 @@ const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
 const { GameState, ARENA_SIZE } = require('./server/game/state');
+const gameState = new GameState(); // Only one instance!
 const { encodeBalls } = require('./server/game/ballBinary');
 // Add this utility for bands and posts:
 function encodeArenaState(balls, bands, posts) {
@@ -84,7 +85,6 @@ console.log('🧠 Running on process ID:', process.pid);
 const PORT = process.env.PORT || 3002;
 const server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 const wss = new WebSocket.Server({ server });
-const gameState = new GameState();
 
 // Serve static files from bump_zone/server/public/
 app.use(express.static(path.join(__dirname, 'server', 'public')));
