@@ -45,6 +45,12 @@ ArenaState decodeArenaState(Uint8List bytes) {
     final segCount = byteData.getUint32(offset, Endian.little); offset += 4;
     final segments = <BandSegment>[];
     for (int s = 0; s < segCount; s++) {
+      // Defensive: check offset before reading
+      if (offset + 8 > byteData.lengthInBytes) {
+        // Not enough data left, fill with zeros to avoid NaN
+        segments.add(BandSegment(0, 0));
+        continue;
+      }
       final x = byteData.getFloat32(offset, Endian.little); offset += 4;
       final y = byteData.getFloat32(offset, Endian.little); offset += 4;
       segments.add(BandSegment(x, y));
@@ -56,6 +62,10 @@ ArenaState decodeArenaState(Uint8List bytes) {
   final postCount = byteData.getUint32(offset, Endian.little); offset += 4;
   final posts = <BandSegment>[];
   for (int i = 0; i < postCount; i++) {
+    if (offset + 8 > byteData.lengthInBytes) {
+      posts.add(BandSegment(0, 0));
+      continue;
+    }
     final x = byteData.getFloat32(offset, Endian.little); offset += 4;
     final y = byteData.getFloat32(offset, Endian.little); offset += 4;
     posts.add(BandSegment(x, y));
