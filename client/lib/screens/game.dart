@@ -163,21 +163,39 @@ class _GameScreenState extends State<GameScreen> {
       body: Stack(
         children: [
           Center(
-            child: Container(
-              key: _arenaKey,
-              width: displaySize,
-              height: displaySize,
-              color: Colors.white,
-              child: CustomPaint(
-                size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                painter: _ArenaPainter(
-                  balls: _balls,
-                  bands: _bands,
-                  posts: _posts,
-                  arenaLogicalSize: _arenaLogicalSize,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanStart: (details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget);
+              },
+              onPanUpdate: (details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updateSendingMovement(logicalTarget);
+              },
+              onPanEnd: (_) => _stopSendingMovement(),
+              onPanCancel: () => _stopSendingMovement(),
+              onTapDown: (details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget);
+              },
+              onTapUp: (_) => _stopSendingMovement(),
+              child: Container(
+                key: _arenaKey,
+                width: displaySize,
+                height: displaySize,
+                color: Colors.white,
+                child: CustomPaint(
+                  size: Size(_arenaLogicalSize, _arenaLogicalSize),
+                  painter: _ArenaPainter(
+                    balls: _balls,
+                    bands: _bands,
+                    posts: _posts,
+                    arenaLogicalSize: _arenaLogicalSize,
+                  ),
+                  isComplex: false,
+                  willChange: false,
                 ),
-                isComplex: false,
-                willChange: false,
               ),
             ),
           ),
@@ -199,36 +217,6 @@ class _GameScreenState extends State<GameScreen> {
               color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
-              ),
-            ),
-          if (ready)
-            GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onPanStart: (DragStartDetails details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _startSendingMovement(logicalTarget);
-              },
-              onPanUpdate: (DragUpdateDetails details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _updateSendingMovement(logicalTarget);
-              },
-              onPanEnd: (DragEndDetails details) {
-                _stopSendingMovement();
-              },
-              onPanCancel: () {
-                _stopSendingMovement();
-              },
-              onTapDown: (TapDownDetails details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _startSendingMovement(logicalTarget);
-              },
-              onTapUp: (TapUpDetails details) {
-                _stopSendingMovement();
-              },
-              child: Container(
-                color: Colors.transparent,
-                width: double.infinity,
-                height: double.infinity,
               ),
             ),
         ],

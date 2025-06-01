@@ -69,7 +69,7 @@ class PlayerListHUD extends StatelessWidget {
   }
 }
 
-class BandSettingsHUD extends StatelessWidget {
+class BandSettingsHUD extends StatefulWidget {
   final double springConstant;
   final double dampingCoeff;
   final double mass;
@@ -92,48 +92,75 @@ class BandSettingsHUD extends StatelessWidget {
   });
 
   @override
+  State<BandSettingsHUD> createState() => _BandSettingsHUDState();
+}
+
+class _BandSettingsHUDState extends State<BandSettingsHUD> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      width: 350,
-      padding: const EdgeInsets.all(12),
-      color: Colors.white.withOpacity(0.85),
+      width: 220,
+      margin: const EdgeInsets.only(top: 12, left: 12),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Band Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          const SizedBox(height: 12),
-          _buildSlider(
-            label: 'Spring Constant',
-            value: springConstant,
-            min: 1.0,
-            max: 100.0,
-            divisions: 99,
-            onChanged: onSpringChanged,
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Row(
+              children: [
+                Icon(_expanded ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+                const SizedBox(width: 4),
+                const Text('Band Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              ],
+            ),
           ),
-          _buildSlider(
-            label: 'Damping Coefficient',
-            value: dampingCoeff,
-            min: 0.01,
-            max: 5.0,
-            divisions: 100,
-            onChanged: onDampingChanged,
-          ),
-          _buildSlider(
-            label: 'Node Mass',
-            value: mass,
-            min: 0.01,
-            max: 5.0,
-            divisions: 100,
-            onChanged: onMassChanged,
-          ),
-          _buildSlider(
-            label: 'Restitution',
-            value: restitution,
-            min: 0.01,
-            max: 1.0,
-            divisions: 100,
-            onChanged: onRestitutionChanged,
-          ),
+          if (_expanded)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                _buildSlider(
+                  label: 'Spring',
+                  value: widget.springConstant,
+                  min: 1.0,
+                  max: 100.0,
+                  divisions: 99,
+                  onChanged: widget.onSpringChanged,
+                ),
+                _buildSlider(
+                  label: 'Damping',
+                  value: widget.dampingCoeff,
+                  min: 0.01,
+                  max: 5.0,
+                  divisions: 100,
+                  onChanged: widget.onDampingChanged,
+                ),
+                _buildSlider(
+                  label: 'Mass',
+                  value: widget.mass,
+                  min: 0.01,
+                  max: 5.0,
+                  divisions: 100,
+                  onChanged: widget.onMassChanged,
+                ),
+                _buildSlider(
+                  label: 'Restitution',
+                  value: widget.restitution,
+                  min: 0.01,
+                  max: 1.0,
+                  divisions: 100,
+                  onChanged: widget.onRestitutionChanged,
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -148,17 +175,21 @@ class BandSettingsHUD extends StatelessWidget {
     required ValueChanged<double> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
         children: [
-          Text('$label: ${value.toStringAsFixed(2)}', style: const TextStyle(fontSize: 15)),
-          Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: onChanged,
+          SizedBox(
+            width: 80,
+            child: Text('$label: ${value.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13)),
+          ),
+          Expanded(
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              divisions: divisions,
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),
