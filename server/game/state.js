@@ -321,7 +321,8 @@ class GameState {
           const closestX = p1.x + segDx * t;
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
-          if (dist < BALL_RADIUS + 6) { // 6 = band thickness
+          if (dist < BALL_RADIUS + 6) {
+            console.log(`Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y})`);
             // Push ball out
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
