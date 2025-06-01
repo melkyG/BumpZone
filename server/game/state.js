@@ -3,6 +3,8 @@ const ARENA_SIZE = 1000; // Logical units (e.g., pixels)
 
 const ACCELERATION = 600; // units per second^2
 
+const BALL_RADIUS = 18; // must match client
+
 class GameState {
   constructor() {
     this.players = [];
@@ -129,6 +131,40 @@ class GameState {
       ball.x += ball.vx * dt * 0.05;
       ball.y += ball.vy * dt * 0.05;
       // Optionally: handle arena boundaries here
+    }
+
+    // --- Collision handling between balls ---
+    const ballsArr = Object.values(this.balls);
+    for (let i = 0; i < ballsArr.length; i++) {
+      for (let j = i + 1; j < ballsArr.length; j++) {
+        const a = ballsArr[i];
+        const b = ballsArr[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < BALL_RADIUS * 2 && dist > 0) {
+          // Move balls apart so they just touch
+          const overlap = BALL_RADIUS * 2 - dist;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap / 2;
+          a.y -= ny * overlap / 2;
+          b.x += nx * overlap / 2;
+          b.y += ny * overlap / 2;
+
+          // Elastic collision: exchange velocity along normal
+          const dvx = b.vx - a.vx;
+          const dvy = b.vy - a.vy;
+          const vn = dvx * nx + dvy * ny;
+          if (vn < 0) { // Only if moving towards each other
+            const impulse = vn;
+            a.vx += nx * impulse;
+            a.vy += ny * impulse;
+            b.vx -= nx * impulse;
+            b.vy -= ny * impulse;
+          }
+        }
+      }
     }
   }
 }
