@@ -68,3 +68,100 @@ class PlayerListHUD extends StatelessWidget {
     );
   }
 }
+
+class BandSettingsHUD extends StatelessWidget {
+  final double springConstant;
+  final double dampingCoeff;
+  final double mass;
+  final double restitution;
+  final ValueChanged<double> onSpringChanged;
+  final ValueChanged<double> onDampingChanged;
+  final ValueChanged<double> onMassChanged;
+  final ValueChanged<double> onRestitutionChanged;
+
+  const BandSettingsHUD({
+    super.key,
+    required this.springConstant,
+    required this.dampingCoeff,
+    required this.mass,
+    required this.restitution,
+    required this.onSpringChanged,
+    required this.onDampingChanged,
+    required this.onMassChanged,
+    required this.onRestitutionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 350,
+      padding: const EdgeInsets.all(12),
+      color: Colors.white.withOpacity(0.85),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Band Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 12),
+          _buildSlider(
+            label: 'Spring Constant',
+            value: springConstant,
+            min: 1.0,
+            max: 100.0,
+            divisions: 99,
+            onChanged: onSpringChanged,
+          ),
+          _buildSlider(
+            label: 'Damping Coefficient',
+            value: dampingCoeff,
+            min: 0.01,
+            max: 5.0,
+            divisions: 100,
+            onChanged: onDampingChanged,
+          ),
+          _buildSlider(
+            label: 'Node Mass',
+            value: mass,
+            min: 0.01,
+            max: 5.0,
+            divisions: 100,
+            onChanged: onMassChanged,
+          ),
+          _buildSlider(
+            label: 'Restitution',
+            value: restitution,
+            min: 0.01,
+            max: 1.0,
+            divisions: 100,
+            onChanged: onRestitutionChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSlider({
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ${value.toStringAsFixed(2)}', style: const TextStyle(fontSize: 15)),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}

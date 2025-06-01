@@ -403,11 +403,11 @@ class GameState {
           // if (dist < 100) {
           //   // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
           // }
-          if (dist < BALL_RADIUS + 6) {
+          if (dist < BALL_RADIUS + 10) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
-            const overlap = BALL_RADIUS + 6 - dist;
+            const overlap = BALL_RADIUS + 10 - dist;
             ball.x += nx * overlap * 0.7;
             ball.y += ny * overlap * 0.7;
             if (!fixedIndices.includes(i)) {

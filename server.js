@@ -6,7 +6,11 @@ function gameLoop() {
   const now = Date.now();
   const dt = (now - lastTick) / 50;
   lastTick = now;
-  gameState.update(dt); // <-- Use this if it calls both balls and bands
+  // Substep physics for better collision detection
+  const substeps = 4;
+  for (let i = 0; i < substeps; i++) {
+    gameState.update(dt / substeps);
+  }
   // --- Send balls, bands, and posts as binary ---
   const balls = gameState.getBalls();
   const bands = gameState.bands;
