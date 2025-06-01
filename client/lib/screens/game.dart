@@ -258,6 +258,7 @@ class _ArenaPainter extends CustomPainter {
       ..strokeWidth = 8;
     for (final band in bands) {
       if (band.segments.isNotEmpty) {
+        print('[DEBUG] Band segment coordinates: ${band.segments.map((s) => '(${s.x},${s.y})').join(', ')}');
         final first = band.segments[0];
         print('[DEBUG] Band first segment: (${first.x}, ${first.y})');
         final path = Path();
