@@ -6,7 +6,7 @@ function gameLoop() {
   const now = Date.now();
   const dt = (now - lastTick) / 50;
   lastTick = now;
-  gameState.updateBalls(dt);
+  gameState.update(dt); // <-- Use this if it calls both balls and bands
   // --- Send balls, bands, and posts as binary ---
   const balls = gameState.getBalls();
   const bands = gameState.bands;
@@ -152,22 +152,21 @@ wss.on('connection', (ws) => {
     }
   });
 
-// Set up ping interval for all clients
-const interval = setInterval(() => {
-  wss.clients.forEach((ws) => {
-    if (ws.isAlive === false) {
-      console.log('Terminating unresponsive client');
-      return ws.terminate();
-    }
-    ws.isAlive = false;
-    ws.ping();
+  // Set up ping interval for all clients
+  const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+      if (ws.isAlive === false) {
+        console.log('Terminating unresponsive client');
+        return ws.terminate();
+      }
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000); // 30 seconds
+
+  wss.on('close', function close() {
+    clearInterval(interval);
   });
-}, 30000); // 30 seconds
-
-wss.on('close', function close() {
-  clearInterval(interval);
-});
-
 
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
