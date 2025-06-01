@@ -229,6 +229,7 @@ class GameState {
 
   // Add this method to update band physics
   updateBands(dt) {
+    console.log('[DEBUG] updateBands called, balls:', Object.keys(this.balls));
     for (const band of this.bands) {
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
