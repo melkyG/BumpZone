@@ -29,6 +29,12 @@ class _GameScreenState extends State<GameScreen> {
   List<BandSegment> _posts = [];
   double _arenaLogicalSize = 1000.0;
 
+  // Band settings state (add these fields)
+  double _springConstant = 10.0;
+  double _dampingCoeff = 1.0;
+  double _mass = 1.0;
+  double _restitution = 0.85;
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -176,6 +182,17 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
           PlayerListHUD(players: _players),
+          HUD(
+            players: _players,
+            springConstant: _springConstant,
+            dampingCoeff: _dampingCoeff,
+            mass: _mass,
+            restitution: _restitution,
+            onSpringChanged: (v) => setState(() => _springConstant = v),
+            onDampingChanged: (v) => setState(() => _dampingCoeff = v),
+            onMassChanged: (v) => setState(() => _mass = v),
+            onRestitutionChanged: (v) => setState(() => _restitution = v),
+          ),
           if (!ready)
             // Show a loading overlay until playerId is set
             Container(
