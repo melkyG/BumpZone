@@ -47,14 +47,10 @@ class GameState {
       const restLength = (sideLength / (BAND_SEGMENTS_PER_SIDE - 1)) * BAND_REST_LENGTH_SCALE;
       for (let j = 0; j < BAND_SEGMENTS_PER_SIDE; j++) {
         const t = j / (BAND_SEGMENTS_PER_SIDE - 1);
-        // Initial position with slight offset for "wiggle"
+        // Initial position: evenly spaced between start and end, NO wiggle
         let x = start.x + (end.x - start.x) * t;
         let y = start.y + (end.y - start.y) * t;
-        if (j > 0 && j < BAND_SEGMENTS_PER_SIDE - 1) {
-          // Offset for visual effect (optional)
-          x += 15.0 * Math.sin(j * Math.PI / (BAND_SEGMENTS_PER_SIDE - 1));
-          y += 15.0 * Math.cos(j * Math.PI / (BAND_SEGMENTS_PER_SIDE - 1));
-        }
+        // (No wiggle offset)
         segments.push({ x, y });
         velocities.push({ x: 0, y: 0 });
       }
