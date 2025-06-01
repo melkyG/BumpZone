@@ -416,5 +416,12 @@ class GameState {
   }
 }
 
+// Helper function for safe normalization
+function safeNormalize(dx, dy) {
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (!isFinite(len) || len < 1e-6) return { x: 0, y: 0 };
+  return { x: dx / len, y: dy / len };
+}
+
 module.exports = { GameState, ARENA_SIZE };
 
