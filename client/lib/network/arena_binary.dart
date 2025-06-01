@@ -41,10 +41,10 @@ ArenaState decodeArenaState(Uint8List bytes) {
   // Bands
   final bandCount = byteData.getUint32(offset, Endian.little); offset += 4;
   final bands = <Band>[];
-  for (int i = 0; i < bandCount; i++) {
+  for (int b = 0; b < bandCount; b++) {
     final segCount = byteData.getUint32(offset, Endian.little); offset += 4;
     final segments = <BandSegment>[];
-    for (int j = 0; j < segCount; j++) {
+    for (int s = 0; s < segCount; s++) {
       final x = byteData.getFloat32(offset, Endian.little); offset += 4;
       final y = byteData.getFloat32(offset, Endian.little); offset += 4;
       segments.add(BandSegment(x, y));
