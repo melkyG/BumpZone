@@ -233,9 +233,14 @@ class GameState {
 
   // Add this method to update band physics
   updateBands(dt) {
-    for (const band of this.bands) {
+    for (const bandIdx in this.bands) {
+      const band = this.bands[bandIdx];
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
+      // Print all segment coordinates before any update
+      for (let i = 0; i < numPts; i++) {
+        console.log(`[PRE] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
+      }
       // Compute Hooke's law forces for each segment
       const forces = Array.from({ length: numPts }, () => ({ x: 0, y: 0 }));
       for (let i = 0; i < numPts; i++) {
@@ -244,16 +249,15 @@ class GameState {
         if (i > 0) {
           const prev = segments[i - 1];
           const curr = segments[i];
-          // Defensive: check for valid numbers before math
           if (!isFinite(prev.x) || !isFinite(prev.y) || !isFinite(curr.x) || !isFinite(curr.y)) {
-            console.error(`[DEBUG] [prev] segment NaN at band ${i}: prev=(${prev.x},${prev.y}), curr=(${curr.x},${curr.y})`);
+            console.error(`[DEBUG] [prev] segment NaN at band ${bandIdx} seg ${i}: prev=(${prev.x},${prev.y}), curr=(${curr.x},${curr.y})`);
             continue;
           }
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (!isFinite(dist) || dist === Infinity) {
-            console.error(`[DEBUG] [prev] dist not finite at band ${i}: dist=${dist}`);
+            console.error(`[DEBUG] [prev] dist not finite at band ${bandIdx} seg ${i}: dist=${dist}`);
             continue;
           }
           if (dist > 1e-6) {
@@ -261,7 +265,7 @@ class GameState {
             const normX = dx / dist;
             const normY = dy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
-              console.error(`[DEBUG] [prev] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+              console.error(`[DEBUG] [prev] normX/normY not finite at band ${bandIdx} seg ${i}: normX=${normX}, normY=${normY}`);
               continue;
             }
             forces[i].x += normX * forceMag;
@@ -273,14 +277,14 @@ class GameState {
           const next = segments[i + 1];
           const curr = segments[i];
           if (!isFinite(next.x) || !isFinite(next.y) || !isFinite(curr.x) || !isFinite(curr.y)) {
-            console.error(`[DEBUG] [next] segment NaN at band ${i}: next=(${next.x},${next.y}), curr=(${curr.x},${curr.y})`);
+            console.error(`[DEBUG] [next] segment NaN at band ${bandIdx} seg ${i}: next=(${next.x},${next.y}), curr=(${curr.x},${curr.y})`);
             continue;
           }
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (!isFinite(dist) || dist === Infinity) {
-            console.error(`[DEBUG] [next] dist not finite at band ${i}: dist=${dist}`);
+            console.error(`[DEBUG] [next] dist not finite at band ${bandIdx} seg ${i}: dist=${dist}`);
             continue;
           }
           if (dist > 1e-6) {
@@ -288,7 +292,7 @@ class GameState {
             const normX = dx / dist;
             const normY = dy / dist;
             if (!isFinite(normX) || !isFinite(normY)) {
-              console.error(`[DEBUG] [next] normX/normY not finite at band ${i}: normX=${normX}, normY=${normY}`);
+              console.error(`[DEBUG] [next] normX/normY not finite at band ${bandIdx} seg ${i}: normX=${normX}, normY=${normY}`);
               continue;
             }
             forces[i].x += normX * forceMag;
@@ -306,26 +310,25 @@ class GameState {
         const fx = forces[i].x + dampingForceX;
         const fy = forces[i].y + dampingForceY;
         if (!isFinite(fx) || !isFinite(fy)) {
-          console.error(`[DEBUG] fx/fy not finite at band ${i}: fx=${fx}, fy=${fy}`);
+          console.error(`[DEBUG] fx/fy not finite at band ${bandIdx} seg ${i}: fx=${fx}, fy=${fy}`);
           continue;
         }
-        // Defensive: skip if any math is not finite
         if (!isFinite(mass) || mass === 0) {
-          console.error(`[DEBUG] mass not finite or zero at band ${i}: mass=${mass}`);
+          console.error(`[DEBUG] mass not finite or zero at band ${bandIdx} seg ${i}: mass=${mass}`);
           continue;
         }
         // Acceleration
         const ax = fx / mass;
         const ay = fy / mass;
         if (!isFinite(ax) || !isFinite(ay)) {
-          console.error(`[DEBUG] ax/ay not finite at band ${i}: ax=${ax}, ay=${ay}`);
+          console.error(`[DEBUG] ax/ay not finite at band ${bandIdx} seg ${i}: ax=${ax}, ay=${ay}`);
           continue;
         }
         // Update velocity
         velocities[i].x += ax * dt * 0.05;
         velocities[i].y += ay * dt * 0.05;
         if (!isFinite(velocities[i].x) || !isFinite(velocities[i].y)) {
-          console.error(`[DEBUG] velocity not finite at band ${i}: vx=${velocities[i].x}, vy=${velocities[i].y}`);
+          console.error(`[DEBUG] velocity not finite at band ${bandIdx} seg ${i}: vx=${velocities[i].x}, vy=${velocities[i].y}`);
           velocities[i].x = 0;
           velocities[i].y = 0;
         }
@@ -337,6 +340,10 @@ class GameState {
           segments[i].x = 0;
           segments[i].y = 0;
         }
+      }
+      // Print all segment coordinates after update
+      for (let i = 0; i < numPts; i++) {
+        console.log(`[POST] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
       }
     }
 
