@@ -314,6 +314,7 @@ class GameState {
           const segDx = p2.x - p1.x, segDy = p2.y - p1.y;
           const segLen2 = segDx * segDx + segDy * segDy;
           if (segLen2 === 0) continue;
+          // Use the ball's position after movement (current tick)
           const t = GameState._clamp(
             ((ball.x - p1.x) * segDx + (ball.y - p1.y) * segDy) / segLen2,
             0, 1
@@ -321,15 +322,19 @@ class GameState {
           const closestX = p1.x + segDx * t;
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
+          // DEBUG: print when close to a band even if not colliding
+          if (dist < BALL_RADIUS + 20) {
+            // Uncomment for debugging proximity
+            // console.log(`Ball near band: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
+          }
           if (dist < BALL_RADIUS + 6) {
-            console.log(`Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y})`);
+            console.log(`Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             // Push ball out
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
             const overlap = BALL_RADIUS + 6 - dist;
             ball.x += nx * overlap * 0.7;
             ball.y += ny * overlap * 0.7;
-            // Band segment also moves (unless fixed)
             if (!fixedIndices.includes(i)) {
               segments[i].x -= nx * overlap * 0.15;
               segments[i].y -= ny * overlap * 0.15;
@@ -338,8 +343,6 @@ class GameState {
               segments[i + 1].x -= nx * overlap * 0.15;
               segments[i + 1].y -= ny * overlap * 0.15;
             }
-            // Exchange velocity (elastic collision)
-            // Average band segment velocity
             const bandVx = (velocities[i].x + velocities[i + 1].x) / 2;
             const bandVy = (velocities[i].y + velocities[i + 1].y) / 2;
             const relVx = ball.vx - bandVx;
