@@ -233,7 +233,6 @@ class GameState {
 
   // Add this method to update band physics
   updateBands(dt) {
-    // console.log('[DEBUG] updateBands called, balls:', Object.keys(this.balls));
     for (const band of this.bands) {
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
@@ -248,7 +247,8 @@ class GameState {
           const dx = prev.x - curr.x;
           const dy = prev.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist !== 0 && isFinite(dist)) {
+          // Defensive: avoid division by zero and infinities
+          if (dist > 1e-6 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
             forces[i].x += (dx / dist) * forceMag;
             forces[i].y += (dy / dist) * forceMag;
@@ -261,7 +261,8 @@ class GameState {
           const dx = next.x - curr.x;
           const dy = next.y - curr.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist !== 0 && isFinite(dist)) {
+          // Defensive: avoid division by zero and infinities
+          if (dist > 1e-6 && isFinite(dist)) {
             const forceMag = springConstant * (dist - restLength);
             forces[i].x += (dx / dist) * forceMag;
             forces[i].y += (dy / dist) * forceMag;
