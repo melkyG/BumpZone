@@ -286,6 +286,13 @@ class GameState {
         // Update position
         segments[i].x += velocities[i].x * dt * 0.05;
         segments[i].y += velocities[i].y * dt * 0.05;
+
+        // NaN check
+        if (!isFinite(segments[i].x) || !isFinite(segments[i].y)) {
+          segments[i].x = 0;
+          segments[i].y = 0;
+          console.error(`[ERROR] Band segment ${i} became NaN, reset to 0`);
+        }
       }
     }
 
