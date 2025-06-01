@@ -237,9 +237,12 @@ class GameState {
       const band = this.bands[bandIdx];
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
-      // Print all segment coordinates before any update
-      for (let i = 0; i < numPts; i++) {
-        console.log(`[PRE] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
+      // Print only the first tick for each band
+      if (!band._printedOnce) {
+        for (let i = 0; i < numPts; i++) {
+          console.log(`[PRE] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
+        }
+        band._printedOnce = true;
       }
       // Compute Hooke's law forces for each segment
       const forces = Array.from({ length: numPts }, () => ({ x: 0, y: 0 }));
@@ -341,9 +344,12 @@ class GameState {
           segments[i].y = 0;
         }
       }
-      // Print all segment coordinates after update
-      for (let i = 0; i < numPts; i++) {
-        console.log(`[POST] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
+      // After update, print only the first tick for each band
+      if (band._printedOnce === true) {
+        for (let i = 0; i < numPts; i++) {
+          console.log(`[POST] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
+        }
+        band._printedOnce = "done";
       }
     }
 
