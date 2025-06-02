@@ -131,6 +131,14 @@ class _GameScreenState extends State<GameScreen> {
         _startSendingMovement(_lastPointerLogical!);
       }
     };
+    widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution) {
+      setState(() {
+        _springConstant = spring;
+        _dampingCoeff = damping;
+        _mass = mass;
+        _restitution = restitution;
+      });
+    };
     widget.webSocketService.requestPlayerList();
   }
 
@@ -162,39 +170,51 @@ class _GameScreenState extends State<GameScreen> {
       backgroundColor: const Color.fromARGB(255, 148, 148, 148),
       body: Stack(
         children: [
-          Center(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanStart: (details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _startSendingMovement(logicalTarget);
-              },
-              onPanUpdate: (details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _updateSendingMovement(logicalTarget);
-              },
-              onPanEnd: (_) => _stopSendingMovement(),
-              onPanCancel: () => _stopSendingMovement(),
-              onTapDown: (details) {
-                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _startSendingMovement(logicalTarget);
-              },
-              onTapUp: (_) => _stopSendingMovement(),
-              child: Container(
-                key: _arenaKey,
-                width: displaySize,
-                height: displaySize,
-                color: Colors.white,
-                child: CustomPaint(
-                  size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                  painter: _ArenaPainter(
-                    balls: _balls,
-                    bands: _bands,
-                    posts: _posts,
-                    arenaLogicalSize: _arenaLogicalSize,
+          // Allow clicking anywhere (including outside arena)
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (DragStartDetails details) {
+              final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+              _startSendingMovement(logicalTarget);
+            },
+            onPanUpdate: (DragUpdateDetails details) {
+              final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+              _updateSendingMovement(logicalTarget);
+            },
+            onPanEnd: (DragEndDetails details) {
+              _stopSendingMovement();
+            },
+            onPanCancel: () {
+              _stopSendingMovement();
+            },
+            onTapDown: (TapDownDetails details) {
+              final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+              _startSendingMovement(logicalTarget);
+            },
+            onTapUp: (TapUpDetails details) {
+              _stopSendingMovement();
+            },
+            child: Container(
+              color: Colors.transparent,
+              width: double.infinity,
+              height: double.infinity,
+              child: Center(
+                child: Container(
+                  key: _arenaKey,
+                  width: displaySize,
+                  height: displaySize,
+                  color: Colors.white,
+                  child: CustomPaint(
+                    size: Size(_arenaLogicalSize, _arenaLogicalSize),
+                    painter: _ArenaPainter(
+                      balls: _balls,
+                      bands: _bands,
+                      posts: _posts,
+                      arenaLogicalSize: _arenaLogicalSize,
+                    ),
+                    isComplex: false,
+                    willChange: false,
                   ),
-                  isComplex: false,
-                  willChange: false,
                 ),
               ),
             ),
@@ -206,10 +226,42 @@ class _GameScreenState extends State<GameScreen> {
             dampingCoeff: _dampingCoeff,
             mass: _mass,
             restitution: _restitution,
-            onSpringChanged: (v) => setState(() => _springConstant = v),
-            onDampingChanged: (v) => setState(() => _dampingCoeff = v),
-            onMassChanged: (v) => setState(() => _mass = v),
-            onRestitutionChanged: (v) => setState(() => _restitution = v),
+            onSpringChanged: (v) {
+              setState(() => _springConstant = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: v,
+                dampingCoeff: _dampingCoeff,
+                mass: _mass,
+                restitution: _restitution,
+              );
+            },
+            onDampingChanged: (v) {
+              setState(() => _dampingCoeff = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: _springConstant,
+                dampingCoeff: v,
+                mass: _mass,
+                restitution: _restitution,
+              );
+            },
+            onMassChanged: (v) {
+              setState(() => _mass = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: _springConstant,
+                dampingCoeff: _dampingCoeff,
+                mass: v,
+                restitution: _restitution,
+              );
+            },
+            onRestitutionChanged: (v) {
+              setState(() => _restitution = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: _springConstant,
+                dampingCoeff: _dampingCoeff,
+                mass: _mass,
+                restitution: v,
+              );
+            },
           ),
           if (!ready)
             // Show a loading overlay until playerId is set

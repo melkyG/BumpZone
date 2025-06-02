@@ -149,6 +149,30 @@ wss.on('connection', (ws) => {
         if (player && data.direction) {
           gameState.handleMove(player.playerId, data.direction.dx, data.direction.dy);
         }
+      } else if (data.type === 'setBandSettings') {
+        // Update band settings for all bands
+        if (typeof data.springConstant === 'number') gameState.bands.forEach(b => b.springConstant = data.springConstant);
+        if (typeof data.dampingCoeff === 'number') gameState.bands.forEach(b => b.dampingCoeff = data.dampingCoeff);
+        if (typeof data.mass === 'number') gameState.bands.forEach(b => b.mass = data.mass);
+        if (typeof data.restitution === 'number') gameState.bands.forEach(b => b.coefficientOfRestitution = data.restitution);
+        console.log('[SERVER] Band settings updated:', {
+          springConstant: data.springConstant,
+          dampingCoeff: data.dampingCoeff,
+          mass: data.mass,
+          restitution: data.restitution,
+        });
+        // Broadcast new settings to all clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'bandSettings',
+              springConstant: data.springConstant,
+              dampingCoeff: data.dampingCoeff,
+              mass: data.mass,
+              restitution: data.restitution,
+            }));
+          }
+        });
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);

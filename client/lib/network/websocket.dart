@@ -20,6 +20,7 @@ class WebSocketService {
   void Function(String playerId)? onWelcome;
   String? playerId; // <-- Add this
   Function(ArenaState)? onArenaUpdate; // <-- Add this callback
+  void Function(double spring, double damping, double mass, double restitution)? onBandSettingsUpdate;
 
   WebSocketService(this.url);
 
@@ -84,7 +85,6 @@ class WebSocketService {
       print('Unexpected message format.');
       return;
     }
-
     final type = data['type'];
     if (type == 'balls' && data['balls'] is List) {
       final balls = (data['balls'] as List)
@@ -124,6 +124,17 @@ class WebSocketService {
         print('Server error: $msg');
         onError?.call(msg);
         break;
+      case 'bandSettings':
+        // Update local band settings state if callback provided
+        if (onBandSettingsUpdate != null) {
+          onBandSettingsUpdate!(
+            (data['springConstant'] as num?)?.toDouble() ?? 10.0,
+            (data['dampingCoeff'] as num?)?.toDouble() ?? 1.0,
+            (data['mass'] as num?)?.toDouble() ?? 1.0,
+            (data['restitution'] as num?)?.toDouble() ?? 0.85,
+          );
+        }
+        break;
 
       default:
         print("Unhandled message type: $type");
@@ -141,6 +152,21 @@ class WebSocketService {
 
   void requestPlayerList() {
     _send({'type': 'getPlayers'});
+  }
+
+  void sendBandSettings({
+    required double springConstant,
+    required double dampingCoeff,
+    required double mass,
+    required double restitution,
+  }) {
+    _send({
+      'type': 'setBandSettings',
+      'springConstant': springConstant,
+      'dampingCoeff': dampingCoeff,
+      'mass': mass,
+      'restitution': restitution,
+    });
   }
 
   void _send(Map<String, dynamic> message) {
