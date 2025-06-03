@@ -498,8 +498,17 @@ class _ArenaPainter extends CustomPainter {
     const double logicalRadius = 18;
     // Draw balls with player color if available
     for (final ball in balls) {
+      Color drawColor = Colors.blue;
+      // Prefer ball.color if present, else fallback to playerColors
+      if (ball.color != null && ball.color is String && ball.color!.length == 9 && ball.color!.startsWith('#')) {
+        try {
+          drawColor = Color(int.parse(ball.color!.substring(1), radix: 16));
+        } catch (_) {}
+      } else if (playerColors[ball.id] != null) {
+        drawColor = playerColors[ball.id]!;
+      }
       final Paint ballPaint = Paint()
-        ..color = playerColors[ball.id] ?? Colors.blue
+        ..color = drawColor
         ..style = PaintingStyle.fill;
       canvas.drawCircle(
         Offset(ball.x * scale, ball.y * scale),

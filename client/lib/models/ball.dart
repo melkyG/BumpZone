@@ -1,10 +1,11 @@
 // Ball model for multiplayer game
 class Ball {
   final String id;
-  double x;
-  double y;
-  double vx;
-  double vy;
+  final double x;
+  final double y;
+  final double vx;
+  final double vy;
+  final String? color; // Add this field
 
   Ball({
     required this.id,
@@ -12,6 +13,7 @@ class Ball {
     required this.y,
     required this.vx,
     required this.vy,
+    this.color,
   });
 
   factory Ball.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class Ball {
       y: (json['y'] as num).toDouble(),
       vx: (json['vx'] as num).toDouble(),
       vy: (json['vy'] as num).toDouble(),
+      color: json['color'] as String?, // Accept color if present
     );
   }
 
