@@ -96,6 +96,9 @@ class WebSocketService {
     //   print('[DEBUG] bandSettings payload: $data');
     // }
 
+    // Add this debug print to always log incoming message types and payloads
+    print('[CLIENT] Received message type: $type, payload: $data');
+
     if (type == 'balls' && data['balls'] is List) {
       final balls = (data['balls'] as List)
           .map((b) => Ball.fromJson(b))
@@ -135,14 +138,10 @@ class WebSocketService {
         onError?.call(msg);
         break;
       case 'bandSettings':
-        // Step 4: Print each value individually
-        // print('[DEBUG] bandSettings springConstant: ${data['springConstant']}');
-        // print('[DEBUG] bandSettings dampingCoeff: ${data['dampingCoeff']}');
-        // print('[DEBUG] bandSettings mass: ${data['mass']}');
-        // print('[DEBUG] bandSettings restitution: ${data['restitution']}');
+        // Add this debug print to confirm this branch is reached
+        print('[CLIENT] Handling bandSettings: $data');
         if (onBandSettingsUpdate != null) {
           double parseNum(dynamic v, double fallback) {
-            // print('[DEBUG] parseNum input: $v'); // Commented out
             if (v is num) return v.toDouble();
             if (v is String) return double.tryParse(v) ?? fallback;
             return fallback;
@@ -151,7 +150,7 @@ class WebSocketService {
           final damping = parseNum(data['dampingCoeff'], 1.0);
           final mass = parseNum(data['mass'], 1.0);
           final restitution = parseNum(data['restitution'], 0.85);
-          // print('[DEBUG] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution'); // Commented out
+          print('[CLIENT] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution');
           onBandSettingsUpdate!(
             spring,
             damping,
