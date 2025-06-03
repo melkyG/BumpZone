@@ -101,19 +101,19 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
   @override
   void initState() {
     super.initState();
-    _expanded = false; // Hidden by default
+    _expanded = false;
   }
 
   @override
   void didUpdateWidget(covariant BandSettingsHUD oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If the server sends new values, update the sliders to reflect them
-    // (Slider uses widget.springConstant etc. directly, so no local state needed)
-    // If you had local state for the slider values, reset them here.
+    // No local state for slider values! Always use widget.springConstant, etc.
+    // If you previously had local state for slider values, REMOVE it.
   }
 
   @override
   Widget build(BuildContext context) {
+    // Always use widget.springConstant, etc. directly from parent
     return Container(
       width: _expanded ? 350 : null,
       padding: _expanded ? const EdgeInsets.all(12) : const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -142,7 +142,7 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
               label: 'Spring Constant',
               value: widget.springConstant, // Always use prop from parent
               min: 1.0,
-              max: 300.0, // Increase max to allow for higher server values
+              max: 300.0,
               divisions: 299,
               onChanged: widget.onSpringChanged,
             ),
