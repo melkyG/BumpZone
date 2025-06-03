@@ -541,23 +541,30 @@ class _ArenaPainter extends CustomPainter {
     const double logicalRadius = 18;
     // Draw balls with player color if available
     for (final ball in balls) {
-      Color drawColor = Colors.blue;
-      // Prefer ball.color if present, else fallback to playerColors
+      Color? drawColor;
+      // Prefer ball.color if present and valid
       if (ball.color != null && ball.color is String && ball.color!.length == 9 && ball.color!.startsWith('#')) {
         try {
           drawColor = Color(int.parse(ball.color!.substring(1), radix: 16));
         } catch (_) {}
-      } else if (playerColors[ball.id] != null) {
+      }
+      // Fallback to playerColors map if not set
+      if (drawColor == null && playerColors[ball.id] != null) {
         drawColor = playerColors[ball.id]!;
       }
       // If this is my ball, always use myBallColor if set
-      try {
-        if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
-          drawColor = myBallColor!;
-        }
-      } catch (_) {
-        // Defensive: ignore errors if any
+      if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
+        drawColor = myBallColor!;
       }
+      // Defensive: If still null, use a visible fallback (e.g. magenta)
+      drawColor ??= Colors.purpleAccent;
+
+      // Print the color for debugging (never print default blue)
+      // Only print if this is my ball
+      if (myPlayerId != null && ball.id == myPlayerId) {
+        print('[DEBUG] Drawing my ball with color: 0x${drawColor.value.toRadixString(16)}');
+      }
+
       final Paint ballPaint = Paint()
         ..color = drawColor
         ..style = PaintingStyle.fill;
