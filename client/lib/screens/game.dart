@@ -1,3 +1,4 @@
+import 'dart:typed_data'; // Add this at the top with other imports
 import '../models/ball.dart';
 import 'dart:math' as math;
 import 'dart:async';
@@ -490,6 +491,24 @@ class _ArenaPainter extends CustomPainter {
     final double camY = (cameraOffset.dy.isNaN || cameraOffset.dy.isInfinite)
         ? arenaLogicalSize / 2
         : cameraOffset.dy;
+
+    // Fill the entire canvas with grey before drawing the arena
+    final Paint backgroundPaint = Paint()..color = Colors.grey[300]!;
+    // Use canvas.transform instead of setMatrix for Flutter
+    canvas.save();
+    canvas.transform(Float64List.fromList([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ]));
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      backgroundPaint,
+    );
+    canvas.restore();
+
+    // Translate after background
     canvas.translate(
       size.width / 2 - camX * scale,
       size.height / 2 - camY * scale,
@@ -569,11 +588,14 @@ class _ArenaPainter extends CustomPainter {
         final Paint ballPaint = Paint()
           ..color = drawColor
           ..style = PaintingStyle.fill;
-        canvas.drawCircle(
-          Offset(ball.x * scale, ball.y * scale),
-          logicalRadius * scale,
-          ballPaint,
-        );
+        final Paint borderPaint = Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0 * scale; // Scaled border width
+        final Offset center = Offset(ball.x * scale, ball.y * scale);
+        final double radius = logicalRadius * scale;
+        canvas.drawCircle(center, radius, ballPaint);
+        canvas.drawCircle(center, radius, borderPaint);
       }
     }
   }
