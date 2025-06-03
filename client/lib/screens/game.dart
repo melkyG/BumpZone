@@ -177,7 +177,6 @@ class _GameScreenState extends State<GameScreen> {
         : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 148, 148, 148),
       body: Stack(
         children: [
           // Allow clicking anywhere (including outside arena)
