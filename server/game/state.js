@@ -1,7 +1,7 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 1800; // Logical units (e.g., pixels)
 
-const ACCELERATION = 600; // units per second^2
+const ACCELERATION = 500; // units per second^2
 
 const BALL_RADIUS = 18; // must match client
 
@@ -26,7 +26,7 @@ class GameState {
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
-    const margin = 285;
+    const margin = 300;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
