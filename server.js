@@ -176,13 +176,33 @@ wss.on('connection', (ws) => {
         if (typeof data.dampingCoeff === 'number') gameState.bands.forEach(b => b.dampingCoeff = data.dampingCoeff);
         if (typeof data.mass === 'number') gameState.bands.forEach(b => b.mass = data.mass);
         if (typeof data.restitution === 'number') gameState.bands.forEach(b => b.coefficientOfRestitution = data.restitution);
-        if (typeof data.segmentsPerSide === 'number') gameState.bands.forEach(b => b.segmentsPerSide = data.segmentsPerSide);
-        if (typeof data.restLengthScale === 'number') gameState.bands.forEach(b => b.restLengthScale = data.restLengthScale);
+
+        // If segmentsPerSide or restLengthScale changed, rebuild bands
+        let needRebuild = false;
+        let segmentsPerSide = gameState.bands[0]?.segmentsPerSide || 35;
+        let restLengthScale = gameState.bands[0]?.restLengthScale || 1.0;
+        if (typeof data.segmentsPerSide === 'number' && data.segmentsPerSide !== segmentsPerSide) {
+          segmentsPerSide = data.segmentsPerSide;
+          needRebuild = true;
+        }
+        if (typeof data.restLengthScale === 'number' && data.restLengthScale !== restLengthScale) {
+          restLengthScale = data.restLengthScale;
+          needRebuild = true;
+        }
+        if (needRebuild) {
+          gameState.updateBandStructure(segmentsPerSide, restLengthScale);
+        } else {
+          if (typeof data.segmentsPerSide === 'number') gameState.bands.forEach(b => b.segmentsPerSide = data.segmentsPerSide);
+          if (typeof data.restLengthScale === 'number') gameState.bands.forEach(b => b.restLengthScale = data.restLengthScale);
+        }
+
         console.log('[SERVER] Band settings updated:', {
           springConstant: data.springConstant,
           dampingCoeff: data.dampingCoeff,
           mass: data.mass,
           restitution: data.restitution,
+          segmentsPerSide,
+          restLengthScale,
         });
         // Broadcast new settings to all clients
         wss.clients.forEach((client) => {
@@ -193,8 +213,8 @@ wss.on('connection', (ws) => {
               dampingCoeff: data.dampingCoeff,
               mass: data.mass,
               restitution: data.restitution,
-              segmentsPerSide: data.segmentsPerSide,
-              restLengthScale: data.restLengthScale,
+              segmentsPerSide,
+              restLengthScale,
             }));
           }
         });
