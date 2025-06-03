@@ -536,20 +536,36 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
-    // Draw balls with player color from playerColors map
+    // Draw balls with player color from playerColors map or ball.color only (no fallback)
     for (final ball in balls) {
-      Color drawColor = playerColors[ball.id] ?? Colors.purpleAccent;
+      Color? drawColor;
+      // Prefer ball.color from the balls message if present and valid
+      if (ball.color != null && ball.color is String && ball.color!.length == 9 && ball.color!.startsWith('#')) {
+        try {
+          drawColor = Color(int.parse(ball.color!.substring(1), radix: 16));
+        } catch (_) {
+          drawColor = null;
+        }
+      }
+      // If not present, use playerColors map if set
+      if (drawColor == null && playerColors[ball.id] != null) {
+        drawColor = playerColors[ball.id];
+      }
+      // If this is my ball, always use myBallColor if set
       if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
         drawColor = myBallColor!;
       }
-      final Paint ballPaint = Paint()
-        ..color = drawColor
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(
-        Offset(ball.x, ball.y),
-        10.0,
-        ballPaint,
-      );
+      // Only draw if color is set
+      if (drawColor != null) {
+        final Paint ballPaint = Paint()
+          ..color = drawColor
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(
+          Offset(ball.x, ball.y),
+          10.0,
+          ballPaint,
+        );
+      }
     }
   }
 
