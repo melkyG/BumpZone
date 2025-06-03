@@ -27,7 +27,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Player> _players = [];
   List<Band> _bands = [];
   List<BandSegment> _posts = [];
-  double _arenaLogicalSize = 1000.0;
+  double _arenaLogicalSize = 2500.0; // Match server ARENA_SIZE
 
   // Band settings state (add these fields)
   double _springConstant = 10.0;
@@ -323,7 +323,7 @@ class _ArenaPainter extends CustomPainter {
       size.height / 2 - camY * scale,
     );
 
-    // Draw arena border
+    // Draw arena border (make sure it matches the logical arena size, not the scaled widget size)
     final Paint borderPaint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.stroke
