@@ -492,14 +492,26 @@ class _ArenaPainter extends CustomPainter {
         ? arenaLogicalSize / 2
         : cameraOffset.dy;
 
-    // Fill the entire canvas with grey (fixed, not moving with camera)
+    // 1. Fill the entire canvas with grey (background, fixed to canvas)
     final Paint backgroundPaint = Paint()..color = Colors.grey[300]!;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       backgroundPaint,
     );
 
-    // Now translate for camera (all arena content moves, but background stays fixed)
+    // 2. Compute the top-left of the arena in screen coordinates
+    final double arenaLeft = size.width / 2 - camX * scale;
+    final double arenaTop = size.height / 2 - camY * scale;
+    final double arenaSizePx = arenaLogicalSize * scale;
+
+    // 3. Draw the arena background (white) at the correct translated position
+    final Paint arenaBgPaint = Paint()..color = Colors.white;
+    canvas.drawRect(
+      Rect.fromLTWH(arenaLeft, arenaTop, arenaSizePx, arenaSizePx),
+      arenaBgPaint,
+    );
+
+    // 4. Now translate for camera and draw all arena content
     canvas.save();
     canvas.translate(
       size.width / 2 - camX * scale,
