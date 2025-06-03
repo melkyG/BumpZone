@@ -532,17 +532,15 @@ class _ArenaPainter extends CustomPainter {
       );
     }
 
-    final Paint ballPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
     // Draw balls with player color from playerColors map or ball.color only (no fallback)
     for (final ball in balls) {
       Color? drawColor;
-      // Prefer ball.color from the balls message if present and valid
-      if (ball.color != null && ball.color is String && ball.color!.length == 9 && ball.color!.startsWith('#')) {
+      // Try to parse ball.color if present and valid
+      final String? colorStr = ball.color is String ? ball.color as String : null;
+      if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
         try {
-          drawColor = Color(int.parse(ball.color!.substring(1), radix: 16));
+          drawColor = Color(int.parse(colorStr.substring(1), radix: 16));
         } catch (_) {
           drawColor = null;
         }
@@ -561,8 +559,8 @@ class _ArenaPainter extends CustomPainter {
           ..color = drawColor
           ..style = PaintingStyle.fill;
         canvas.drawCircle(
-          Offset(ball.x, ball.y),
-          10.0,
+          Offset(ball.x * scale, ball.y * scale),
+          logicalRadius * scale,
           ballPaint,
         );
       }
