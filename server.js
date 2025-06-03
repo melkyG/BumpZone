@@ -97,6 +97,18 @@ app.use(express.static(path.join(__dirname, 'server', 'public')));
 wss.on('connection', (ws) => {
   // Send arena size to the client on connect
   ws.send(JSON.stringify({ type: 'arenaInfo', size: ARENA_SIZE }));
+
+  // Send current band settings to the client on connect
+  if (gameState.bands.length > 0) {
+    const b = gameState.bands[0];
+    ws.send(JSON.stringify({
+      type: 'bandSettings',
+      springConstant: b.springConstant,
+      dampingCoeff: b.dampingCoeff,
+      mass: b.mass,
+      restitution: b.coefficientOfRestitution,
+    }));
+  }
   console.log('🔗 New WebSocket connection established');
 
   // --- Ping/Pong keep-alive mechanism ---

@@ -62,7 +62,7 @@ class GameState {
         mass: BAND_MASS,
         restLength,
         coefficientOfRestitution: BAND_COEFFICIENT_OF_RESTITUTION,
-        fixedIndices: [0, BAND_SEGMENTS_PER_SIDE - 1], // ends fixed to posts
+        fixedIndices: [0, BAND_SEGMENTS_PER_SIDE - 1],
       });
     }
 
