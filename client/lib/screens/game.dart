@@ -147,6 +147,7 @@ class _GameScreenState extends State<GameScreen> {
         _startSendingMovement(_lastPointerLogical!);
       }
       // Request band settings after join
+      print('[GAME] Sending getBandSettings after join'); // <-- Add this debug print
       widget.webSocketService.sendRaw({'type': 'getBandSettings'});
     };
     widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution) {
