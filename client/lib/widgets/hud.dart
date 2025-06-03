@@ -26,7 +26,7 @@ class PlayerListHUD extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
-                      ..strokeWidth = 2.5
+                      ..strokeWidth = 2.2
                       ..color = Colors.black,
                   ),
                 ),
@@ -57,7 +57,7 @@ class PlayerListHUD extends StatelessWidget {
                   for (final player in players)
                     Text(
                       player.username,
-                      style: const TextStyle(color: Color.fromARGB(255, 243, 243, 243), fontSize: 13, fontWeight: FontWeight.w300,),
+                      style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 13, fontWeight: FontWeight.w100,),
                     ),
                 ],
               ),
