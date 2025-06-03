@@ -177,10 +177,15 @@ wss.on('connection', (ws) => {
         if (typeof data.mass === 'number') gameState.bands.forEach(b => b.mass = data.mass);
         if (typeof data.restitution === 'number') gameState.bands.forEach(b => b.coefficientOfRestitution = data.restitution);
 
-        // If segmentsPerSide or restLengthScale changed, rebuild bands
+        // Fix: Avoid optional chaining for Node.js compatibility
+        var segmentsPerSide = (gameState.bands.length > 0 && typeof gameState.bands[0].segmentsPerSide === 'number')
+          ? gameState.bands[0].segmentsPerSide
+          : 35;
+        var restLengthScale = (gameState.bands.length > 0 && typeof gameState.bands[0].restLengthScale === 'number')
+          ? gameState.bands[0].restLengthScale
+          : 1.0;
+
         let needRebuild = false;
-        let segmentsPerSide = gameState.bands[0]?.segmentsPerSide || 35;
-        let restLengthScale = gameState.bands[0]?.restLengthScale || 1.0;
         if (typeof data.segmentsPerSide === 'number' && data.segmentsPerSide !== segmentsPerSide) {
           segmentsPerSide = data.segmentsPerSide;
           needRebuild = true;
