@@ -81,7 +81,7 @@ class WebSocketService {
     print("WebSocket message received: $message");
 
     final data = jsonDecode(message as String);
-    if (data is! Map<String, dynamic>) {
+    if (data is! Map) {
       print('Unexpected message format.');
       return;
     }
@@ -125,13 +125,19 @@ class WebSocketService {
         onError?.call(msg);
         break;
       case 'bandSettings':
-        // Update local band settings state if callback provided
+        // Add debug print to see what is received
+        print('[CLIENT] Received bandSettings: $data');
         if (onBandSettingsUpdate != null) {
+          double parseNum(dynamic v, double fallback) {
+            if (v is num) return v.toDouble();
+            if (v is String) return double.tryParse(v) ?? fallback;
+            return fallback;
+          }
           onBandSettingsUpdate!(
-            (data['springConstant'] as num?)?.toDouble() ?? 10.0,
-            (data['dampingCoeff'] as num?)?.toDouble() ?? 1.0,
-            (data['mass'] as num?)?.toDouble() ?? 1.0,
-            (data['restitution'] as num?)?.toDouble() ?? 0.85,
+            parseNum(data['springConstant'], 10.0),
+            parseNum(data['dampingCoeff'], 1.0),
+            parseNum(data['mass'], 1.0),
+            parseNum(data['restitution'], 0.85),
           );
         }
         break;

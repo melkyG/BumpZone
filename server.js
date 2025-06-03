@@ -100,7 +100,6 @@ wss.on('connection', (ws) => {
 
   // Send current band settings to the client on connect
   if (gameState.bands.length > 0) {
-    // Use the *first* band's current values, but ensure you send all fields as numbers
     const b = gameState.bands[0];
     ws.send(JSON.stringify({
       type: 'bandSettings',
@@ -109,6 +108,7 @@ wss.on('connection', (ws) => {
       mass: Number(b.mass),
       restitution: Number(b.coefficientOfRestitution),
     }));
+    // This print statement is present:
     console.log('[SERVER] Sent bandSettings on connect:', {
       springConstant: b.springConstant,
       dampingCoeff: b.dampingCoeff,

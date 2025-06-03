@@ -30,7 +30,7 @@ class _GameScreenState extends State<GameScreen> {
   double _arenaLogicalSize = 1800.0;
 
   // Band settings state (add these fields)
-  double _springConstant = 10.0;
+  double _springConstant = 10.0; // <-- This is just a default, will be overwritten by server
   double _dampingCoeff = 1.0;
   double _mass = 1.0;
   double _restitution = 0.85;
