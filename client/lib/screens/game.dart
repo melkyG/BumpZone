@@ -526,7 +526,7 @@ class _ArenaPainter extends CustomPainter {
     final Paint borderPaint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8;
+      ..strokeWidth = 7;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, arenaLogicalSize * scale, arenaLogicalSize * scale),
       borderPaint,
@@ -600,7 +600,7 @@ class _ArenaPainter extends CustomPainter {
         final Paint borderPaint = Paint()
           ..color = Colors.black
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0 * scale; // Scaled border width
+          ..strokeWidth = 1.0 * scale; // Scaled border width
         final Offset center = Offset(ball.x * scale, ball.y * scale);
         final double radius = logicalRadius * scale;
         canvas.drawCircle(center, radius, ballPaint);
