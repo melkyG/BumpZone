@@ -231,13 +231,26 @@ class _GameScreenState extends State<GameScreen> {
     // Find player colors by id
     Map<String, Color> playerColors = {};
     for (final player in _players) {
-      // Fix: player may not have a color property, so use a Map or dynamic access
-      final dynamic playerMap = player as dynamic;
-      final dynamic colorValue = playerMap.color ?? (playerMap['color'] ?? null);
+      // Use Map access for JS interop compatibility (works for both Map and class)
+      dynamic colorValue;
+      dynamic playerIdValue;
+      try {
+        // Try as Map (works for JS interop and json)
+        colorValue = (player as dynamic)['color'];
+        playerIdValue = (player as dynamic)['playerId'];
+      } catch (_) {
+        // Fallback to property access (works for Dart class)
+        try {
+          colorValue = (player as dynamic).color;
+          playerIdValue = (player as dynamic).playerId;
+        } catch (_) {
+          colorValue = null;
+          playerIdValue = null;
+        }
+      }
       if (colorValue is String && colorValue.length == 9 && colorValue.startsWith('#')) {
         try {
-          playerColors[playerMap.playerId ?? playerMap['playerId']] =
-              Color(int.parse(colorValue.substring(1), radix: 16));
+          playerColors[playerIdValue] = Color(int.parse(colorValue.substring(1), radix: 16));
         } catch (_) {}
       }
     }
