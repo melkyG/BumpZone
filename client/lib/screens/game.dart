@@ -40,6 +40,9 @@ class _GameScreenState extends State<GameScreen> {
   // Smooth camera offset
   Offset? _smoothedCameraOffset; // Add this field
 
+  // Store the color picked by the client as the "myBallColor"
+  Color? _myBallColor;
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -124,6 +127,40 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _players = players;
+        // Update myBallColor if my player is in the list
+        final myPlayer = players.cast<dynamic?>().firstWhere(
+          (p) {
+            dynamic playerIdValue;
+            try {
+              playerIdValue = (p as dynamic)['playerId'];
+            } catch (_) {
+              try {
+                playerIdValue = (p as dynamic).playerId;
+              } catch (_) {
+                playerIdValue = null;
+              }
+            }
+            return playerIdValue == _myPlayerId;
+          },
+          orElse: () => null,
+        );
+        if (myPlayer != null) {
+          dynamic colorValue;
+          try {
+            colorValue = (myPlayer as dynamic)['color'];
+          } catch (_) {
+            try {
+              colorValue = (myPlayer as dynamic).color;
+            } catch (_) {
+              colorValue = null;
+            }
+          }
+          if (colorValue is String && colorValue.length == 9 && colorValue.startsWith('#')) {
+            try {
+              _myBallColor = Color(int.parse(colorValue.substring(1), radix: 16));
+            } catch (_) {}
+          }
+        }
       });
     };
     widget.webSocketService.onArenaUpdate = (arena) {
@@ -300,6 +337,8 @@ class _GameScreenState extends State<GameScreen> {
                       arenaLogicalSize: _arenaLogicalSize,
                       cameraOffset: cameraOffset,
                       playerColors: playerColors,
+                      myPlayerId: _myPlayerId,      // Pass to painter
+                      myBallColor: _myBallColor,    // Pass to painter
                     ),
                     isComplex: false,
                     willChange: false,
@@ -416,6 +455,8 @@ class _ArenaPainter extends CustomPainter {
   final double arenaLogicalSize;
   final Offset cameraOffset;
   final Map<String, Color> playerColors;
+  final String? myPlayerId;      // Add this
+  final Color? myBallColor;      // Add this
 
   _ArenaPainter({
     required this.balls,
@@ -424,6 +465,8 @@ class _ArenaPainter extends CustomPainter {
     required this.arenaLogicalSize,
     required this.cameraOffset,
     this.playerColors = const {},
+    this.myPlayerId,             // Add this
+    this.myBallColor,            // Add this
   });
 
   @override
@@ -506,6 +549,14 @@ class _ArenaPainter extends CustomPainter {
         } catch (_) {}
       } else if (playerColors[ball.id] != null) {
         drawColor = playerColors[ball.id]!;
+      }
+      // If this is my ball, always use myBallColor if set
+      try {
+        if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
+          drawColor = myBallColor!;
+        }
+      } catch (_) {
+        // Defensive: ignore errors if any
       }
       final Paint ballPaint = Paint()
         ..color = drawColor
