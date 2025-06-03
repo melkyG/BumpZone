@@ -265,29 +265,26 @@ class _GameScreenState extends State<GameScreen> {
             ? Offset(myBall.x, myBall.y)
             : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2));
 
-    // Find player colors by id
-    Map<String, Color> playerColors = {};
+    // Build playerColors map from _players (playerId -> Color)
+    final Map<String, Color> playerColors = {};
     for (final player in _players) {
-      // Use Map access for JS interop compatibility (works for both Map and class)
-      dynamic colorValue;
-      dynamic playerIdValue;
+      String? id;
+      String? colorStr;
       try {
-        // Try as Map (works for JS interop and json)
-        colorValue = (player as dynamic)['color'];
-        playerIdValue = (player as dynamic)['playerId'];
+        id = (player as dynamic)['playerId'];
+        colorStr = (player as dynamic)['color'];
       } catch (_) {
-        // Fallback to property access (works for Dart class)
         try {
-          colorValue = (player as dynamic).color;
-          playerIdValue = (player as dynamic).playerId;
+          id = (player as dynamic).playerId;
+          colorStr = (player as dynamic).color;
         } catch (_) {
-          colorValue = null;
-          playerIdValue = null;
+          id = null;
+          colorStr = null;
         }
       }
-      if (colorValue is String && colorValue.length == 9 && colorValue.startsWith('#')) {
+      if (id != null && colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
         try {
-          playerColors[playerIdValue] = Color(int.parse(colorValue.substring(1), radix: 16));
+          playerColors[id] = Color(int.parse(colorStr.substring(1), radix: 16));
         } catch (_) {}
       }
     }
@@ -337,8 +334,8 @@ class _GameScreenState extends State<GameScreen> {
                       arenaLogicalSize: _arenaLogicalSize,
                       cameraOffset: cameraOffset,
                       playerColors: playerColors,
-                      myPlayerId: _myPlayerId,      // Pass to painter
-                      myBallColor: _myBallColor,    // Pass to painter
+                      myPlayerId: _myPlayerId,
+                      myBallColor: _myBallColor,
                     ),
                     isComplex: false,
                     willChange: false,
@@ -539,38 +536,18 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
-    // Draw balls with player color if available
+    // Draw balls with player color from playerColors map
     for (final ball in balls) {
-      Color? drawColor;
-      // Prefer ball.color if present and valid
-      if (ball.color != null && ball.color is String && ball.color!.length == 9 && ball.color!.startsWith('#')) {
-        try {
-          drawColor = Color(int.parse(ball.color!.substring(1), radix: 16));
-        } catch (_) {}
-      }
-      // Fallback to playerColors map if not set
-      if (drawColor == null && playerColors[ball.id] != null) {
-        drawColor = playerColors[ball.id]!;
-      }
-      // If this is my ball, always use myBallColor if set
+      Color drawColor = playerColors[ball.id] ?? Colors.purpleAccent;
       if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
         drawColor = myBallColor!;
       }
-      // Defensive: If still null, use a visible fallback (e.g. magenta)
-      drawColor ??= Colors.purpleAccent;
-
-      // Print the color for debugging (never print default blue)
-      // Only print if this is my ball
-      if (myPlayerId != null && ball.id == myPlayerId) {
-        print('[DEBUG] Drawing my ball with color: 0x${drawColor.value.toRadixString(16)}');
-      }
-
       final Paint ballPaint = Paint()
         ..color = drawColor
         ..style = PaintingStyle.fill;
       canvas.drawCircle(
-        Offset(ball.x * scale, ball.y * scale),
-        logicalRadius * scale,
+        Offset(ball.x, ball.y),
+        10.0,
         ballPaint,
       );
     }
