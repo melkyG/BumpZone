@@ -122,9 +122,9 @@ class _GameScreenState extends State<GameScreen> {
       });
     };
     widget.webSocketService.onArenaUpdate = (arena) {
-      print('[DEBUG] Arena bands received: ${arena.bands.length}');
+      //print('[DEBUG] Arena bands received: ${arena.bands.length}');
       if (arena.bands.isNotEmpty) {
-        print('[DEBUG] First band segment count: ${arena.bands[0].segments.length}');
+        //print('[DEBUG] First band segment count: ${arena.bands[0].segments.length}');
       }
       setState(() {
         _balls = arena.balls;
