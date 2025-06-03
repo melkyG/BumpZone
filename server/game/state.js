@@ -6,9 +6,9 @@ const ACCELERATION = 500; // units per second^2
 const BALL_RADIUS = 18; // must match client
 
 const BAND_SEGMENTS_PER_SIDE = 35; // from reference code
-const BAND_SPRING_CONSTANT = 10.0;
+const BAND_SPRING_CONSTANT = 100.0;
 const BAND_DAMPING_COEFF = 1.0;
-const BAND_MASS = 1.0;
+const BAND_MASS = 0.2;
 const BAND_REST_LENGTH_SCALE = 0.35;
 const BAND_COEFFICIENT_OF_RESTITUTION = 0.85;
 
