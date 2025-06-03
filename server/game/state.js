@@ -138,16 +138,24 @@ class GameState {
     this.players = this.players.filter(player => player.ws !== ws);
   }
   getBalls() {
-    const balls = Object.values(this.balls).filter(ball => {
+    // Return balls with color property from player if not already present
+    return Object.values(this.balls).filter(ball => {
       return (
         typeof ball.x === 'number' &&
         typeof ball.y === 'number' &&
         typeof ball.vx === 'number' &&
         typeof ball.vy === 'number'
       );
+    }).map(ball => {
+      // Attach color from player if missing
+      if (!ball.color) {
+        const player = this.players.find(p => p.playerId === ball.id);
+        if (player && player.color) {
+          return { ...ball, color: player.color };
+        }
+      }
+      return ball;
     });
-    // console.log('[DEBUG] getBalls:', balls);
-    return balls;
   }
 
   getPlayers() {

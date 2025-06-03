@@ -19,6 +19,18 @@ function gameLoop() {
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(buffer);
+      // Send balls as JSON with color for rendering
+      client.send(JSON.stringify({
+        type: 'balls',
+        balls: balls.map(b => ({
+          id: b.id,
+          x: b.x,
+          y: b.y,
+          vx: b.vx,
+          vy: b.vy,
+          color: b.color // include color if present
+        }))
+      }));
     }
   });
 }
@@ -71,6 +83,7 @@ function encodeArenaState(balls, bands, posts) {
     buffer.writeFloatLE(b.y, offset); offset += 4;
     buffer.writeFloatLE(b.vx, offset); offset += 4;
     buffer.writeFloatLE(b.vy, offset); offset += 4;
+    // NOTE: color is NOT sent in the binary buffer!
   });
 
   // Bands
@@ -298,10 +311,6 @@ wss.on('connection', (ws) => {
     });
   }, 30000); // 30 seconds
 
-  wss.on('close', function close() {
-    clearInterval(interval);
-  });
-
   ws.on('close', () => {
     console.log('❎ WebSocket connection closed');
     const removed = gameState.removePlayer(ws);
@@ -311,7 +320,8 @@ wss.on('connection', (ws) => {
 
     const simplifiedPlayers = players.map(p => ({
       playerId: p.playerId,
-      username: p.username
+      username: p.username,
+      color: p.color,
     }));
 
     wss.clients.forEach((client) => {
@@ -320,6 +330,11 @@ wss.on('connection', (ws) => {
         client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
       }
     });
+  });
+
+  // Clean up interval on server close
+  wss.on('close', function close() {
+    clearInterval(interval);
   });
 });
 
