@@ -1,4 +1,3 @@
-import 'dart:typed_data'; // Add this at the top with other imports
 import '../models/ball.dart';
 import 'dart:math' as math;
 import 'dart:async';
@@ -7,6 +6,7 @@ import '../models/player.dart';
 import '../widgets/hud.dart';
 import 'package:bump_zone/network/websocket.dart';
 import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
+import 'dart:typed_data'; // Add this at the top with other imports
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -492,23 +492,15 @@ class _ArenaPainter extends CustomPainter {
         ? arenaLogicalSize / 2
         : cameraOffset.dy;
 
-    // Fill the entire canvas with grey before drawing the arena
+    // Fill the entire canvas with grey (fixed, not moving with camera)
     final Paint backgroundPaint = Paint()..color = Colors.grey[300]!;
-    // Use canvas.transform instead of setMatrix for Flutter
-    canvas.save();
-    canvas.transform(Float64List.fromList([
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ]));
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       backgroundPaint,
     );
-    canvas.restore();
 
-    // Translate after background
+    // Now translate for camera (all arena content moves, but background stays fixed)
+    canvas.save();
     canvas.translate(
       size.width / 2 - camX * scale,
       size.height / 2 - camY * scale,
@@ -598,6 +590,8 @@ class _ArenaPainter extends CustomPainter {
         canvas.drawCircle(center, radius, borderPaint);
       }
     }
+
+    canvas.restore();
   }
 
   @override
