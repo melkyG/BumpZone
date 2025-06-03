@@ -56,16 +56,9 @@ class _GameScreenState extends State<GameScreen> {
     // Calculate scale and camera offset as in painter
     final double scale = box.size.width / _arenaLogicalSize;
 
-    // Find my ball for camera center
-    Ball? myBall;
-    try {
-      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
-    } catch (_) {
-      myBall = null;
-    }
-    final Offset cameraOffset = (myBall != null)
-        ? Offset(myBall.x, myBall.y)
-        : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+    // --- Use the same camera offset as the painter (smoothed) ---
+    final Offset cameraOffset = _smoothedCameraOffset ??
+        Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
 
     // Undo camera translation to get logical coordinates
     final double logicalX = (local.dx - box.size.width / 2) / scale + cameraOffset.dx;
