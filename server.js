@@ -268,6 +268,15 @@ wss.on('connection', (ws) => {
             }));
           }
         });
+      } else if (data.type === 'respawn') {
+        // Respawn the player's ball at the center of the arena
+        const player = gameState.getPlayerBySocket(ws);
+        if (player && gameState.balls[player.playerId]) {
+          gameState.balls[player.playerId].x = ARENA_SIZE / 2;
+          gameState.balls[player.playerId].y = ARENA_SIZE / 2;
+          gameState.balls[player.playerId].vx = 0;
+          gameState.balls[player.playerId].vy = 0;
+        }
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);

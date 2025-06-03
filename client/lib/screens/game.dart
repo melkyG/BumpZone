@@ -331,6 +331,9 @@ class _GameScreenState extends State<GameScreen> {
             onResetToDefault: () {
               widget.webSocketService.sendRaw({'type': 'resetBandSettings'});
             },
+            onRespawn: () {
+              widget.webSocketService.sendRaw({'type': 'respawn'});
+            },
           ),
           if (!ready)
             Container(

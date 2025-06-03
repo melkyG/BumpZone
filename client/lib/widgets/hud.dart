@@ -83,6 +83,7 @@ class BandSettingsHUD extends StatefulWidget {
   final ValueChanged<int> onSegmentsChanged;
   final ValueChanged<double> onRestLengthScaleChanged;
   final VoidCallback onResetToDefault;
+  final VoidCallback onRespawn;
 
   const BandSettingsHUD({
     super.key,
@@ -99,6 +100,7 @@ class BandSettingsHUD extends StatefulWidget {
     required this.onSegmentsChanged,
     required this.onRestLengthScaleChanged,
     required this.onResetToDefault,
+    required this.onRespawn,
   });
 
   @override
@@ -206,11 +208,19 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
               onChanged: widget.onRestLengthScaleChanged,
             ),
             const SizedBox(height: 12),
-            Center(
-              child: ElevatedButton(
-                onPressed: widget.onResetToDefault,
-                child: const Text('Default'),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: widget.onResetToDefault,
+                  child: const Text('Default'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: widget.onRespawn,
+                  child: const Text('Respawn'),
+                ),
+              ],
             ),
           ],
         ],
@@ -260,6 +270,7 @@ class HUD extends StatelessWidget {
   final ValueChanged<int> onSegmentsChanged;
   final ValueChanged<double> onRestLengthScaleChanged;
   final VoidCallback onResetToDefault;
+  final VoidCallback onRespawn;
 
   const HUD({
     super.key,
@@ -277,6 +288,7 @@ class HUD extends StatelessWidget {
     required this.onSegmentsChanged,
     required this.onRestLengthScaleChanged,
     required this.onResetToDefault,
+    required this.onRespawn,
   });
 
   @override
@@ -300,6 +312,7 @@ class HUD extends StatelessWidget {
             onSegmentsChanged: onSegmentsChanged,
             onRestLengthScaleChanged: onRestLengthScaleChanged,
             onResetToDefault: onResetToDefault,
+            onRespawn: onRespawn,
           ),
         ),
       ],
