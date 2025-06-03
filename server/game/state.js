@@ -1,5 +1,5 @@
 // Arena/game configuration (shared with all clients)
-const ARENA_SIZE = 2000; // Logical units (increase as desired)
+const ARENA_SIZE = 1000; // Logical units (e.g., pixels)
 
 const ACCELERATION = 600; // units per second^2
 
@@ -26,7 +26,7 @@ class GameState {
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
-    const margin = 200; // Increase margin if you want bands further from border
+    const margin = 150;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
@@ -44,10 +44,7 @@ class GameState {
       const sideLength = Math.sqrt(
         Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
       );
-      // PATCH: Clamp restLength so bands fit inside the square
-      // The max allowed restLength is the straight-line distance between posts divided by (segments-1)
-      // If BAND_REST_LENGTH_SCALE is not 1.0, it can cause bands to be too long!
-      const restLength = sideLength / (BAND_SEGMENTS_PER_SIDE - 1);
+      const restLength = sideLength / (BAND_SEGMENTS_PER_SIDE - 1); // REMOVE * BAND_REST_LENGTH_SCALE
       for (let j = 0; j < BAND_SEGMENTS_PER_SIDE; j++) {
         const t = j / (BAND_SEGMENTS_PER_SIDE - 1);
         // Initial position: evenly spaced between start and end, NO wiggle
