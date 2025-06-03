@@ -43,6 +43,9 @@ class _GameScreenState extends State<GameScreen> {
   // Store the color picked by the client as the "myBallColor"
   Color? _myBallColor;
 
+  // Fallback color map for balls
+  final Map<String, Color> _lastBallColors = {}; // Add this
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -201,6 +204,15 @@ class _GameScreenState extends State<GameScreen> {
       }
     };
     widget.webSocketService.onBallsUpdate = (balls) {
+      // Update last known color for each ball
+      for (final ball in balls) {
+        final String? colorStr = ball.color is String ? ball.color as String : null;
+        if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
+          try {
+            _lastBallColors[ball.id] = Color(int.parse(colorStr.substring(1), radix: 16));
+          } catch (_) {}
+        }
+      }
       setState(() {
         _balls = balls;
       });
@@ -336,6 +348,7 @@ class _GameScreenState extends State<GameScreen> {
                       playerColors: playerColors,
                       myPlayerId: _myPlayerId,
                       myBallColor: _myBallColor,
+                      lastBallColors: _lastBallColors, // Pass the lastBallColors map
                     ),
                     isComplex: false,
                     willChange: false,
@@ -454,6 +467,7 @@ class _ArenaPainter extends CustomPainter {
   final Map<String, Color> playerColors;
   final String? myPlayerId;      // Add this
   final Color? myBallColor;      // Add this
+  final Map<String, Color> lastBallColors; // Add this
 
   _ArenaPainter({
     required this.balls,
@@ -464,6 +478,7 @@ class _ArenaPainter extends CustomPainter {
     this.playerColors = const {},
     this.myPlayerId,             // Add this
     this.myBallColor,            // Add this
+    required this.lastBallColors, // Add this
   });
 
   @override
@@ -536,7 +551,6 @@ class _ArenaPainter extends CustomPainter {
     // Draw balls with player color from playerColors map or ball.color only (no fallback)
     for (final ball in balls) {
       Color? drawColor;
-      // Try to parse ball.color if present and valid
       final String? colorStr = ball.color is String ? ball.color as String : null;
       if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
         try {
@@ -545,15 +559,12 @@ class _ArenaPainter extends CustomPainter {
           drawColor = null;
         }
       }
-      // If not present, use playerColors map if set
-      if (drawColor == null && playerColors[ball.id] != null) {
-        drawColor = playerColors[ball.id];
+      if (drawColor == null && lastBallColors[ball.id] != null) {
+        drawColor = lastBallColors[ball.id];
       }
-      // If this is my ball, always use myBallColor if set
       if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
         drawColor = myBallColor!;
       }
-      // Only draw if color is set
       if (drawColor != null) {
         final Paint ballPaint = Paint()
           ..color = drawColor
