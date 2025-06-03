@@ -124,38 +124,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () async {
-                      Color? picked = await showDialog<Color>(
+                      // Show a dialog with BlockPicker, auto-select on tap, dismiss on tap outside
+                      await showDialog(
                         context: context,
+                        barrierDismissible: true,
                         builder: (context) {
-                          Color tempColor = _selectedColor;
                           return AlertDialog(
                             title: const Text('Pick Ball Color'),
                             content: SingleChildScrollView(
                               child: BlockPicker(
-                                pickerColor: tempColor,
+                                pickerColor: _selectedColor,
                                 onColorChanged: (color) {
-                                  tempColor = color;
+                                  setState(() {
+                                    _selectedColor = color;
+                                  });
+                                  Navigator.of(context).pop(); // Auto-close on select
                                 },
                               ),
                             ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(tempColor),
-                                child: const Text('Select'),
-                              ),
-                            ],
+                            // No actions: tap outside to cancel
                           );
                         },
                       );
-                      if (picked != null) {
-                        setState(() {
-                          _selectedColor = picked;
-                        });
-                      }
                     },
                     child: Container(
                       width: 32,

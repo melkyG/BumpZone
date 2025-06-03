@@ -33,5 +33,6 @@ class Ball {
         'y': y,
         'vx': vx,
         'vy': vy,
+        if (color != null) 'color': color, // Include color if present
       };
 }
