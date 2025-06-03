@@ -105,6 +105,14 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
   }
 
   @override
+  void didUpdateWidget(covariant BandSettingsHUD oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the server sends new values, update the sliders to reflect them
+    // (Slider uses widget.springConstant etc. directly, so no local state needed)
+    // If you had local state for the slider values, reset them here.
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       width: _expanded ? 350 : null,
@@ -132,10 +140,10 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
             const SizedBox(height: 12),
             _buildSlider(
               label: 'Spring Constant',
-              value: widget.springConstant,
+              value: widget.springConstant, // Always use prop from parent
               min: 1.0,
-              max: 100.0,
-              divisions: 99,
+              max: 300.0, // Increase max to allow for higher server values
+              divisions: 299,
               onChanged: widget.onSpringChanged,
             ),
             _buildSlider(
@@ -183,7 +191,7 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
         children: [
           Text('$label: ${value.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
           Slider(
-            value: value,
+            value: value.clamp(min, max), // Clamp to avoid errors if server sends out-of-range
             min: min,
             max: max,
             divisions: divisions,

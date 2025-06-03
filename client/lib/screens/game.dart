@@ -148,6 +148,7 @@ class _GameScreenState extends State<GameScreen> {
       }
     };
     widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution) {
+      print('[GAME] onBandSettingsUpdate: $spring, $damping, $mass, $restitution'); // <-- Add this debug print
       setState(() {
         _springConstant = spring;
         _dampingCoeff = damping;
