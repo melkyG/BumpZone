@@ -187,12 +187,12 @@ class _GameScreenState extends State<GameScreen> {
             ? Offset(myBall.x, myBall.y)
             : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
 
-        // Smooth camera: move _smoothedCameraOffset toward target
+        // --- Camera smoothing factor: tweak this value for acceleration/lag ---
+        const double smoothing = 0.3; // <-- Increase for snappier, decrease for more lag
+        // ---------------------------------------------------------------
         if (_smoothedCameraOffset == null) {
           _smoothedCameraOffset = target;
         } else {
-          // Smoothing factor (0.0 = no movement, 1.0 = instant snap)
-          const double smoothing = 0.15;
           _smoothedCameraOffset = Offset(
             _smoothedCameraOffset!.dx + (target.dx - _smoothedCameraOffset!.dx) * smoothing,
             _smoothedCameraOffset!.dy + (target.dy - _smoothedCameraOffset!.dy) * smoothing,
