@@ -49,7 +49,7 @@ class WebSocketService {
   }
 
   void _onMessage(dynamic message) {
-    print('WebSocket raw message type: ${message.runtimeType}');
+    // print('WebSocket raw message type: ${message.runtimeType}'); // Commented out
 
     // --- Handle binary arena update for Dart VM (List<int>) ---
     if (message is List<int>) {
@@ -77,15 +77,25 @@ class WebSocketService {
       return;
     }
 
-    // Now it's safe to assume it's a String (JSON)
-    print("WebSocket message received: $message");
+    // print("WebSocket message received: $message"); // Commented out
 
+    // Step 1: Parse JSON
     final data = jsonDecode(message as String);
+    // print('[DEBUG] Decoded JSON: $data'); // Commented out
+
+    // Step 2: Check type
     if (data is! Map) {
-      print('Unexpected message format.');
+      // print('[DEBUG] Unexpected message format.'); // Commented out
       return;
     }
     final type = data['type'];
+    // print('[DEBUG] Message type: $type'); // Commented out
+
+    // Step 3: Print bandSettings payload if present
+    // if (type == 'bandSettings') {
+    //   print('[DEBUG] bandSettings payload: $data');
+    // }
+
     if (type == 'balls' && data['balls'] is List) {
       final balls = (data['balls'] as List)
           .map((b) => Ball.fromJson(b))
@@ -104,7 +114,7 @@ class WebSocketService {
     }
     // Call the onWelcome callback when a welcome message is received
     if (type == 'welcome' && data['playerId'] != null) {
-      print('Welcome message received with playerId: ${data['playerId']}');
+      // print('Welcome message received with playerId: ${data['playerId']}'); // Commented out
       playerId = data['playerId'] as String; // <-- Store playerId
       if (onWelcome != null) onWelcome!(playerId!);
     }
@@ -121,29 +131,38 @@ class WebSocketService {
 
       case 'error':
         final msg = data['message'] ?? 'unknown_error';
-        print('Server error: $msg');
+        // print('Server error: $msg'); // Commented out
         onError?.call(msg);
         break;
       case 'bandSettings':
-        // Add debug print to see what is received
-        print('[CLIENT] Received bandSettings: $data');
+        // Step 4: Print each value individually
+        // print('[DEBUG] bandSettings springConstant: ${data['springConstant']}');
+        // print('[DEBUG] bandSettings dampingCoeff: ${data['dampingCoeff']}');
+        // print('[DEBUG] bandSettings mass: ${data['mass']}');
+        // print('[DEBUG] bandSettings restitution: ${data['restitution']}');
         if (onBandSettingsUpdate != null) {
           double parseNum(dynamic v, double fallback) {
+            // print('[DEBUG] parseNum input: $v'); // Commented out
             if (v is num) return v.toDouble();
             if (v is String) return double.tryParse(v) ?? fallback;
             return fallback;
           }
+          final spring = parseNum(data['springConstant'], 10.0);
+          final damping = parseNum(data['dampingCoeff'], 1.0);
+          final mass = parseNum(data['mass'], 1.0);
+          final restitution = parseNum(data['restitution'], 0.85);
+          // print('[DEBUG] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution'); // Commented out
           onBandSettingsUpdate!(
-            parseNum(data['springConstant'], 10.0),
-            parseNum(data['dampingCoeff'], 1.0),
-            parseNum(data['mass'], 1.0),
-            parseNum(data['restitution'], 0.85),
+            spring,
+            damping,
+            mass,
+            restitution,
           );
         }
         break;
 
       default:
-        print("Unhandled message type: $type");
+        // print("[DEBUG] Unhandled message type: $type"); // Commented out
         break;
     }
   }
