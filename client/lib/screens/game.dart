@@ -37,6 +37,9 @@ class _GameScreenState extends State<GameScreen> {
   int _segmentsPerSide = 35;
   double _restLengthScale = 0.35;
 
+  // Smooth camera offset
+  Offset? _smoothedCameraOffset; // Add this field
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -132,6 +135,28 @@ class _GameScreenState extends State<GameScreen> {
         _balls = arena.balls;
         _bands = arena.bands;
         _posts = arena.posts;
+        // Camera smoothing: update target position here
+        Ball? myBall;
+        try {
+          myBall = arena.balls.firstWhere((b) => b.id == _myPlayerId);
+        } catch (_) {
+          myBall = null;
+        }
+        final Offset target = (myBall != null)
+            ? Offset(myBall.x, myBall.y)
+            : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+
+        // Smooth camera: move _smoothedCameraOffset toward target
+        if (_smoothedCameraOffset == null) {
+          _smoothedCameraOffset = target;
+        } else {
+          // Smoothing factor (0.0 = no movement, 1.0 = instant snap)
+          const double smoothing = 0.15;
+          _smoothedCameraOffset = Offset(
+            _smoothedCameraOffset!.dx + (target.dx - _smoothedCameraOffset!.dx) * smoothing,
+            _smoothedCameraOffset!.dy + (target.dy - _smoothedCameraOffset!.dy) * smoothing,
+          );
+        }
       });
       // If user is holding/tapping, try to send movement again when balls update
       if (_lastPointerLogical != null && _myPlayerId != null) {
@@ -197,9 +222,11 @@ class _GameScreenState extends State<GameScreen> {
     } catch (_) {
       myBall = null;
     }
-    Offset cameraOffset = (myBall != null)
-        ? Offset(myBall.x, myBall.y)
-        : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+    // Use smoothed camera offset if available
+    Offset cameraOffset = _smoothedCameraOffset ??
+        ((myBall != null)
+            ? Offset(myBall.x, myBall.y)
+            : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2));
 
     return Scaffold(
       body: Stack(
