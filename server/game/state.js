@@ -459,6 +459,46 @@ class GameState {
     this.updateBands(dt);
   }
 
+  updateBandStructure(segmentsPerSide, restLengthScale) {
+    const margin = 300;
+    this.posts = [
+      { x: margin, y: margin },
+      { x: ARENA_SIZE - margin, y: margin },
+      { x: ARENA_SIZE - margin, y: ARENA_SIZE - margin },
+      { x: margin, y: ARENA_SIZE - margin }
+    ];
+    this.bands = [];
+    for (let i = 0; i < 4; i++) {
+      const start = this.posts[i];
+      const end = this.posts[(i + 1) % 4];
+      const segments = [];
+      const velocities = [];
+      const sideLength = Math.sqrt(
+        Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+      );
+      const restLength = (sideLength / (segmentsPerSide - 1)) * restLengthScale;
+      for (let j = 0; j < segmentsPerSide; j++) {
+        const t = j / (segmentsPerSide - 1);
+        let x = start.x + (end.x - start.x) * t;
+        let y = start.y + (end.y - start.y) * t;
+        segments.push({ x, y });
+        velocities.push({ x: 0, y: 0 });
+      }
+      this.bands.push({
+        segments,
+        velocities,
+        springConstant: BAND_SPRING_CONSTANT,
+        dampingCoeff: BAND_DAMPING_COEFF,
+        mass: BAND_MASS,
+        restLength,
+        coefficientOfRestitution: BAND_COEFFICIENT_OF_RESTITUTION,
+        fixedIndices: [0, segmentsPerSide - 1],
+        segmentsPerSide,
+        restLengthScale,
+      });
+    }
+  }
+
   // Helper: distance between two points
   static _dist(x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
