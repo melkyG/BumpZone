@@ -78,8 +78,7 @@ class _GameScreenState extends State<GameScreen> {
     try {
       myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
     } catch (_) {
-      print('My ball not found in _balls.');
-      return;
+      myBall = null;
     }
     if (myBall == null) {
       print('My ball is null.');
@@ -166,6 +165,17 @@ class _GameScreenState extends State<GameScreen> {
     final double displaySize = _arenaLogicalSize * scale;
     final bool ready = _myPlayerId != null;
 
+    // Find my ball
+    Ball? myBall;
+    try {
+      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+    } catch (_) {
+      myBall = null;
+    }
+    Offset cameraOffset = (myBall != null)
+        ? Offset(myBall.x, myBall.y)
+        : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 148, 148, 148),
       body: Stack(
@@ -211,6 +221,7 @@ class _GameScreenState extends State<GameScreen> {
                       bands: _bands,
                       posts: _posts,
                       arenaLogicalSize: _arenaLogicalSize,
+                      cameraOffset: cameraOffset, // pass camera offset
                     ),
                     isComplex: false,
                     willChange: false,
@@ -288,25 +299,40 @@ class _ArenaPainter extends CustomPainter {
   final List<Band> bands;
   final List<BandSegment> posts;
   final double arenaLogicalSize;
+  final Offset cameraOffset;
+
   _ArenaPainter({
     required this.balls,
     required this.bands,
     required this.posts,
     required this.arenaLogicalSize,
+    required this.cameraOffset,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final double scale = size.width / arenaLogicalSize;
+    // Defensive: cameraOffset may be null or NaN
+    final double camX = (cameraOffset.dx.isNaN || cameraOffset.dx.isInfinite)
+        ? arenaLogicalSize / 2
+        : cameraOffset.dx;
+    final double camY = (cameraOffset.dy.isNaN || cameraOffset.dy.isInfinite)
+        ? arenaLogicalSize / 2
+        : cameraOffset.dy;
+    canvas.translate(
+      size.width / 2 - camX * scale,
+      size.height / 2 - camY * scale,
+    );
+
+    // Draw arena border
     final Paint borderPaint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8;
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
+      Rect.fromLTWH(0, 0, arenaLogicalSize * scale, arenaLogicalSize * scale),
       borderPaint,
     );
-
-    final double scale = size.width / arenaLogicalSize;
 
     // Draw bands
     final Paint bandPaint = Paint()
@@ -315,15 +341,12 @@ class _ArenaPainter extends CustomPainter {
       ..strokeWidth = 8;
     for (final band in bands) {
       if (band.segments.isNotEmpty) {
-        print('[DEBUG] Band segment coordinates: ${band.segments.map((s) => '(${s.x},${s.y})').join(', ')}');
         final first = band.segments[0];
-        print('[DEBUG] Band first segment: (${first.x}, ${first.y})');
         final path = Path();
         path.moveTo(first.x * scale, first.y * scale);
         for (final seg in band.segments.skip(1)) {
           path.lineTo(seg.x * scale, seg.y * scale);
         }
-        print('[DEBUG] Band path bounds: ${path.getBounds()}');
         canvas.drawPath(path, bandPaint);
       }
     }
@@ -335,7 +358,7 @@ class _ArenaPainter extends CustomPainter {
     for (final post in posts) {
       canvas.drawCircle(
         Offset(post.x * scale, post.y * scale),
-        22 * scale, // POST_RADIUS
+        22 * scale,
         postPaint,
       );
     }
