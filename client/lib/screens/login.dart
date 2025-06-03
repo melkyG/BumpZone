@@ -20,24 +20,15 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    // Use ws://localhost:3000 for local testing
     _webSocketService = WebSocketService(
       'wss://thorn-glory-wanderer.glitch.me',
     );
-    _webSocketService.connect();
-    
-    // Request initial player list
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _webSocketService.requestPlayerList();
-    });
-    
-    // Update player count from server and handle navigation after successful join
+
+    // Set all callbacks BEFORE connect()
     _webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _playerCount = players.length;
       });
-      
-      // If we're joining and got a player list update, it means join was successful
       if (_joining && _errorMessage == null) {
         Navigator.pushReplacement(
           context,
@@ -48,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     };
 
-    // Handle connection errors
     _webSocketService.onError = (error) {
       if (!_joining) return;
       print('WebSocket onError called with: $error');
@@ -59,6 +49,18 @@ class _LoginScreenState extends State<LoginScreen> {
             : 'Failed to connect, try again';
       });
     };
+
+    // Add this:
+    _webSocketService.onWelcome = (playerId) {
+      print('[LOGIN] onWelcome: $playerId');
+      _webSocketService.sendRaw({'type': 'getBandSettings'});
+    };
+
+    _webSocketService.connect();
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _webSocketService.requestPlayerList();
+    });
   }
 
   @override
