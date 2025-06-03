@@ -40,8 +40,25 @@ class _GameScreenState extends State<GameScreen> {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
     final Offset local = box.globalToLocal(globalPosition);
+
+    // Calculate scale and camera offset as in painter
     final double scale = box.size.width / _arenaLogicalSize;
-    return Offset(local.dx / scale, local.dy / scale);
+
+    // Find my ball for camera center
+    Ball? myBall;
+    try {
+      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+    } catch (_) {
+      myBall = null;
+    }
+    final Offset cameraOffset = (myBall != null)
+        ? Offset(myBall.x, myBall.y)
+        : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+
+    // Undo camera translation to get logical coordinates
+    final double logicalX = (local.dx - box.size.width / 2) / scale + cameraOffset.dx;
+    final double logicalY = (local.dy - box.size.height / 2) / scale + cameraOffset.dy;
+    return Offset(logicalX, logicalY);
   }
 
   void _startSendingMovement(Offset logicalTarget) {
