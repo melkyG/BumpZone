@@ -228,6 +228,20 @@ class _GameScreenState extends State<GameScreen> {
             ? Offset(myBall.x, myBall.y)
             : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2));
 
+    // Find player colors by id
+    Map<String, Color> playerColors = {};
+    for (final player in _players) {
+      // Fix: player may not have a color property, so use a Map or dynamic access
+      final dynamic playerMap = player as dynamic;
+      final dynamic colorValue = playerMap.color ?? (playerMap['color'] ?? null);
+      if (colorValue is String && colorValue.length == 9 && colorValue.startsWith('#')) {
+        try {
+          playerColors[playerMap.playerId ?? playerMap['playerId']] =
+              Color(int.parse(colorValue.substring(1), radix: 16));
+        } catch (_) {}
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -272,6 +286,7 @@ class _GameScreenState extends State<GameScreen> {
                       posts: _posts,
                       arenaLogicalSize: _arenaLogicalSize,
                       cameraOffset: cameraOffset,
+                      playerColors: playerColors,
                     ),
                     isComplex: false,
                     willChange: false,
@@ -387,6 +402,7 @@ class _ArenaPainter extends CustomPainter {
   final List<BandSegment> posts;
   final double arenaLogicalSize;
   final Offset cameraOffset;
+  final Map<String, Color> playerColors;
 
   _ArenaPainter({
     required this.balls,
@@ -394,6 +410,7 @@ class _ArenaPainter extends CustomPainter {
     required this.posts,
     required this.arenaLogicalSize,
     required this.cameraOffset,
+    this.playerColors = const {},
   });
 
   @override
@@ -419,11 +436,15 @@ class _ArenaPainter extends CustomPainter {
       borderPaint,
     );
 
-    final Paint bandPaint = Paint()
-      ..color = Colors.orange
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8;
-    for (final band in bands) {
+    // Boxing ring: alternate band colors (blue and red)
+    final List<Color> bandColors = [
+      Colors.blue,
+      Colors.red,
+      Colors.blue,
+      Colors.red,
+    ];
+    for (int i = 0; i < bands.length; i++) {
+      final band = bands[i];
       if (band.segments.isNotEmpty) {
         final first = band.segments[0];
         final path = Path();
@@ -431,14 +452,26 @@ class _ArenaPainter extends CustomPainter {
         for (final seg in band.segments.skip(1)) {
           path.lineTo(seg.x * scale, seg.y * scale);
         }
+        final Paint bandPaint = Paint()
+          ..color = bandColors[i % bandColors.length]
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3;
         canvas.drawPath(path, bandPaint);
       }
     }
 
-    final Paint postPaint = Paint()
-      ..color = Colors.red
-      ..style = PaintingStyle.fill;
-    for (final post in posts) {
+    // Boxing ring: 2 blue posts and 2 red posts (diagonally opposite)
+    final List<Color> postColors = [
+      Colors.blue,
+      Colors.red,
+      Colors.blue,
+      Colors.red,
+    ];
+    for (int i = 0; i < posts.length; i++) {
+      final post = posts[i];
+      final Paint postPaint = Paint()
+        ..color = postColors[i % postColors.length]
+        ..style = PaintingStyle.fill;
       canvas.drawCircle(
         Offset(post.x * scale, post.y * scale),
         22 * scale,
@@ -450,7 +483,11 @@ class _ArenaPainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     const double logicalRadius = 18;
+    // Draw balls with player color if available
     for (final ball in balls) {
+      final Paint ballPaint = Paint()
+        ..color = playerColors[ball.id] ?? Colors.blue
+        ..style = PaintingStyle.fill;
       canvas.drawCircle(
         Offset(ball.x * scale, ball.y * scale),
         logicalRadius * scale,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bump_zone/network/websocket.dart';
 import 'package:bump_zone/screens/game.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   int _playerCount = 0;
   bool _joining = false;
+  Color _selectedColor = Colors.blue;
 
   @override
   void initState() {
@@ -83,8 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
       _joining = true;
     });
 
-    // Send join request and wait for server confirmation
-    _webSocketService.join(username);
+    // Send join request and include color as hex string
+    _webSocketService.sendRaw({
+      'type': 'join',
+      'username': username,
+      'color': '#${_selectedColor.value.toRadixString(16).padLeft(8, '0')}',
+    });
   }
 
   @override
@@ -108,6 +114,60 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Username',
                 ),
                 maxLength: 20,
+              ),
+              const SizedBox(height: 10),
+              // Ball color picker
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Ball Color:'),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      Color? picked = await showDialog<Color>(
+                        context: context,
+                        builder: (context) {
+                          Color tempColor = _selectedColor;
+                          return AlertDialog(
+                            title: const Text('Pick Ball Color'),
+                            content: SingleChildScrollView(
+                              child: BlockPicker(
+                                pickerColor: tempColor,
+                                onColorChanged: (color) {
+                                  tempColor = color;
+                                },
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(tempColor),
+                                child: const Text('Select'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _selectedColor = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _selectedColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black, width: 2),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               Text('Players online: $_playerCount'),

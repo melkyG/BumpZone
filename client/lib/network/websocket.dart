@@ -208,7 +208,14 @@ class WebSocketService {
   }
 
   void sendRaw(Map<String, dynamic> message) {
-    _send(message);
+    final encoded = jsonEncode(message);
+    print("🔹 Sending WebSocket message: $encoded"); // ✅ Debug output
+
+    if (_channel != null) {
+      _channel!.sink.add(encoded);
+    } else {
+      print("❌ WebSocket channel is not connected.");
+    }
   }
 
   void _send(Map<String, dynamic> message) {

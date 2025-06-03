@@ -1,20 +1,20 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 1800; // Logical units (e.g., pixels)
 
-const ACCELERATION = 500; // units per second^2
+const ACCELERATION = 700; // units per second^2
 
 const BALL_RADIUS = 18; // must match client
 
-const BAND_SEGMENTS_PER_SIDE = 5; // from reference code
-const BAND_SPRING_CONSTANT = 15.0;
+const BAND_SEGMENTS_PER_SIDE = 8; // from reference code
+const BAND_SPRING_CONSTANT = 35.0;
 const BAND_DAMPING_COEFF = 0.05;
-const BAND_MASS = 0.05;
-const BAND_REST_LENGTH_SCALE = 0.01;
-const BAND_COEFFICIENT_OF_RESTITUTION = 0.7;
+const BAND_MASS = 0.04;
+const BAND_REST_LENGTH_SCALE = 0.03;
+const BAND_COEFFICIENT_OF_RESTITUTION = 1.0;
 
 const POST_RADIUS = 22; // for collision, slightly larger than ball
 
-const BALL_MASS = 2.0; // Increase this for "heavier" balls (default 1.0)
+const BALL_MASS = 2.5; // Increase this for "heavier" balls (default 1.0)
 
 class GameState {
   constructor() {
@@ -80,14 +80,14 @@ class GameState {
     return this.players.find(p => p.ws === ws);
   }
 
-  addPlayer(username, ws) {
+  addPlayer(username, ws, color) {
     // Prevent duplicate usernames
     if (this.players.some(p => p.username === username)) {
       return { success: false };
     }
 
     const playerId = Date.now().toString();
-    this.players.push({ playerId, username, ws });
+    this.players.push({ playerId, username, ws, color });
 
     // Spawn a ball for this player at a random spot near the center, not overlapping others
     const radius = 18; // must match client
@@ -121,7 +121,8 @@ class GameState {
       x: spawnX,
       y: spawnY,
       vx: 0,
-      vy: 0
+      vy: 0,
+      color: color || '#ff2196f3', // default blue if not provided
     };
     // console.log('[DEBUG] Ball added:', this.balls[playerId]);
 
@@ -151,7 +152,7 @@ class GameState {
 
   getPlayers() {
     // Return player info without WebSocket object
-    return this.players.map(({ playerId, username }) => ({ playerId, username }));
+    return this.players.map(({ playerId, username, color }) => ({ playerId, username, color }));
   }
   
   // Set the velocity of a player's ball based on input direction (dx, dy)

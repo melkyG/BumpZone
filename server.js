@@ -143,7 +143,8 @@ wss.on('connection', (ws) => {
       if (data.type === 'join' || data.type === 'getPlayers') {
         if (data.type === 'join') {
           console.log(`👤 Attempting to add player: ${data.username}`);
-          const result = gameState.addPlayer(data.username, ws);
+          // Accept color from client if provided
+          const result = gameState.addPlayer(data.username, ws, data.color);
           if (!result.success) {
             console.warn(`⚠️ Username taken: ${data.username}`);
             ws.send(JSON.stringify({ type: 'error', message: 'username_taken' }));
@@ -159,7 +160,8 @@ wss.on('connection', (ws) => {
 
         const simplifiedPlayers = players.map(p => ({
           playerId: p.playerId,
-          username: p.username
+          username: p.username,
+          color: p.color,
         }));
 
         // For join, broadcast to all. For getPlayers, send only to requester
