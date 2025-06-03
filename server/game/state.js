@@ -63,6 +63,8 @@ class GameState {
         restLength,
         coefficientOfRestitution: BAND_COEFFICIENT_OF_RESTITUTION,
         fixedIndices: [0, BAND_SEGMENTS_PER_SIDE - 1],
+        segmentsPerSide: BAND_SEGMENTS_PER_SIDE, // <-- add this
+        restLengthScale: BAND_REST_LENGTH_SCALE, // <-- add this
       });
     }
 

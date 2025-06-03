@@ -20,7 +20,7 @@ class WebSocketService {
   void Function(String playerId)? onWelcome;
   String? playerId; // <-- Add this
   Function(ArenaState)? onArenaUpdate; // <-- Add this callback
-  void Function(double spring, double damping, double mass, double restitution)? onBandSettingsUpdate;
+  void Function(double spring, double damping, double mass, double restitution, int segmentsPerSide, double restLengthScale)? onBandSettingsUpdate;
 
   WebSocketService(this.url);
 
@@ -146,16 +146,26 @@ class WebSocketService {
             if (v is String) return double.tryParse(v) ?? fallback;
             return fallback;
           }
+          int parseInt(dynamic v, int fallback) {
+            if (v is int) return v;
+            if (v is num) return v.toInt();
+            if (v is String) return int.tryParse(v) ?? fallback;
+            return fallback;
+          }
           final spring = parseNum(data['springConstant'], 10.0);
           final damping = parseNum(data['dampingCoeff'], 1.0);
           final mass = parseNum(data['mass'], 1.0);
           final restitution = parseNum(data['restitution'], 0.85);
-          print('[CLIENT] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution');
+          final segmentsPerSide = parseInt(data['segmentsPerSide'], 35);
+          final restLengthScale = parseNum(data['restLengthScale'], 0.35);
+          print('[CLIENT] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution, $segmentsPerSide, $restLengthScale');
           onBandSettingsUpdate!(
             spring,
             damping,
             mass,
             restitution,
+            segmentsPerSide,
+            restLengthScale,
           );
         }
         break;
@@ -183,6 +193,8 @@ class WebSocketService {
     required double dampingCoeff,
     required double mass,
     required double restitution,
+    required int segmentsPerSide,
+    required double restLengthScale,
   }) {
     _send({
       'type': 'setBandSettings',
@@ -190,6 +202,8 @@ class WebSocketService {
       'dampingCoeff': dampingCoeff,
       'mass': mass,
       'restitution': restitution,
+      'segmentsPerSide': segmentsPerSide,
+      'restLengthScale': restLengthScale,
     });
   }
 

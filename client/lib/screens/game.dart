@@ -34,6 +34,8 @@ class _GameScreenState extends State<GameScreen> {
   double _dampingCoeff = 1.0;
   double _mass = 1.0;
   double _restitution = 0.85;
+  int _segmentsPerSide = 35;
+  double _restLengthScale = 0.35;
 
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
@@ -150,13 +152,15 @@ class _GameScreenState extends State<GameScreen> {
       print('[GAME] Sending getBandSettings after join'); // <-- Add this debug print
       widget.webSocketService.sendRaw({'type': 'getBandSettings'});
     };
-    widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution) {
-      print('[GAME] onBandSettingsUpdate: $spring, $damping, $mass, $restitution'); // <-- Add this debug print
+    widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution, segmentsPerSide, restLengthScale) {
+      print('[GAME] onBandSettingsUpdate: $spring, $damping, $mass, $restitution, $segmentsPerSide, $restLengthScale');
       setState(() {
         _springConstant = spring;
         _dampingCoeff = damping;
         _mass = mass;
         _restitution = restitution;
+        _segmentsPerSide = segmentsPerSide;
+        _restLengthScale = restLengthScale;
       });
     };
     widget.webSocketService.requestPlayerList();
@@ -256,6 +260,8 @@ class _GameScreenState extends State<GameScreen> {
             dampingCoeff: _dampingCoeff,
             mass: _mass,
             restitution: _restitution,
+            segmentsPerSide: _segmentsPerSide,
+            restLengthScale: _restLengthScale,
             onSpringChanged: (v) {
               setState(() => _springConstant = v);
               widget.webSocketService.sendBandSettings(
@@ -263,6 +269,8 @@ class _GameScreenState extends State<GameScreen> {
                 dampingCoeff: _dampingCoeff,
                 mass: _mass,
                 restitution: _restitution,
+                segmentsPerSide: _segmentsPerSide,
+                restLengthScale: _restLengthScale,
               );
             },
             onDampingChanged: (v) {
@@ -272,6 +280,8 @@ class _GameScreenState extends State<GameScreen> {
                 dampingCoeff: v,
                 mass: _mass,
                 restitution: _restitution,
+                segmentsPerSide: _segmentsPerSide,
+                restLengthScale: _restLengthScale,
               );
             },
             onMassChanged: (v) {
@@ -281,6 +291,8 @@ class _GameScreenState extends State<GameScreen> {
                 dampingCoeff: _dampingCoeff,
                 mass: v,
                 restitution: _restitution,
+                segmentsPerSide: _segmentsPerSide,
+                restLengthScale: _restLengthScale,
               );
             },
             onRestitutionChanged: (v) {
@@ -290,6 +302,30 @@ class _GameScreenState extends State<GameScreen> {
                 dampingCoeff: _dampingCoeff,
                 mass: _mass,
                 restitution: v,
+                segmentsPerSide: _segmentsPerSide,
+                restLengthScale: _restLengthScale,
+              );
+            },
+            onSegmentsChanged: (v) {
+              setState(() => _segmentsPerSide = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: _springConstant,
+                dampingCoeff: _dampingCoeff,
+                mass: _mass,
+                restitution: _restitution,
+                segmentsPerSide: v,
+                restLengthScale: _restLengthScale,
+              );
+            },
+            onRestLengthScaleChanged: (v) {
+              setState(() => _restLengthScale = v);
+              widget.webSocketService.sendBandSettings(
+                springConstant: _springConstant,
+                dampingCoeff: _dampingCoeff,
+                mass: _mass,
+                restitution: _restitution,
+                segmentsPerSide: _segmentsPerSide,
+                restLengthScale: v,
               );
             },
           ),

@@ -107,6 +107,8 @@ wss.on('connection', (ws) => {
       dampingCoeff: Number(b.dampingCoeff),
       mass: Number(b.mass),
       restitution: Number(b.coefficientOfRestitution),
+      segmentsPerSide: Number(b.segmentsPerSide), // <-- add
+      restLengthScale: Number(b.restLengthScale), // <-- add
     }));
     // This print statement is present:
     console.log('[SERVER] Sent bandSettings on connect:', {
@@ -174,6 +176,8 @@ wss.on('connection', (ws) => {
         if (typeof data.dampingCoeff === 'number') gameState.bands.forEach(b => b.dampingCoeff = data.dampingCoeff);
         if (typeof data.mass === 'number') gameState.bands.forEach(b => b.mass = data.mass);
         if (typeof data.restitution === 'number') gameState.bands.forEach(b => b.coefficientOfRestitution = data.restitution);
+        if (typeof data.segmentsPerSide === 'number') gameState.bands.forEach(b => b.segmentsPerSide = data.segmentsPerSide);
+        if (typeof data.restLengthScale === 'number') gameState.bands.forEach(b => b.restLengthScale = data.restLengthScale);
         console.log('[SERVER] Band settings updated:', {
           springConstant: data.springConstant,
           dampingCoeff: data.dampingCoeff,
@@ -189,6 +193,8 @@ wss.on('connection', (ws) => {
               dampingCoeff: data.dampingCoeff,
               mass: data.mass,
               restitution: data.restitution,
+              segmentsPerSide: data.segmentsPerSide,
+              restLengthScale: data.restLengthScale,
             }));
           }
         });
@@ -201,6 +207,8 @@ wss.on('connection', (ws) => {
             dampingCoeff: Number(b.dampingCoeff),
             mass: Number(b.mass),
             restitution: Number(b.coefficientOfRestitution),
+            segmentsPerSide: Number(b.segmentsPerSide),
+            restLengthScale: Number(b.restLengthScale),
           }));
         }
       }

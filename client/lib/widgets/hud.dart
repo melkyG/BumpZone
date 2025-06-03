@@ -74,10 +74,14 @@ class BandSettingsHUD extends StatefulWidget {
   final double dampingCoeff;
   final double mass;
   final double restitution;
+  final int segmentsPerSide;
+  final double restLengthScale;
   final ValueChanged<double> onSpringChanged;
   final ValueChanged<double> onDampingChanged;
   final ValueChanged<double> onMassChanged;
   final ValueChanged<double> onRestitutionChanged;
+  final ValueChanged<int> onSegmentsChanged;
+  final ValueChanged<double> onRestLengthScaleChanged;
 
   const BandSettingsHUD({
     super.key,
@@ -85,10 +89,14 @@ class BandSettingsHUD extends StatefulWidget {
     required this.dampingCoeff,
     required this.mass,
     required this.restitution,
+    required this.segmentsPerSide,
+    required this.restLengthScale,
     required this.onSpringChanged,
     required this.onDampingChanged,
     required this.onMassChanged,
     required this.onRestitutionChanged,
+    required this.onSegmentsChanged,
+    required this.onRestLengthScaleChanged,
   });
 
   @override
@@ -140,7 +148,7 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
             const SizedBox(height: 12),
             _buildSlider(
               label: 'Spring Constant',
-              value: widget.springConstant, // Always use prop from parent
+              value: widget.springConstant,
               min: 1.0,
               max: 300.0,
               divisions: 299,
@@ -169,6 +177,31 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
               max: 1.0,
               divisions: 100,
               onChanged: widget.onRestitutionChanged,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Segments Per Side: ${widget.segmentsPerSide}', style: const TextStyle(fontSize: 16)),
+                  Slider(
+                    value: widget.segmentsPerSide.toDouble(),
+                    min: 5,
+                    max: 100,
+                    divisions: 95,
+                    label: widget.segmentsPerSide.toString(),
+                    onChanged: (v) => widget.onSegmentsChanged(v.round()),
+                  ),
+                ],
+              ),
+            ),
+            _buildSlider(
+              label: 'Rest Length Scale',
+              value: widget.restLengthScale,
+              min: 0.01,
+              max: 2.0,
+              divisions: 199,
+              onChanged: widget.onRestLengthScaleChanged,
             ),
           ],
         ],
@@ -209,10 +242,14 @@ class HUD extends StatelessWidget {
   final double dampingCoeff;
   final double mass;
   final double restitution;
+  final int segmentsPerSide;
+  final double restLengthScale;
   final ValueChanged<double> onSpringChanged;
   final ValueChanged<double> onDampingChanged;
   final ValueChanged<double> onMassChanged;
   final ValueChanged<double> onRestitutionChanged;
+  final ValueChanged<int> onSegmentsChanged;
+  final ValueChanged<double> onRestLengthScaleChanged;
 
   const HUD({
     super.key,
@@ -221,10 +258,14 @@ class HUD extends StatelessWidget {
     required this.dampingCoeff,
     required this.mass,
     required this.restitution,
+    required this.segmentsPerSide,
+    required this.restLengthScale,
     required this.onSpringChanged,
     required this.onDampingChanged,
     required this.onMassChanged,
     required this.onRestitutionChanged,
+    required this.onSegmentsChanged,
+    required this.onRestLengthScaleChanged,
   });
 
   @override
@@ -239,10 +280,14 @@ class HUD extends StatelessWidget {
             dampingCoeff: dampingCoeff,
             mass: mass,
             restitution: restitution,
+            segmentsPerSide: segmentsPerSide,
+            restLengthScale: restLengthScale,
             onSpringChanged: onSpringChanged,
             onDampingChanged: onDampingChanged,
             onMassChanged: onMassChanged,
             onRestitutionChanged: onRestitutionChanged,
+            onSegmentsChanged: onSegmentsChanged,
+            onRestLengthScaleChanged: onRestLengthScaleChanged,
           ),
         ),
       ],
