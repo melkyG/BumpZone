@@ -305,6 +305,11 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // --- Add a full-screen grey background behind everything ---
+          Positioned.fill(
+            child: Container(color: Colors.grey[300]),
+          ),
+          // --- The rest of your UI ---
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onPanStart: (DragStartDetails details) {
@@ -337,7 +342,7 @@ class _GameScreenState extends State<GameScreen> {
                   key: _arenaKey,
                   width: displaySize,
                   height: displaySize,
-                  color: Colors.white,
+                  color: Colors.transparent, // <-- Make this transparent
                   child: CustomPaint(
                     size: Size(_arenaLogicalSize, _arenaLogicalSize),
                     painter: _ArenaPainter(
@@ -349,7 +354,7 @@ class _GameScreenState extends State<GameScreen> {
                       playerColors: playerColors,
                       myPlayerId: _myPlayerId,
                       myBallColor: _myBallColor,
-                      lastBallColors: _lastBallColors, // Pass the lastBallColors map
+                      lastBallColors: _lastBallColors,
                     ),
                     isComplex: false,
                     willChange: false,
