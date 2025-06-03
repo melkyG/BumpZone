@@ -192,6 +192,17 @@ wss.on('connection', (ws) => {
             }));
           }
         });
+      } else if (data.type === 'getBandSettings') {
+        if (gameState.bands.length > 0) {
+          const b = gameState.bands[0];
+          ws.send(JSON.stringify({
+            type: 'bandSettings',
+            springConstant: Number(b.springConstant),
+            dampingCoeff: Number(b.dampingCoeff),
+            mass: Number(b.mass),
+            restitution: Number(b.coefficientOfRestitution),
+          }));
+        }
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);

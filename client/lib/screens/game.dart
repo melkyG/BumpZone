@@ -146,6 +146,8 @@ class _GameScreenState extends State<GameScreen> {
       if (_lastPointerLogical != null) {
         _startSendingMovement(_lastPointerLogical!);
       }
+      // Request band settings after join
+      widget.webSocketService.sendRaw({'type': 'getBandSettings'});
     };
     widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution) {
       print('[GAME] onBandSettingsUpdate: $spring, $damping, $mass, $restitution'); // <-- Add this debug print
@@ -197,7 +199,6 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Allow clicking anywhere (including outside arena)
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onPanStart: (DragStartDetails details) {
@@ -238,7 +239,7 @@ class _GameScreenState extends State<GameScreen> {
                       bands: _bands,
                       posts: _posts,
                       arenaLogicalSize: _arenaLogicalSize,
-                      cameraOffset: cameraOffset, // pass camera offset
+                      cameraOffset: cameraOffset,
                     ),
                     isComplex: false,
                     willChange: false,
@@ -292,7 +293,6 @@ class _GameScreenState extends State<GameScreen> {
             },
           ),
           if (!ready)
-            // Show a loading overlay until playerId is set
             Container(
               color: Colors.black.withOpacity(0.3),
               child: const Center(
@@ -329,7 +329,6 @@ class _ArenaPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final double scale = size.width / arenaLogicalSize;
-    // Defensive: cameraOffset may be null or NaN
     final double camX = (cameraOffset.dx.isNaN || cameraOffset.dx.isInfinite)
         ? arenaLogicalSize / 2
         : cameraOffset.dx;
@@ -341,7 +340,6 @@ class _ArenaPainter extends CustomPainter {
       size.height / 2 - camY * scale,
     );
 
-    // Draw arena border
     final Paint borderPaint = Paint()
       ..color = Colors.black
       ..style = PaintingStyle.stroke
@@ -351,7 +349,6 @@ class _ArenaPainter extends CustomPainter {
       borderPaint,
     );
 
-    // Draw bands
     final Paint bandPaint = Paint()
       ..color = Colors.orange
       ..style = PaintingStyle.stroke
@@ -368,7 +365,6 @@ class _ArenaPainter extends CustomPainter {
       }
     }
 
-    // Draw posts
     final Paint postPaint = Paint()
       ..color = Colors.red
       ..style = PaintingStyle.fill;
@@ -380,7 +376,6 @@ class _ArenaPainter extends CustomPainter {
       );
     }
 
-    // Draw balls
     final Paint ballPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;

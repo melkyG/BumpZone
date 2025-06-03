@@ -193,6 +193,10 @@ class WebSocketService {
     });
   }
 
+  void sendRaw(Map<String, dynamic> message) {
+    _send(message);
+  }
+
   void _send(Map<String, dynamic> message) {
     final encoded = jsonEncode(message);
     print("🔹 Sending WebSocket message: $encoded"); // ✅ Debug output

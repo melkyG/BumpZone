@@ -75,11 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = 'Username must be 1-20 characters';
       });
       return;
-    }    setState(() {
+    }
+    setState(() {
       _errorMessage = null;
       _joining = true;
     });
-    
+
     // Send join request and wait for server confirmation
     _webSocketService.join(username);
   }
