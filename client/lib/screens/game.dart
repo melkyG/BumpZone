@@ -328,6 +328,9 @@ class _GameScreenState extends State<GameScreen> {
                 restLengthScale: v,
               );
             },
+            onResetToDefault: () {
+              widget.webSocketService.sendRaw({'type': 'resetBandSettings'});
+            },
           ),
           if (!ready)
             Container(

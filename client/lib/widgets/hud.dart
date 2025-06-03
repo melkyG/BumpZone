@@ -82,6 +82,7 @@ class BandSettingsHUD extends StatefulWidget {
   final ValueChanged<double> onRestitutionChanged;
   final ValueChanged<int> onSegmentsChanged;
   final ValueChanged<double> onRestLengthScaleChanged;
+  final VoidCallback onResetToDefault;
 
   const BandSettingsHUD({
     super.key,
@@ -97,6 +98,7 @@ class BandSettingsHUD extends StatefulWidget {
     required this.onRestitutionChanged,
     required this.onSegmentsChanged,
     required this.onRestLengthScaleChanged,
+    required this.onResetToDefault,
   });
 
   @override
@@ -203,6 +205,13 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
               divisions: 199,
               onChanged: widget.onRestLengthScaleChanged,
             ),
+            const SizedBox(height: 12),
+            Center(
+              child: ElevatedButton(
+                onPressed: widget.onResetToDefault,
+                child: const Text('Default'),
+              ),
+            ),
           ],
         ],
       ),
@@ -250,6 +259,7 @@ class HUD extends StatelessWidget {
   final ValueChanged<double> onRestitutionChanged;
   final ValueChanged<int> onSegmentsChanged;
   final ValueChanged<double> onRestLengthScaleChanged;
+  final VoidCallback onResetToDefault;
 
   const HUD({
     super.key,
@@ -266,6 +276,7 @@ class HUD extends StatelessWidget {
     required this.onRestitutionChanged,
     required this.onSegmentsChanged,
     required this.onRestLengthScaleChanged,
+    required this.onResetToDefault,
   });
 
   @override
@@ -288,6 +299,7 @@ class HUD extends StatelessWidget {
             onRestitutionChanged: onRestitutionChanged,
             onSegmentsChanged: onSegmentsChanged,
             onRestLengthScaleChanged: onRestLengthScaleChanged,
+            onResetToDefault: onResetToDefault,
           ),
         ),
       ],

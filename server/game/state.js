@@ -5,14 +5,16 @@ const ACCELERATION = 500; // units per second^2
 
 const BALL_RADIUS = 18; // must match client
 
-const BAND_SEGMENTS_PER_SIDE = 35; // from reference code
-const BAND_SPRING_CONSTANT = 200.0;
-const BAND_DAMPING_COEFF = 0.06;
-const BAND_MASS = 0.07;
-const BAND_REST_LENGTH_SCALE = 0.35;
-const BAND_COEFFICIENT_OF_RESTITUTION = 0.85;
+const BAND_SEGMENTS_PER_SIDE = 5; // from reference code
+const BAND_SPRING_CONSTANT = 15.0;
+const BAND_DAMPING_COEFF = 0.05;
+const BAND_MASS = 0.05;
+const BAND_REST_LENGTH_SCALE = 0.01;
+const BAND_COEFFICIENT_OF_RESTITUTION = 0.7;
 
 const POST_RADIUS = 22; // for collision, slightly larger than ball
+
+const BALL_MASS = 2.0; // Increase this for "heavier" balls (default 1.0)
 
 class GameState {
   constructor() {
@@ -173,8 +175,9 @@ class GameState {
         // Apply the impulse once
         const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
         if (len > 0) {
-          const ax = (impulse.dx / len) * ACCELERATION;
-          const ay = (impulse.dy / len) * ACCELERATION;
+          // Scale acceleration by BALL_MASS (heavier = less acceleration)
+          const ax = (impulse.dx / len) * ACCELERATION / BALL_MASS;
+          const ay = (impulse.dy / len) * ACCELERATION / BALL_MASS;
           ball.vx += ax * dt * 0.05;
           ball.vy += ay * dt * 0.05;
         }
@@ -183,8 +186,9 @@ class GameState {
         // Apply acceleration if input is held
         const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
         if (len > 0) {
-          const ax = (input.dx / len) * ACCELERATION;
-          const ay = (input.dy / len) * ACCELERATION;
+          // Scale acceleration by BALL_MASS
+          const ax = (input.dx / len) * ACCELERATION / BALL_MASS;
+          const ay = (input.dy / len) * ACCELERATION / BALL_MASS;
           ball.vx += ax * dt * 0.05;
           ball.vy += ay * dt * 0.05;
         }
@@ -518,5 +522,14 @@ function safeNormalize(dx, dy) {
   return { x: dx / len, y: dy / len };
 }
 
-module.exports = { GameState, ARENA_SIZE };
+module.exports = {
+  GameState,
+  ARENA_SIZE,
+  BAND_SPRING_CONSTANT,
+  BAND_DAMPING_COEFF,
+  BAND_MASS,
+  BAND_COEFFICIENT_OF_RESTITUTION,
+  BAND_SEGMENTS_PER_SIDE,
+  BAND_REST_LENGTH_SCALE
+};
 

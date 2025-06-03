@@ -29,6 +29,15 @@ const path = require('path');
 const { GameState, ARENA_SIZE } = require('./server/game/state');
 const gameState = new GameState(); // Only one instance!
 const { encodeBalls } = require('./server/game/ballBinary');
+// Add these constants for defaults:
+const {
+  BAND_SPRING_CONSTANT,
+  BAND_DAMPING_COEFF,
+  BAND_MASS,
+  BAND_COEFFICIENT_OF_RESTITUTION,
+  BAND_SEGMENTS_PER_SIDE,
+  BAND_REST_LENGTH_SCALE
+} = require('./server/game/state');
 // Add this utility for bands and posts:
 function encodeArenaState(balls, bands, posts) {
   // Format:
@@ -236,6 +245,29 @@ wss.on('connection', (ws) => {
             restLengthScale: Number(b.restLengthScale),
           }));
         }
+      } else if (data.type === 'resetBandSettings') {
+        // Reset all bands to default values
+        gameState.updateBandStructure(BAND_SEGMENTS_PER_SIDE, BAND_REST_LENGTH_SCALE);
+        gameState.bands.forEach(b => {
+          b.springConstant = BAND_SPRING_CONSTANT;
+          b.dampingCoeff = BAND_DAMPING_COEFF;
+          b.mass = BAND_MASS;
+          b.coefficientOfRestitution = BAND_COEFFICIENT_OF_RESTITUTION;
+        });
+        // Broadcast new settings to all clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'bandSettings',
+              springConstant: BAND_SPRING_CONSTANT,
+              dampingCoeff: BAND_DAMPING_COEFF,
+              mass: BAND_MASS,
+              restitution: BAND_COEFFICIENT_OF_RESTITUTION,
+              segmentsPerSide: BAND_SEGMENTS_PER_SIDE,
+              restLengthScale: BAND_REST_LENGTH_SCALE,
+            }));
+          }
+        });
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);
