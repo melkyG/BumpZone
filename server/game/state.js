@@ -26,7 +26,7 @@ class GameState {
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
-    const margin = 100;
+    const margin = 250;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
