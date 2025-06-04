@@ -578,6 +578,9 @@ class _GameScreenState extends State<GameScreen> {
     print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)'); // <-- Add this debug print
     // Send burst flag to server
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
+
+    // --- FIX: Stop sending movement after burst unless user is actively holding/tapping ---
+    _stopSendingMovement();
   }
 
   @override
