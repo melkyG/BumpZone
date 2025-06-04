@@ -336,11 +336,11 @@ class _BatteryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 110;
-    const double height = 28;
-    const double border = 3;
-    const double tipWidth = 8;
-    const double tipHeight = 14;
+    const double width = 150;
+    const double height = 50;
+    const double border = 5;
+    const double tipWidth = 7;
+    const double tipHeight = 15;
     final double fillWidth = (width - border * 2) * staminaPercent.clamp(0.0, 1.0);
 
     return SizedBox(
