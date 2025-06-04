@@ -1,7 +1,7 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 1800; // Logical units (e.g., pixels)
 
-const ACCELERATION = 700; // units per second^2
+const ACCELERATION = 750; // units per second^2
 
 const BALL_RADIUS = 18; // must match client
 
@@ -18,8 +18,8 @@ const BALL_MASS = 2.5; // Increase this for "heavier" balls (default 1.0)
 
 // Stamina system constants
 const STAMINA_MAX = 1.0;
-const STAMINA_DRAIN_PER_SEC = 0.35; // how fast stamina drains when holding (per second)
-const STAMINA_RECOVER_PER_SEC = 0.25; // how fast stamina recovers when not holding (per second)
+const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per second)
+const STAMINA_RECOVER_PER_SEC = 0.4; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
 class GameState {
@@ -34,7 +34,7 @@ class GameState {
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
-    const margin = 300;
+    const margin = 310;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
