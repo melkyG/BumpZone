@@ -66,7 +66,7 @@ class _GameScreenState extends State<GameScreen> {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
     // --- FIX: Use box.localToGlobal(Offset.zero) to get the arena's top-left in global coordinates ---
-    final Offset arenaTopLeftGlobal = box.localToGlobal(Offset.zero);
+    final Offset arenaTopLeftGlobal = box.localToGlobal(Offset(0, 0));
     final double scale = box.size.width / _arenaLogicalSize;
     final Offset cameraOffset = _smoothedCameraOffset ??
         Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
@@ -352,16 +352,14 @@ class _GameScreenState extends State<GameScreen> {
             if (!_pendingBurst) {
               _pendingBurst = true;
               Offset? pointer;
-              Offset? mousePosition;
               try {
-                // --- Always get the latest mouse position relative to the arena after camera movement ---
                 final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box != null) {
-                  // Use the current mouse position in global coordinates
-                  // (If _lastPointerGlobal is null, fallback to center)
+                  // --- Use the same logic as click/tap: get the mouse position relative to the arena widget ---
+                  // If _lastPointerGlobal is set, use it (it's in global coordinates, just like click/tap)
+                  // If not, fallback to the center of the arena
                   final Offset globalPointer = _lastPointerGlobal ??
                       box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
-                  // Recalculate logical using the latest camera/arena state
                   pointer = globalPointer;
                 }
               } catch (_) {
@@ -383,7 +381,6 @@ class _GameScreenState extends State<GameScreen> {
               // ---------------------------------------------------------------
               if (pointer != null) {
                 final logical = _getLogicalFromGlobal(pointer);
-                print('[BURST] Logical burst target: $logical');
                 _sendBurstTo(logical);
               }
             }
