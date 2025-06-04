@@ -184,7 +184,12 @@ class GameState {
     }
     this.inputDirections[playerId] = { dx, dy };
     if (burst) {
-      this.burstRequests[playerId] = { dx, dy };
+      // Only store burst request if player has enough stamina right now
+      const ball = this.balls[playerId];
+      if (ball && typeof ball.stamina === 'number' && ball.stamina >= BURST_MIN_STAMINA) {
+        this.burstRequests[playerId] = { dx, dy };
+      }
+      // else: ignore burst request if not enough stamina
     }
   }
 
