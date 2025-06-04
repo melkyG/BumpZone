@@ -354,22 +354,18 @@ class _GameScreenState extends State<GameScreen> {
               Offset? pointer;
               Offset? mousePosition;
               try {
-                // Fallback: Use _lastPointerGlobal if available (from last click/tap/drag)
-                if (_lastPointerGlobal != null) {
-                  mousePosition = _lastPointerGlobal;
-                }
-              } catch (_) {
-                // Fallback: ignore errors, mousePosition remains null
-              }
-              if (mousePosition != null) {
-                pointer = mousePosition;
-              }
-              // Fallback to center if mouse is not available
-              if (pointer == null) {
+                // --- Always get the latest mouse position relative to the arena after camera movement ---
                 final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box != null) {
-                  pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+                  // Use the current mouse position in global coordinates
+                  // (If _lastPointerGlobal is null, fallback to center)
+                  final Offset globalPointer = _lastPointerGlobal ??
+                      box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+                  // Recalculate logical using the latest camera/arena state
+                  pointer = globalPointer;
                 }
+              } catch (_) {
+                pointer = null;
               }
               // --- DEBUG PRINT: Print the pointer position when burst is activated ---
               print('[BURST] Raw pointer for burst: $pointer');

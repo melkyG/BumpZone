@@ -35279,22 +35279,22 @@ A.aas.prototype={
 $1(a){return a.a===this.a.a.c.w},
 $S:49}
 A.aaB.prototype={
-$1(a){var s,r,q,p,o,n,m,l,k
-if(a instanceof A.jp&&a.c.grG().j(0,B.fy)){q=this.a
-if(!q.fr){q.fr=!0
+$1(a){var s,r,q,p,o,n,m,l,k,j
+if(a instanceof A.jp&&a.c.grG().j(0,B.fy)){o=this.a
+if(!o.fr){o.fr=!0
 s=null
-try{p=q.db
-if(p!=null)s=p}catch(o){}n=s!=null?s:null
-if(n==null){p=$.Z.a6$.x.h(0,q.f)
-p=p==null?null:p.gT()
-t.Qv.a(p)
-if(p!=null){m=p.gp()
-l=p.gp()
-n=A.b6(p.aD(null),new A.f(m.a/2,l.b/2))}}A.bO("[BURST] Raw pointer for burst: "+A.m(n))
-if(q.a.c.w!=null){r=null
-try{r=B.b.mC(q.r,new A.aal(q))}catch(o){r=null}if(r!=null)A.bO("[BURST] My ball position: ("+A.m(r.b)+", "+A.m(r.c)+")")}if(n!=null){k=q.nI(n)
-A.bO("[BURST] Logical burst target: "+k.k(0))
-q.a7d(k)}}}if(a instanceof A.nw&&a.c.grG().j(0,B.fy))this.a.fr=!1},
+try{n=$.Z.a6$.x.h(0,o.f)
+n=n==null?null:n.gT()
+r=t.Qv.a(n)
+if(r!=null){m=o.db
+if(m==null){n=r.gp()
+l=r.gp()
+m=A.b6(r.aD(null),new A.f(n.a/2,l.b/2))}q=m
+s=q}}catch(k){s=null}A.bO("[BURST] Raw pointer for burst: "+A.m(s))
+if(o.a.c.w!=null){p=null
+try{p=B.b.mC(o.r,new A.aal(o))}catch(k){p=null}if(p!=null)A.bO("[BURST] My ball position: ("+A.m(p.b)+", "+A.m(p.c)+")")}if(s!=null){j=o.nI(s)
+A.bO("[BURST] Logical burst target: "+j.k(0))
+o.a7d(j)}}}if(a instanceof A.nw&&a.c.grG().j(0,B.fy))this.a.fr=!1},
 $S:76}
 A.aal.prototype={
 $1(a){return a.a===this.a.a.c.w},
