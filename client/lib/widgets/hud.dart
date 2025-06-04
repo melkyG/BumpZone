@@ -320,9 +320,12 @@ class HUD extends StatelessWidget {
         ),
         // --- Battery/Stamina HUD in bottom right ---
         Positioned(
-          right: 24,
-          bottom: 24,
-          child: _BatteryWidget(staminaPercent: staminaPercent ?? 1.0),
+          right: 20, // Reduced margin from 24 to 8
+          bottom: 20, // Reduced margin from 24 to 8
+          child: Opacity(
+            opacity: 0.85, // Set transparency (0.0 = fully transparent, 1.0 = opaque)
+            child: _BatteryWidget(staminaPercent: staminaPercent ?? 1.0),
+          ),
         ),
       ],
     );
@@ -336,11 +339,11 @@ class _BatteryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 500;
+    const double width = 350;
     const double height = 50;
-    const double border = 5;
-    const double tipWidth = 7;
-    const double tipHeight = 15;
+    const double border = 7;
+    const double tipWidth = 8;
+    const double tipHeight = 17;
     final double fillWidth = (width - border * 2) * staminaPercent.clamp(0.0, 1.0);
 
     return SizedBox(
