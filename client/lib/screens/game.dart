@@ -352,33 +352,21 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              // --- Always update _lastPointerCameraOffset to the latest camera before burst ---
-              // FIX: Only update _lastPointerCameraOffset if _lastPointerGlobal is not null
-              // and _lastPointerCameraOffset is not newer than _smoothedCameraOffset
-              // (prevents accumulating camera deltas on repeated bursts)
-              if (_lastPointerGlobal != null && _smoothedCameraOffset != null) {
-                // Only update if camera offset has changed since last pointer update
-                if (_lastPointerCameraOffset == null ||
-                    _lastPointerCameraOffset != _smoothedCameraOffset) {
-                  _lastPointerCameraOffset = Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy);
-                }
+              // --- Calculate logicalTarget at the moment of burst using the latest pointer position and camera ---
+              Offset pointer;
+              final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+              if (_lastPointerGlobal != null) {
+                pointer = _lastPointerGlobal!;
+              } else if (box != null) {
+                // Fallback to arena center if mouse never moved
+                pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+              } else {
+                pointer = Offset.zero;
               }
-              Offset pointer = _getAdjustedPointerGlobal();
-              print('[BURST] Raw pointer for burst: $pointer');
-              if (_myPlayerId != null) {
-                Ball? myBall;
-                try {
-                  myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
-                } catch (_) {
-                  myBall = null;
-                }
-                if (myBall != null) {
-                  print('[BURST] My ball position: (${myBall.x}, ${myBall.y})');
-                }
-              }
-              final logical = _getLogicalFromGlobal(pointer);
-              print('[BURST] Logical burst target: $logical');
-              _sendBurstTo(logical);
+              // Convert to logicalTarget using the current camera/canvas state
+              final logicalTarget = _getLogicalFromGlobal(pointer);
+              print('[BURST] logicalTarget: $logicalTarget');
+              _sendBurstTo(logicalTarget);
             }
           }
           if (event is RawKeyUpEvent && event.logicalKey == LogicalKeyboardKey.space) {
@@ -604,6 +592,30 @@ class _GameScreenState extends State<GameScreen> {
     return Offset.zero;
   }
 }
+
+// Click/hold (movement) input coordinate flow:
+
+// 1. When the user clicks/taps or drags in the arena, Flutter provides a DragStartDetails, DragUpdateDetails, or TapDownDetails.
+//    These have a .globalPosition property, which is the pointer's position in global (screen) coordinates.
+
+// 2. In onPanStart, onPanUpdate, onTapDown, you call:
+//      final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+//      _updatePointerGlobal(details.globalPosition);
+//      _startSendingMovement(logicalTarget, details.globalPosition);
+//    or
+//      _updateSendingMovement(logicalTarget, details.globalPosition);
+
+// 3. _getLogicalFromGlobal(globalPosition) does:
+//      - Gets the RenderBox for the arena widget.
+//      - Converts the global pointer position to a local position relative to the arena widget.
+//      - Adjusts for camera offset and scale to compute the logical arena coordinates.
+
+// 4. The logicalTarget is then used to compute the direction from the player's ball to the pointer in logical space.
+//    This direction is sent to the server for movement.
+
+// 5. While holding, a timer keeps sending updated movement directions, always recalculating logicalTarget from the latest global pointer position and the current camera offset.
+
+// This works because every click/drag/tap event gives you the true global pointer position at that moment, and you always convert it to logical using the current camera state.
 
 class _ArenaPainter extends CustomPainter {
   final List<Ball> balls;
