@@ -9,7 +9,6 @@ import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 import 'dart:typed_data'; // Add this at the top with other imports
 import 'package:flutter/services.dart'; // <-- Add this import for RawKeyboardListener and LogicalKeyboardKey
 import 'package:flutter/rendering.dart'; // Add this import for mouseTracker
-import 'dart:html' as html; // ignore: avoid_web_libraries_in_flutter
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -67,7 +66,7 @@ class _GameScreenState extends State<GameScreen> {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
     // --- FIX: Use box.localToGlobal(Offset.zero) to get the arena's top-left in global coordinates ---
-    final Offset arenaTopLeftGlobal = box.localToGlobal(Offset(0, 0));
+    final Offset arenaTopLeftGlobal = box.localToGlobal(Offset.zero);
     final double scale = box.size.width / _arenaLogicalSize;
     final Offset cameraOffset = _smoothedCameraOffset ??
         Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
@@ -352,11 +351,45 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              // Use the adjusted pointer for burst
-              final pointer = _getBurstPointerGlobal();
-              final logicalTarget = _getLogicalFromGlobal(pointer);
-              print('[BURST] logicalTarget: $logicalTarget');
-              _sendBurstTo(logicalTarget);
+              Offset? pointer;
+              Offset? mousePosition;
+              try {
+                // Fallback: Use _lastPointerGlobal if available (from last click/tap/drag)
+                if (_lastPointerGlobal != null) {
+                  mousePosition = _lastPointerGlobal;
+                }
+              } catch (_) {
+                // Fallback: ignore errors, mousePosition remains null
+              }
+              if (mousePosition != null) {
+                pointer = mousePosition;
+              }
+              // Fallback to center if mouse is not available
+              if (pointer == null) {
+                final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+                if (box != null) {
+                  pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+                }
+              }
+              // --- DEBUG PRINT: Print the pointer position when burst is activated ---
+              print('[BURST] Raw pointer for burst: $pointer');
+              if (_myPlayerId != null) {
+                Ball? myBall;
+                try {
+                  myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+                } catch (_) {
+                  myBall = null;
+                }
+                if (myBall != null) {
+                  print('[BURST] My ball position: (${myBall.x}, ${myBall.y})');
+                }
+              }
+              // ---------------------------------------------------------------
+              if (pointer != null) {
+                final logical = _getLogicalFromGlobal(pointer);
+                print('[BURST] Logical burst target: $logical');
+                _sendBurstTo(logical);
+              }
             }
           }
           if (event is RawKeyUpEvent && event.logicalKey == LogicalKeyboardKey.space) {
@@ -374,22 +407,30 @@ class _GameScreenState extends State<GameScreen> {
               behavior: HitTestBehavior.translucent,
               onPanStart: (DragStartDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _updatePointerGlobal(details.globalPosition);
                 _startSendingMovement(logicalTarget, details.globalPosition);
               },
               onPanUpdate: (DragUpdateDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _updatePointerGlobal(details.globalPosition);
                 _updateSendingMovement(logicalTarget, details.globalPosition);
+              },
+              onPanEnd: (DragEndDetails details) {
+                _stopSendingMovement();
+              },
+              onPanCancel: () {
+                _stopSendingMovement();
               },
               onTapDown: (TapDownDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                _updatePointerGlobal(details.globalPosition);
                 _startSendingMovement(logicalTarget, details.globalPosition);
+              },
+              onTapUp: (TapUpDetails details) {
+                _stopSendingMovement();
               },
               child: MouseRegion(
                 onHover: (PointerHoverEvent event) {
-                  _updatePointerGlobal(event.position);
+                  // Only update the pointer position for burst direction
+                  _lastPointerGlobal = event.position;
+                  // DO NOT call _startSendingMovement or _updateSendingMovement here!
                 },
                 // Prevent MouseRegion from activating gestures unless a button is pressed
                 child: Listener(
@@ -522,38 +563,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  // Store the last burst's ball position
-  Offset? _lastBurstBallPosition;
-
-  // This function returns the pointer position for burst (relative to ball movement)
-  Offset _getBurstPointerGlobal() {
-    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-    Ball? myBall;
-    try {
-      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
-    } catch (_) {
-      myBall = null;
-    }
-    // If this is the first burst or mouse moved, just use the last pointer global
-    if (_lastPointerGlobal != null && _lastBurstBallPosition != null && myBall != null) {
-      // Calculate how much the ball moved since last burst
-      final Offset ballDelta = Offset(myBall.x, myBall.y) - _lastBurstBallPosition!;
-      // Convert ballDelta (arena units) to screen pixels
-      if (box != null) {
-        final double scale = box.size.width / _arenaLogicalSize;
-        final Offset pixelDelta = Offset(ballDelta.dx * scale, ballDelta.dy * scale);
-        // Add the ball's movement to the last pointer global
-        return _lastPointerGlobal! + pixelDelta;
-      }
-    }
-    // Fallback: just use the last pointer global or center
-    if (_lastPointerGlobal != null) return _lastPointerGlobal!;
-    if (box != null) {
-      return box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
-    }
-    return Offset.zero;
-  }
-
   void _sendBurstTo(Offset logicalTarget) {
     if (_myPlayerId == null) return;
     Ball? myBall;
@@ -564,17 +573,16 @@ class _GameScreenState extends State<GameScreen> {
     }
     if (myBall == null) return;
 
-    // Save the ball position at the time of burst
-    _lastBurstBallPosition = Offset(myBall.x, myBall.y);
-
     final double dx = logicalTarget.dx - myBall.x;
     final double dy = logicalTarget.dy - myBall.y;
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
-    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)');
+    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)'); // <-- Add this debug print
+    // Send burst flag to server
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
 
+    // --- FIX: Stop sending movement after burst unless user is actively holding/tapping ---
     _stopSendingMovement();
   }
 
@@ -583,41 +591,7 @@ class _GameScreenState extends State<GameScreen> {
     _moveTimer?.cancel();
     super.dispose();
   }
-
-  Offset? _lastPointerCameraOffset; // Camera offset when mouse last moved
-
-  // Call this whenever the mouse moves or user clicks/taps in the arena
-  void _updatePointerGlobal(Offset globalPosition) {
-    _lastPointerGlobal = globalPosition;
-    _lastPointerCameraOffset = _smoothedCameraOffset != null
-        ? Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy)
-        : null;
-  }
 }
-
-// Click/hold (movement) input coordinate flow:
-
-// 1. When the user clicks/taps or drags in the arena, Flutter provides a DragStartDetails, DragUpdateDetails, or TapDownDetails.
-//    These have a .globalPosition property, which is the pointer's position in global (screen) coordinates.
-
-// 2. In onPanStart, onPanUpdate, onTapDown, you call:
-//      final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-//      _updatePointerGlobal(details.globalPosition);
-//      _startSendingMovement(logicalTarget, details.globalPosition);
-//    or
-//      _updateSendingMovement(logicalTarget, details.globalPosition);
-
-// 3. _getLogicalFromGlobal(globalPosition) does:
-//      - Gets the RenderBox for the arena widget.
-//      - Converts the global pointer position to a local position relative to the arena widget.
-//      - Adjusts for camera offset and scale to compute the logical arena coordinates.
-
-// 4. The logicalTarget is then used to compute the direction from the player's ball to the pointer in logical space.
-//    This direction is sent to the server for movement.
-
-// 5. While holding, a timer keeps sending updated movement directions, always recalculating logicalTarget from the latest global pointer position and the current camera offset.
-
-// This works because every click/drag/tap event gives you the true global pointer position at that moment, and you always convert it to logical using the current camera state.
 
 class _ArenaPainter extends CustomPainter {
   final List<Ball> balls;
