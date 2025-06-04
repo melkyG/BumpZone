@@ -190,8 +190,10 @@ class _GameScreenState extends State<GameScreen> {
           myBall = null;
         }
         if (myBall != null && myBall.stamina != null) {
-          // Assume stamina is 0.0 - 1.0 (if not, normalize here)
           _myStamina = myBall.stamina;
+          print('[DEBUG] (onArenaUpdate) myBall.stamina: ${myBall.stamina}');
+        } else {
+          print('[DEBUG] (onArenaUpdate) myBall or stamina is null');
         }
         // Camera smoothing: update target position here
         final Offset target = (myBall != null)
@@ -228,6 +230,19 @@ class _GameScreenState extends State<GameScreen> {
       }
       setState(() {
         _balls = balls;
+        // --- Also update stamina here ---
+        Ball? myBall;
+        try {
+          myBall = balls.firstWhere((b) => b.id == _myPlayerId);
+        } catch (_) {
+          myBall = null;
+        }
+        if (myBall != null && myBall.stamina != null) {
+          _myStamina = myBall.stamina;
+          print('[DEBUG] (onBallsUpdate) myBall.stamina: ${myBall.stamina}');
+        } else {
+          print('[DEBUG] (onBallsUpdate) myBall or stamina is null');
+        }
       });
     };
     widget.webSocketService.onWelcome = (playerId) {
@@ -313,6 +328,8 @@ class _GameScreenState extends State<GameScreen> {
         } catch (_) {}
       }
     }
+
+    print('[DEBUG] (build) _myStamina: $_myStamina');
 
     return Scaffold(
       body: Stack(

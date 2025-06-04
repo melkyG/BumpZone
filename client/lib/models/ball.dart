@@ -6,7 +6,7 @@ class Ball {
   final double vx;
   final double vy;
   final String? color;
-  final double? stamina; // Add this field
+  final double? stamina; // must exist
 
   Ball({
     required this.id,
@@ -15,7 +15,7 @@ class Ball {
     required this.vx,
     required this.vy,
     this.color,
-    this.stamina, // Add this
+    this.stamina,
   });
 
   factory Ball.fromJson(Map<String, dynamic> json) {
@@ -26,7 +26,7 @@ class Ball {
       vx: (json['vx'] as num).toDouble(),
       vy: (json['vy'] as num).toDouble(),
       color: json['color'] as String?,
-      stamina: json['stamina'] != null ? (json['stamina'] as num).toDouble() : null, // Add this
+      stamina: json['stamina'] != null ? (json['stamina'] as num).toDouble() : null,
     );
   }
 
