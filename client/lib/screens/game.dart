@@ -8,6 +8,7 @@ import 'package:bump_zone/network/websocket.dart';
 import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 import 'dart:typed_data'; // Add this at the top with other imports
 import 'package:flutter/services.dart'; // <-- Add this import for RawKeyboardListener and LogicalKeyboardKey
+import 'package:flutter/rendering.dart'; // Add this import for mouseTracker
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -347,7 +348,20 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              Offset? pointer = _lastPointerGlobal;
+              Offset? pointer;
+              Offset? mousePosition;
+              try {
+                // Fallback: Use _lastPointerGlobal if available (from last click/tap/drag)
+                if (_lastPointerGlobal != null) {
+                  mousePosition = _lastPointerGlobal;
+                }
+              } catch (_) {
+                // Fallback: ignore errors, mousePosition remains null
+              }
+              if (mousePosition != null) {
+                pointer = mousePosition;
+              }
+              // Fallback to center if mouse is not available
               if (pointer == null) {
                 final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box != null) {
@@ -364,163 +378,157 @@ class _GameScreenState extends State<GameScreen> {
             _pendingBurst = false;
           }
         },
-        child: MouseRegion(
-          onHover: (PointerHoverEvent event) {
-            // Only update the pointer position for burst direction
-            _lastPointerGlobal = event.position;
-          },
-          child: Stack(
-            children: [
-              // --- Add a full-screen grey background behind everything ---
-              Positioned.fill(
-                child: Container(color: Colors.grey[300]),
-              ),
-              // --- The rest of your UI ---
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (DragStartDetails details) {
-                  final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                  _startSendingMovement(logicalTarget, details.globalPosition);
-                },
-                onPanUpdate: (DragUpdateDetails details) {
-                  final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                  _updateSendingMovement(logicalTarget, details.globalPosition);
-                },
-                onPanEnd: (DragEndDetails details) {
-                  _stopSendingMovement();
-                },
-                onPanCancel: () {
-                  _stopSendingMovement();
-                },
-                onTapDown: (TapDownDetails details) {
-                  final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-                  _startSendingMovement(logicalTarget, details.globalPosition);
-                },
-                onTapUp: (TapUpDetails details) {
-                  _stopSendingMovement();
-                },
-                child: Container(
-                  color: Colors.transparent,
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Center(
-                    child: Container(
-                      key: _arenaKey,
-                      width: displaySize,
-                      height: displaySize,
-                      color: Colors.transparent, // <-- Make this transparent
-                      child: CustomPaint(
-                        size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                        painter: _ArenaPainter(
-                          balls: _balls,
-                          bands: _bands,
-                          posts: _posts,
-                          arenaLogicalSize: _arenaLogicalSize,
-                          cameraOffset: cameraOffset,
-                          playerColors: playerColors,
-                          myPlayerId: _myPlayerId,
-                          myBallColor: _myBallColor,
-                          lastBallColors: _lastBallColors,
-                        ),
-                        isComplex: false,
-                        willChange: false,
+        child: Stack(
+          children: [
+            // --- Add a full-screen grey background behind everything ---
+            Positioned.fill(
+              child: Container(color: Colors.grey[300]),
+            ),
+            // --- The rest of your UI ---
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (DragStartDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget, details.globalPosition);
+              },
+              onPanUpdate: (DragUpdateDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updateSendingMovement(logicalTarget, details.globalPosition);
+              },
+              onPanEnd: (DragEndDetails details) {
+                _stopSendingMovement();
+              },
+              onPanCancel: () {
+                _stopSendingMovement();
+              },
+              onTapDown: (TapDownDetails details) {
+                final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _startSendingMovement(logicalTarget, details.globalPosition);
+              },
+              onTapUp: (TapUpDetails details) {
+                _stopSendingMovement();
+              },
+              child: Container(
+                color: Colors.transparent,
+                width: double.infinity,
+                height: double.infinity,
+                child: Center(
+                  child: Container(
+                    key: _arenaKey,
+                    width: displaySize,
+                    height: displaySize,
+                    color: Colors.transparent, // <-- Make this transparent
+                    child: CustomPaint(
+                      size: Size(_arenaLogicalSize, _arenaLogicalSize),
+                      painter: _ArenaPainter(
+                        balls: _balls,
+                        bands: _bands,
+                        posts: _posts,
+                        arenaLogicalSize: _arenaLogicalSize,
+                        cameraOffset: cameraOffset,
+                        playerColors: playerColors,
+                        myPlayerId: _myPlayerId,
+                        myBallColor: _myBallColor,
+                        lastBallColors: _lastBallColors,
                       ),
+                      isComplex: false,
+                      willChange: false,
                     ),
                   ),
                 ),
               ),
-              PlayerListHUD(players: _players),
-              HUD(
-                players: _players,
-                springConstant: _springConstant,
-                dampingCoeff: _dampingCoeff,
-                mass: _mass,
-                restitution: _restitution,
-                segmentsPerSide: _segmentsPerSide,
-                restLengthScale: _restLengthScale,
-                onSpringChanged: (v) {
-                  setState(() => _springConstant = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: v,
-                    dampingCoeff: _dampingCoeff,
-                    mass: _mass,
-                    restitution: _restitution,
-                    segmentsPerSide: _segmentsPerSide,
-                    restLengthScale: _restLengthScale,
-                  );
-                },
-                onDampingChanged: (v) {
-                  setState(() => _dampingCoeff = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: _springConstant,
-                    dampingCoeff: v,
-                    mass: _mass,
-                    restitution: _restitution,
-                    segmentsPerSide: _segmentsPerSide,
-                    restLengthScale: _restLengthScale,
-                  );
-                },
-                onMassChanged: (v) {
-                  setState(() => _mass = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: _springConstant,
-                    dampingCoeff: _dampingCoeff,
-                    mass: v,
-                    restitution: _restitution,
-                    segmentsPerSide: _segmentsPerSide,
-                    restLengthScale: _restLengthScale,
-                  );
-                },
-                onRestitutionChanged: (v) {
-                  setState(() => _restitution = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: _springConstant,
-                    dampingCoeff: _dampingCoeff,
-                    mass: _mass,
-                    restitution: v,
-                    segmentsPerSide: _segmentsPerSide,
-                    restLengthScale: _restLengthScale,
-                  );
-                },
-                onSegmentsChanged: (v) {
-                  setState(() => _segmentsPerSide = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: _springConstant,
-                    dampingCoeff: _dampingCoeff,
-                    mass: _mass,
-                    restitution: _restitution,
-                    segmentsPerSide: v,
-                    restLengthScale: _restLengthScale,
-                  );
-                },
-                onRestLengthScaleChanged: (v) {
-                  setState(() => _restLengthScale = v);
-                  widget.webSocketService.sendBandSettings(
-                    springConstant: _springConstant,
-                    dampingCoeff: _dampingCoeff,
-                    mass: _mass,
-                    restitution: _restitution,
-                    segmentsPerSide: _segmentsPerSide,
-                    restLengthScale: v,
-                  );
-                },
-                onResetToDefault: () {
-                  widget.webSocketService.sendRaw({'type': 'resetBandSettings'});
-                },
-                onRespawn: () {
-                  widget.webSocketService.sendRaw({'type': 'respawn'});
-                },
-                staminaPercent: _myStamina, // --- Add staminaPercent to HUD ---
-              ),
-              if (!ready)
-                Container(
-                  color: Colors.black.withOpacity(0.3),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+            ),
+            PlayerListHUD(players: _players),
+            HUD(
+              players: _players,
+              springConstant: _springConstant,
+              dampingCoeff: _dampingCoeff,
+              mass: _mass,
+              restitution: _restitution,
+              segmentsPerSide: _segmentsPerSide,
+              restLengthScale: _restLengthScale,
+              onSpringChanged: (v) {
+                setState(() => _springConstant = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: v,
+                  dampingCoeff: _dampingCoeff,
+                  mass: _mass,
+                  restitution: _restitution,
+                  segmentsPerSide: _segmentsPerSide,
+                  restLengthScale: _restLengthScale,
+                );
+              },
+              onDampingChanged: (v) {
+                setState(() => _dampingCoeff = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: _springConstant,
+                  dampingCoeff: v,
+                  mass: _mass,
+                  restitution: _restitution,
+                  segmentsPerSide: _segmentsPerSide,
+                  restLengthScale: _restLengthScale,
+                );
+              },
+              onMassChanged: (v) {
+                setState(() => _mass = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: _springConstant,
+                  dampingCoeff: _dampingCoeff,
+                  mass: v,
+                  restitution: _restitution,
+                  segmentsPerSide: _segmentsPerSide,
+                  restLengthScale: _restLengthScale,
+                );
+              },
+              onRestitutionChanged: (v) {
+                setState(() => _restitution = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: _springConstant,
+                  dampingCoeff: _dampingCoeff,
+                  mass: _mass,
+                  restitution: v,
+                  segmentsPerSide: _segmentsPerSide,
+                  restLengthScale: _restLengthScale,
+                );
+              },
+              onSegmentsChanged: (v) {
+                setState(() => _segmentsPerSide = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: _springConstant,
+                  dampingCoeff: _dampingCoeff,
+                  mass: _mass,
+                  restitution: _restitution,
+                  segmentsPerSide: v,
+                  restLengthScale: _restLengthScale,
+                );
+              },
+              onRestLengthScaleChanged: (v) {
+                setState(() => _restLengthScale = v);
+                widget.webSocketService.sendBandSettings(
+                  springConstant: _springConstant,
+                  dampingCoeff: _dampingCoeff,
+                  mass: _mass,
+                  restitution: _restitution,
+                  segmentsPerSide: _segmentsPerSide,
+                  restLengthScale: v,
+                );
+              },
+              onResetToDefault: () {
+                widget.webSocketService.sendRaw({'type': 'resetBandSettings'});
+              },
+              onRespawn: () {
+                widget.webSocketService.sendRaw({'type': 'respawn'});
+              },
+              staminaPercent: _myStamina, // --- Add staminaPercent to HUD ---
+            ),
+            if (!ready)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: CircularProgressIndicator(),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
