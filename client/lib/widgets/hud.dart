@@ -323,7 +323,7 @@ class HUD extends StatelessWidget {
           right: 18, // Reduced margin from 24 to 8
           bottom: 18, // Reduced margin from 24 to 8
           child: Opacity(
-            opacity: 0.80, // Set transparency (0.0 = fully transparent, 1.0 = opaque)
+            opacity: 0.70, // Set transparency (0.0 = fully transparent, 1.0 = opaque)
             child: _BatteryWidget(staminaPercent: staminaPercent ?? 1.0),
           ),
         ),
@@ -339,11 +339,11 @@ class _BatteryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 320;
+    const double width = 300;
     const double height = 50;
-    const double border = 7;
+    const double border = 6.7;
     const double tipWidth = 8;
-    const double tipHeight = 17;
+    const double tipHeight = 20;
     final double fillWidth = (width - border * 2) * staminaPercent.clamp(0.0, 1.0);
 
     return SizedBox(
@@ -399,7 +399,7 @@ class _BatteryWidget extends StatelessWidget {
 
 Color getStaminaColor(double stamina) {
   const double burstMinStamina = 0.66; // Should match BURST_MIN_STAMINA from server
-  if (stamina >= burstMinStamina * 2) {
+  if (stamina >= 0.96) {
     return Colors.green;
   } else if (stamina >= burstMinStamina) {
     return Colors.orange;

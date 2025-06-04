@@ -19,7 +19,7 @@ const BALL_MASS = 2.5; // Increase this for "heavier" balls (default 1.0)
 // Stamina system constants
 const STAMINA_MAX = 1.0;
 const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per second)
-const STAMINA_RECOVER_PER_SEC = 0.33; // how fast stamina recovers when not holding (per second)
+const STAMINA_RECOVER_PER_SEC = 0.31; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
 // Burst settings
