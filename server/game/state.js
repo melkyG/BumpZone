@@ -1,5 +1,5 @@
 // Arena/game configuration (shared with all clients)
-const ARENA_SIZE = 2000; // Logical units (e.g., pixels)
+const ARENA_SIZE = 2500; // Logical units (e.g., pixels)
 
 const ACCELERATION = 725; // units per second^2
 

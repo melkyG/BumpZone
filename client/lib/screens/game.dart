@@ -28,7 +28,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Player> _players = [];
   List<Band> _bands = [];
   List<BandSegment> _posts = [];
-  double _arenaLogicalSize = 2000.0;
+  double _arenaLogicalSize = 2500.0;
 
   // Band settings state (add these fields)
   double _springConstant = 10.0; // <-- This is just a default, will be overwritten by server
