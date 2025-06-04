@@ -429,31 +429,35 @@ class _GameScreenState extends State<GameScreen> {
                   _lastPointerGlobal = event.position;
                   // DO NOT call _startSendingMovement or _updateSendingMovement here!
                 },
-                child: Container(
-                  color: Colors.transparent,
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Center(
-                    child: Container(
-                      key: _arenaKey,
-                      width: displaySize,
-                      height: displaySize,
-                      color: Colors.transparent,
-                      child: CustomPaint(
-                        size: Size(_arenaLogicalSize, _arenaLogicalSize),
-                        painter: _ArenaPainter(
-                          balls: _balls,
-                          bands: _bands,
-                          posts: _posts,
-                          arenaLogicalSize: _arenaLogicalSize,
-                          cameraOffset: cameraOffset,
-                          playerColors: playerColors,
-                          myPlayerId: _myPlayerId,
-                          myBallColor: _myBallColor,
-                          lastBallColors: _lastBallColors,
+                // Prevent MouseRegion from activating gestures unless a button is pressed
+                child: Listener(
+                  onPointerDown: (_) {}, // Needed to allow GestureDetector to work inside MouseRegion
+                  child: Container(
+                    color: Colors.transparent,
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: Center(
+                      child: Container(
+                        key: _arenaKey,
+                        width: displaySize,
+                        height: displaySize,
+                        color: Colors.transparent,
+                        child: CustomPaint(
+                          size: Size(_arenaLogicalSize, _arenaLogicalSize),
+                          painter: _ArenaPainter(
+                            balls: _balls,
+                            bands: _bands,
+                            posts: _posts,
+                            arenaLogicalSize: _arenaLogicalSize,
+                            cameraOffset: cameraOffset,
+                            playerColors: playerColors,
+                            myPlayerId: _myPlayerId,
+                            myBallColor: _myBallColor,
+                            lastBallColors: _lastBallColors,
+                          ),
+                          isComplex: false,
+                          willChange: false,
                         ),
-                        isComplex: false,
-                        willChange: false,
                       ),
                     ),
                   ),
