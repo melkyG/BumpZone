@@ -368,8 +368,23 @@ class _GameScreenState extends State<GameScreen> {
                   pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
                 }
               }
+              // --- DEBUG PRINT: Print the pointer position when burst is activated ---
+              print('[BURST] Raw pointer for burst: $pointer');
+              if (_myPlayerId != null) {
+                Ball? myBall;
+                try {
+                  myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+                } catch (_) {
+                  myBall = null;
+                }
+                if (myBall != null) {
+                  print('[BURST] My ball position: (${myBall.x}, ${myBall.y})');
+                }
+              }
+              // ---------------------------------------------------------------
               if (pointer != null) {
                 final logical = _getLogicalFromGlobal(pointer);
+                print('[BURST] Logical burst target: $logical');
                 _sendBurstTo(logical);
               }
             }
