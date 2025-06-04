@@ -193,7 +193,8 @@ wss.on('connection', (ws) => {
         // Find playerId by socket
         const player = gameState.getPlayerBySocket(ws);
         if (player && data.direction) {
-          gameState.handleMove(player.playerId, data.direction.dx, data.direction.dy);
+          // Pass burst flag to handleMove
+          gameState.handleMove(player.playerId, data.direction.dx, data.direction.dy, !!data.burst);
         }
       } else if (data.type === 'setBandSettings') {
         // Update band settings for all bands

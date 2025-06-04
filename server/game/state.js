@@ -22,6 +22,11 @@ const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per
 const STAMINA_RECOVER_PER_SEC = 0.33; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
+// Burst settings
+const BURST_STAMINA_COST = 0.3;
+const BURST_MIN_STAMINA = 0.66;
+const BURST_IMPULSE = 420; // tweak as needed
+
 class GameState {
   constructor() {
     // console.log('[DEBUG] GameState constructor called');
@@ -31,6 +36,7 @@ class GameState {
     // Store input direction for each player
     this.inputDirections = {}; // { playerId: {dx, dy} }
     this.pendingImpulses = {}; // { playerId: {dx, dy} }
+    this.burstRequests = {}; // { playerId: {dx, dy} }
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
@@ -171,14 +177,15 @@ class GameState {
     return this.players.map(({ playerId, username, color }) => ({ playerId, username, color }));
   }
   
-  // Set the velocity of a player's ball based on input direction (dx, dy)
-  handleMove(playerId, dx, dy) {
-    // If this is a nonzero input, store as a pending impulse
+  // Set the velocity of a player's ball based on input direction (dx, dy) and burst
+  handleMove(playerId, dx, dy, burst = false) {
     if (dx !== 0 || dy !== 0) {
       this.pendingImpulses[playerId] = { dx, dy };
     }
-    // Always store the latest input direction
     this.inputDirections[playerId] = { dx, dy };
+    if (burst) {
+      this.burstRequests[playerId] = { dx, dy };
+    }
   }
 
   // Update all balls' positions based on their velocities, apply friction, and update stamina

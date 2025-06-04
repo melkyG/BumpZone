@@ -28,6 +28,10 @@ class WebSocketService {
     _send({'type': 'move', 'direction': {'dx': dx, 'dy': dy}});
   }
 
+  void sendMovementWithBurst(double dx, double dy, bool burst) {
+    _send({'type': 'move', 'direction': {'dx': dx, 'dy': dy}, 'burst': burst});
+  }
+
   void connect() {
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
