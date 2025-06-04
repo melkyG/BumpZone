@@ -341,17 +341,21 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
       body: RawKeyboardListener(
-        focusNode: FocusNode(), // Remove ..requestFocus(), let Flutter manage focus
+        focusNode: FocusNode(),
         autofocus: true,
         onKey: (event) {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              // Use last pointer or center if not available
+              // Always use the latest pointer position (from mouse/touch) if available
               Offset? pointer = _lastPointerGlobal;
               if (pointer == null) {
+                // If no pointer, use the center of the visible arena widget
                 final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box != null) {
+                  // Remove the use of RendererBinding.instance.mouseTracker.debugLastMouseEvent?.position
+                  // as it is not reliable and not supported in all platforms.
+                  // Just fallback to the center of the arena widget.
                   pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
                 }
               }
