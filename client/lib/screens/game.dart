@@ -204,7 +204,7 @@ class _GameScreenState extends State<GameScreen> {
             : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
 
         // --- Camera smoothing factor: tweak this value for acceleration/lag ---
-        const double smoothing = 0.3; // <-- Increase for snappier, decrease for more lag
+        const double smoothing = 0.2; // <-- Increase for snappier, decrease for more lag
         // ---------------------------------------------------------------
         if (_smoothedCameraOffset == null) {
           _smoothedCameraOffset = target;

@@ -34,7 +34,7 @@ class GameState {
 
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
-    const margin = 570;
+    const margin = 550;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
@@ -501,7 +501,7 @@ class GameState {
   }
 
   updateBandStructure(segmentsPerSide, restLengthScale) {
-    const margin = 570;
+    const margin = 550;
     this.posts = [
       { x: margin, y: margin },
       { x: ARENA_SIZE - margin, y: margin },
