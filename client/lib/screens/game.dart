@@ -352,21 +352,7 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              Offset? pointer;
-              try {
-                final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-                if (box != null) {
-                  // --- FIX: Use html.window.onMouseMove to track mouse position globally ---
-                  // html.window.event is not supported; instead, use _lastPointerGlobal as fallback.
-                  Offset? globalPointer = _lastPointerGlobal;
-                  // Fallback to center if still null
-                  globalPointer ??= box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
-                  pointer = globalPointer;
-                }
-              } catch (_) {
-                pointer = null;
-              }
-              // --- DEBUG PRINT: Print the pointer position when burst is activated ---
+              Offset pointer = _getAdjustedPointerGlobal();
               print('[BURST] Raw pointer for burst: $pointer');
               if (_myPlayerId != null) {
                 Ball? myBall;
@@ -379,11 +365,9 @@ class _GameScreenState extends State<GameScreen> {
                   print('[BURST] My ball position: (${myBall.x}, ${myBall.y})');
                 }
               }
-              // ---------------------------------------------------------------
-              if (pointer != null) {
-                final logical = _getLogicalFromGlobal(pointer);
-                _sendBurstTo(logical);
-              }
+              final logical = _getLogicalFromGlobal(pointer);
+              print('[BURST] Logical burst target: $logical');
+              _sendBurstTo(logical);
             }
           }
           if (event is RawKeyUpEvent && event.logicalKey == LogicalKeyboardKey.space) {
@@ -401,10 +385,12 @@ class _GameScreenState extends State<GameScreen> {
               behavior: HitTestBehavior.translucent,
               onPanStart: (DragStartDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updatePointerGlobal(details.globalPosition);
                 _startSendingMovement(logicalTarget, details.globalPosition);
               },
               onPanUpdate: (DragUpdateDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updatePointerGlobal(details.globalPosition);
                 _updateSendingMovement(logicalTarget, details.globalPosition);
               },
               onPanEnd: (DragEndDetails details) {
@@ -415,6 +401,7 @@ class _GameScreenState extends State<GameScreen> {
               },
               onTapDown: (TapDownDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
+                _updatePointerGlobal(details.globalPosition);
                 _startSendingMovement(logicalTarget, details.globalPosition);
               },
               onTapUp: (TapUpDetails details) {
@@ -422,8 +409,7 @@ class _GameScreenState extends State<GameScreen> {
               },
               child: MouseRegion(
                 onHover: (PointerHoverEvent event) {
-                  // Only update the pointer position for burst direction
-                  _lastPointerGlobal = event.position;
+                  _updatePointerGlobal(event.position);
                   // DO NOT call _startSendingMovement or _updateSendingMovement here!
                 },
                 // Prevent MouseRegion from activating gestures unless a button is pressed
@@ -584,6 +570,46 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     _moveTimer?.cancel();
     super.dispose();
+  }
+
+  // Store the last camera offset when _lastPointerGlobal was updated
+  Offset? _lastPointerCameraOffset;
+
+  // Update _lastPointerGlobal and _lastPointerCameraOffset on mouse move/hover/click/tap
+  void _updatePointerGlobal(Offset globalPosition) {
+    _lastPointerGlobal = globalPosition;
+    _lastPointerCameraOffset = _smoothedCameraOffset;
+  }
+
+  // Use this in all places where you previously set _lastPointerGlobal:
+  // Example: in onHover, onTapDown, onPanStart, etc.
+  // Replace:
+  //   _lastPointerGlobal = event.position;
+  // With:
+  //   _updatePointerGlobal(event.position);
+
+  // When calculating the burst pointer, adjust for camera movement:
+  Offset _getAdjustedPointerGlobal() {
+    if (_lastPointerGlobal != null && _lastPointerCameraOffset != null && _smoothedCameraOffset != null) {
+      // Calculate the delta in camera movement since last pointer update
+      final Offset cameraDelta = _smoothedCameraOffset! - _lastPointerCameraOffset!;
+      // Calculate the scale (pixels per logical unit)
+      final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+      if (box != null) {
+        final double scale = box.size.width / _arenaLogicalSize;
+        // Convert cameraDelta (logical units) to screen pixels
+        final Offset pixelDelta = Offset(cameraDelta.dx * scale, cameraDelta.dy * scale);
+        // Adjust the global pointer by the camera movement in screen space
+        return _lastPointerGlobal! + pixelDelta;
+      }
+    }
+    // Fallback: just use the last pointer global or center
+    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+    if (_lastPointerGlobal != null) return _lastPointerGlobal!;
+    if (box != null) {
+      return box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+    }
+    return Offset.zero;
   }
 }
 
