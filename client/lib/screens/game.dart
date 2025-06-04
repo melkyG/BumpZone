@@ -427,6 +427,7 @@ class _GameScreenState extends State<GameScreen> {
                 onHover: (PointerHoverEvent event) {
                   // Only update the pointer position for burst direction
                   _lastPointerGlobal = event.position;
+                  // DO NOT call _startSendingMovement or _updateSendingMovement here!
                 },
                 child: Container(
                   color: Colors.transparent,
