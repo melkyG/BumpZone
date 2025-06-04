@@ -25,7 +25,7 @@ const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to mov
 // Burst settings
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
-const BURST_IMPULSE = 420; // tweak as needed
+const BURST_IMPULSE = 550; // tweak as needed
 
 class GameState {
   constructor() {

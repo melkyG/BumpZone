@@ -320,10 +320,10 @@ class HUD extends StatelessWidget {
         ),
         // --- Battery/Stamina HUD in bottom right ---
         Positioned(
-          right: 20, // Reduced margin from 24 to 8
-          bottom: 20, // Reduced margin from 24 to 8
+          right: 18, // Reduced margin from 24 to 8
+          bottom: 18, // Reduced margin from 24 to 8
           child: Opacity(
-            opacity: 0.85, // Set transparency (0.0 = fully transparent, 1.0 = opaque)
+            opacity: 0.80, // Set transparency (0.0 = fully transparent, 1.0 = opaque)
             child: _BatteryWidget(staminaPercent: staminaPercent ?? 1.0),
           ),
         ),
@@ -339,7 +339,7 @@ class _BatteryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 350;
+    const double width = 320;
     const double height = 50;
     const double border = 7;
     const double tipWidth = 8;
@@ -386,15 +386,24 @@ class _BatteryWidget extends StatelessWidget {
               width: fillWidth,
               height: height - border * 2,
               decoration: BoxDecoration(
-                color: staminaPercent > 0.2
-                    ? Colors.green
-                    : (staminaPercent > 0.05 ? Colors.orange : Colors.red),
-                borderRadius: BorderRadius.circular(4),
+                color: getStaminaColor(staminaPercent),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+Color getStaminaColor(double stamina) {
+  const double burstMinStamina = 0.66; // Should match BURST_MIN_STAMINA from server
+  if (stamina >= burstMinStamina * 2) {
+    return Colors.green;
+  } else if (stamina >= burstMinStamina) {
+    return Colors.orange;
+  } else {
+    return Colors.red;
   }
 }
