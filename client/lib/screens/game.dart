@@ -28,7 +28,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Player> _players = [];
   List<Band> _bands = [];
   List<BandSegment> _posts = [];
-  double _arenaLogicalSize = 1800.0;
+  double _arenaLogicalSize = 2000.0;
 
   // Band settings state (add these fields)
   double _springConstant = 10.0; // <-- This is just a default, will be overwritten by server
@@ -630,7 +630,7 @@ class _ArenaPainter extends CustomPainter {
         final Paint borderPaint = Paint()
           ..color = Colors.black
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0 * scale; // Scaled border width
+          ..strokeWidth = 0.6 * scale; // Scaled border width
         final Offset center = Offset(ball.x * scale, ball.y * scale);
         final double radius = logicalRadius * scale;
         canvas.drawCircle(center, radius, ballPaint);

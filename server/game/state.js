@@ -1,16 +1,16 @@
 // Arena/game configuration (shared with all clients)
-const ARENA_SIZE = 1800; // Logical units (e.g., pixels)
+const ARENA_SIZE = 2000; // Logical units (e.g., pixels)
 
 const ACCELERATION = 725; // units per second^2
 
 const BALL_RADIUS = 18; // must match client
 
-const BAND_SEGMENTS_PER_SIDE = 8; // from reference code
-const BAND_SPRING_CONSTANT = 35.0;
-const BAND_DAMPING_COEFF = 0.05;
+const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
+const BAND_SPRING_CONSTANT = 11.0;
+const BAND_DAMPING_COEFF = 0.02;
 const BAND_MASS = 0.04;
 const BAND_REST_LENGTH_SCALE = 0.03;
-const BAND_COEFFICIENT_OF_RESTITUTION = 1.0;
+const BAND_COEFFICIENT_OF_RESTITUTION = 0.85;
 
 const POST_RADIUS = 22; // for collision, slightly larger than ball
 
