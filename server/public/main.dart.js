@@ -35173,7 +35173,7 @@ l=n?p/o:0
 A.bO("Burst raw: dx="+A.m(q)+" dy="+A.m(p)+", normalized: ("+A.m(m)+", "+A.m(l)+")")
 n=t.N
 k.a.c.qm(A.ac(["type","move","direction",A.ac(["dx",m,"dy",l],n,t.i),"burst",!0],n,t.z))
-k.va()},
+if(k.d==null||k.db==null)k.va()},
 l(){var s=this.d
 if(s!=null)s.aJ()
 this.aF()}}

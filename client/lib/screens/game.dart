@@ -582,8 +582,10 @@ class _GameScreenState extends State<GameScreen> {
     // Send burst flag to server
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
 
-    // --- FIX: Stop sending movement after burst unless user is actively holding/tapping ---
-    _stopSendingMovement();
+    // Only stop sending movement if the user is NOT actively holding/tapping
+    if (_moveTimer == null || _lastPointerGlobal == null) {
+      _stopSendingMovement();
+    }
   }
 
   @override
