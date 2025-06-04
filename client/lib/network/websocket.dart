@@ -106,14 +106,6 @@ class WebSocketService {
       if (onBallsUpdate != null) {
         onBallsUpdate!(balls);
       }
-      // --- Also call onArenaUpdate with just balls, so stamina updates in game.dart ---
-      if (onArenaUpdate != null) {
-        onArenaUpdate!(ArenaState(
-          balls: balls,
-          bands: const [],
-          posts: const [],
-        ));
-      }
       return;
     }
     if (type == 'arenaInfo' && data['size'] != null) {
