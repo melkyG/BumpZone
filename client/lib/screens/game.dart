@@ -352,6 +352,17 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
+              // --- Always update _lastPointerCameraOffset to the latest camera before burst ---
+              // FIX: Only update _lastPointerCameraOffset if _lastPointerGlobal is not null
+              // and _lastPointerCameraOffset is not newer than _smoothedCameraOffset
+              // (prevents accumulating camera deltas on repeated bursts)
+              if (_lastPointerGlobal != null && _smoothedCameraOffset != null) {
+                // Only update if camera offset has changed since last pointer update
+                if (_lastPointerCameraOffset == null ||
+                    _lastPointerCameraOffset != _smoothedCameraOffset) {
+                  _lastPointerCameraOffset = Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy);
+                }
+              }
               Offset pointer = _getAdjustedPointerGlobal();
               print('[BURST] Raw pointer for burst: $pointer');
               if (_myPlayerId != null) {
@@ -393,19 +404,10 @@ class _GameScreenState extends State<GameScreen> {
                 _updatePointerGlobal(details.globalPosition);
                 _updateSendingMovement(logicalTarget, details.globalPosition);
               },
-              onPanEnd: (DragEndDetails details) {
-                _stopSendingMovement();
-              },
-              onPanCancel: () {
-                _stopSendingMovement();
-              },
               onTapDown: (TapDownDetails details) {
                 final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
                 _updatePointerGlobal(details.globalPosition);
                 _startSendingMovement(logicalTarget, details.globalPosition);
-              },
-              onTapUp: (TapUpDetails details) {
-                _stopSendingMovement();
               },
               child: MouseRegion(
                 onHover: (PointerHoverEvent event) {
@@ -578,33 +580,23 @@ class _GameScreenState extends State<GameScreen> {
   // Update _lastPointerGlobal and _lastPointerCameraOffset on mouse move/hover/click/tap
   void _updatePointerGlobal(Offset globalPosition) {
     _lastPointerGlobal = globalPosition;
-    _lastPointerCameraOffset = _smoothedCameraOffset;
+    // Always update to the latest camera offset at the time of pointer update
+    _lastPointerCameraOffset = _smoothedCameraOffset != null
+        ? Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy)
+        : null;
   }
 
-  // Use this in all places where you previously set _lastPointerGlobal:
-  // Example: in onHover, onTapDown, onPanStart, etc.
-  // Replace:
-  //   _lastPointerGlobal = event.position;
-  // With:
-  //   _updatePointerGlobal(event.position);
-
-  // When calculating the burst pointer, adjust for camera movement:
   Offset _getAdjustedPointerGlobal() {
-    if (_lastPointerGlobal != null && _lastPointerCameraOffset != null && _smoothedCameraOffset != null) {
+    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+    if (_lastPointerGlobal != null && _lastPointerCameraOffset != null && _smoothedCameraOffset != null && box != null) {
       // Calculate the delta in camera movement since last pointer update
       final Offset cameraDelta = _smoothedCameraOffset! - _lastPointerCameraOffset!;
-      // Calculate the scale (pixels per logical unit)
-      final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box != null) {
-        final double scale = box.size.width / _arenaLogicalSize;
-        // Convert cameraDelta (logical units) to screen pixels
-        final Offset pixelDelta = Offset(cameraDelta.dx * scale, cameraDelta.dy * scale);
-        // Adjust the global pointer by the camera movement in screen space
-        return _lastPointerGlobal! + pixelDelta;
-      }
+      final double scale = box.size.width / _arenaLogicalSize;
+      final Offset pixelDelta = Offset(cameraDelta.dx * scale, cameraDelta.dy * scale);
+      // Adjust the global pointer by the camera movement in screen space
+      return _lastPointerGlobal! + pixelDelta;
     }
     // Fallback: just use the last pointer global or center
-    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (_lastPointerGlobal != null) return _lastPointerGlobal!;
     if (box != null) {
       return box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
