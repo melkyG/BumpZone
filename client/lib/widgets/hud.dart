@@ -336,7 +336,7 @@ class _BatteryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 150;
+    const double width = 500;
     const double height = 50;
     const double border = 5;
     const double tipWidth = 7;
