@@ -50,6 +50,9 @@ class _GameScreenState extends State<GameScreen> {
   // Store the last pointer position in global (screen) coordinates
   Offset? _lastPointerGlobal; // Add this
 
+  // Stamina state
+  double? _myStamina; // Add this to store stamina percent (0.0 - 1.0)
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -179,13 +182,18 @@ class _GameScreenState extends State<GameScreen> {
         _balls = arena.balls;
         _bands = arena.bands;
         _posts = arena.posts;
-        // Camera smoothing: update target position here
+        // --- Update my stamina from my ball, if present ---
         Ball? myBall;
         try {
           myBall = arena.balls.firstWhere((b) => b.id == _myPlayerId);
         } catch (_) {
           myBall = null;
         }
+        if (myBall != null && myBall.stamina != null) {
+          // Assume stamina is 0.0 - 1.0 (if not, normalize here)
+          _myStamina = myBall.stamina;
+        }
+        // Camera smoothing: update target position here
         final Offset target = (myBall != null)
             ? Offset(myBall.x, myBall.y)
             : Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
@@ -448,6 +456,7 @@ class _GameScreenState extends State<GameScreen> {
             onRespawn: () {
               widget.webSocketService.sendRaw({'type': 'respawn'});
             },
+            staminaPercent: _myStamina, // --- Add staminaPercent to HUD ---
           ),
           if (!ready)
             Container(

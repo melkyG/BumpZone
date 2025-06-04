@@ -5,7 +5,8 @@ class Ball {
   final double y;
   final double vx;
   final double vy;
-  final String? color; // Add this field
+  final String? color;
+  final double? stamina; // Add this field
 
   Ball({
     required this.id,
@@ -14,16 +15,18 @@ class Ball {
     required this.vx,
     required this.vy,
     this.color,
+    this.stamina, // Add this
   });
 
   factory Ball.fromJson(Map<String, dynamic> json) {
     return Ball(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       x: (json['x'] as num).toDouble(),
       y: (json['y'] as num).toDouble(),
       vx: (json['vx'] as num).toDouble(),
       vy: (json['vy'] as num).toDouble(),
-      color: json['color'] as String?, // Accept color if present
+      color: json['color'] as String?,
+      stamina: json['stamina'] != null ? (json['stamina'] as num).toDouble() : null, // Add this
     );
   }
 
@@ -34,5 +37,6 @@ class Ball {
         'vx': vx,
         'vy': vy,
         if (color != null) 'color': color, // Include color if present
+        if (stamina != null) 'stamina': stamina, // Include stamina if present
       };
 }

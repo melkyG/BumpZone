@@ -16,6 +16,12 @@ const POST_RADIUS = 22; // for collision, slightly larger than ball
 
 const BALL_MASS = 2.5; // Increase this for "heavier" balls (default 1.0)
 
+// Stamina system constants
+const STAMINA_MAX = 1.0;
+const STAMINA_DRAIN_PER_SEC = 0.35; // how fast stamina drains when holding (per second)
+const STAMINA_RECOVER_PER_SEC = 0.25; // how fast stamina recovers when not holding (per second)
+const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
+
 class GameState {
   constructor() {
     // console.log('[DEBUG] GameState constructor called');
@@ -123,6 +129,7 @@ class GameState {
       vx: 0,
       vy: 0,
       color: color || '#ff2196f3', // default blue if not provided
+      stamina: STAMINA_MAX, // Start with full stamina
     };
     // console.log('[DEBUG] Ball added:', this.balls[playerId]);
 
@@ -154,7 +161,8 @@ class GameState {
           return { ...ball, color: player.color };
         }
       }
-      return ball;
+      // Always include stamina in the output
+      return { ...ball, stamina: typeof ball.stamina === 'number' ? ball.stamina : STAMINA_MAX };
     });
   }
 
@@ -173,33 +181,53 @@ class GameState {
     this.inputDirections[playerId] = { dx, dy };
   }
 
-  // Update all balls' positions based on their velocities, apply friction
+  // Update all balls' positions based on their velocities, apply friction, and update stamina
   updateBalls(dt) {
     // dt is in "ticks" (e.g., 1 = 50ms)
     for (const ball of Object.values(this.balls)) {
-      // Check for a pending impulse (from a quick tap/click)
+      // --- Stamina logic ---
       let input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
+      const isMoving = input.dx !== 0 || input.dy !== 0;
+      // Initialize stamina if missing
+      if (typeof ball.stamina !== 'number') ball.stamina = STAMINA_MAX;
+
+      if (isMoving) {
+        // Drain stamina
+        ball.stamina -= STAMINA_DRAIN_PER_SEC * (dt * 0.05);
+        if (ball.stamina < 0) ball.stamina = 0;
+      } else {
+        // Recover stamina
+        ball.stamina += STAMINA_RECOVER_PER_SEC * (dt * 0.05);
+        if (ball.stamina > STAMINA_MAX) ball.stamina = STAMINA_MAX;
+      }
+
+      // --- Only apply movement if stamina is available ---
       let impulse = this.pendingImpulses[ball.id];
       if (impulse) {
-        // Apply the impulse once
-        const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
-        if (len > 0) {
-          // Scale acceleration by BALL_MASS (heavier = less acceleration)
-          const ax = (impulse.dx / len) * ACCELERATION / BALL_MASS;
-          const ay = (impulse.dy / len) * ACCELERATION / BALL_MASS;
-          ball.vx += ax * dt * 0.05;
-          ball.vy += ay * dt * 0.05;
+        // Apply the impulse once, only if stamina is available
+        if (ball.stamina > STAMINA_MIN_TO_MOVE) {
+          const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
+          if (len > 0) {
+            const ax = (impulse.dx / len) * ACCELERATION / BALL_MASS;
+            const ay = (impulse.dy / len) * ACCELERATION / BALL_MASS;
+            ball.vx += ax * dt * 0.05;
+            ball.vy += ay * dt * 0.05;
+            // Drain stamina for impulse
+            ball.stamina -= STAMINA_DRAIN_PER_SEC * (dt * 0.05);
+            if (ball.stamina < 0) ball.stamina = 0;
+          }
         }
         delete this.pendingImpulses[ball.id];
-      } else if (input.dx !== 0 || input.dy !== 0) {
-        // Apply acceleration if input is held
-        const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
-        if (len > 0) {
-          // Scale acceleration by BALL_MASS
-          const ax = (input.dx / len) * ACCELERATION / BALL_MASS;
-          const ay = (input.dy / len) * ACCELERATION / BALL_MASS;
-          ball.vx += ax * dt * 0.05;
-          ball.vy += ay * dt * 0.05;
+      } else if (isMoving) {
+        // Only apply acceleration if stamina is available
+        if (ball.stamina > STAMINA_MIN_TO_MOVE) {
+          const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
+          if (len > 0) {
+            const ax = (input.dx / len) * ACCELERATION / BALL_MASS;
+            const ay = (input.dy / len) * ACCELERATION / BALL_MASS;
+            ball.vx += ax * dt * 0.05;
+            ball.vy += ay * dt * 0.05;
+          }
         }
       }
       // No friction, no max speed

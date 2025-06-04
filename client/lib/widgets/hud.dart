@@ -272,6 +272,8 @@ class HUD extends StatelessWidget {
   final VoidCallback onResetToDefault;
   final VoidCallback onRespawn;
 
+  final double? staminaPercent; // Add this
+
   const HUD({
     super.key,
     required this.players,
@@ -289,6 +291,7 @@ class HUD extends StatelessWidget {
     required this.onRestLengthScaleChanged,
     required this.onResetToDefault,
     required this.onRespawn,
+    this.staminaPercent,
   });
 
   @override
@@ -315,7 +318,80 @@ class HUD extends StatelessWidget {
             onRespawn: onRespawn,
           ),
         ),
+        // --- Battery/Stamina HUD in bottom right ---
+        Positioned(
+          right: 24,
+          bottom: 24,
+          child: _BatteryWidget(staminaPercent: staminaPercent ?? 1.0),
+        ),
       ],
+    );
+  }
+}
+
+// Add this widget for the battery
+class _BatteryWidget extends StatelessWidget {
+  final double staminaPercent;
+  const _BatteryWidget({required this.staminaPercent});
+
+  @override
+  Widget build(BuildContext context) {
+    const double width = 80;
+    const double height = 28;
+    const double border = 3;
+    const double tipWidth = 8;
+    const double tipHeight = 14;
+    final double fillWidth = (width - border * 2) * staminaPercent.clamp(0.0, 1.0);
+
+    return SizedBox(
+      width: width + tipWidth + 4,
+      height: height,
+      child: Stack(
+        children: [
+          // Battery body
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: border),
+                borderRadius: BorderRadius.circular(6),
+                color: Colors.transparent,
+              ),
+            ),
+          ),
+          // Battery tip
+          Positioned(
+            left: width,
+            top: (height - tipHeight) / 2,
+            child: Container(
+              width: tipWidth,
+              height: tipHeight,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Battery fill
+          Positioned(
+            left: border,
+            top: border,
+            child: Container(
+              width: fillWidth,
+              height: height - border * 2,
+              decoration: BoxDecoration(
+                color: staminaPercent > 0.2
+                    ? Colors.green
+                    : (staminaPercent > 0.05 ? Colors.orange : Colors.red),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
