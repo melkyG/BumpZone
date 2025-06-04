@@ -47,27 +47,29 @@ class _GameScreenState extends State<GameScreen> {
   // Fallback color map for balls
   final Map<String, Color> _lastBallColors = {}; // Add this
 
+  // Store the last pointer position in global (screen) coordinates
+  Offset? _lastPointerGlobal; // Add this
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
     final Offset local = box.globalToLocal(globalPosition);
 
-    // Calculate scale and camera offset as in painter
     final double scale = box.size.width / _arenaLogicalSize;
-
-    // --- Use the same camera offset as the painter (smoothed) ---
     final Offset cameraOffset = _smoothedCameraOffset ??
         Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
 
-    // Undo camera translation to get logical coordinates
     final double logicalX = (local.dx - box.size.width / 2) / scale + cameraOffset.dx;
     final double logicalY = (local.dy - box.size.height / 2) / scale + cameraOffset.dy;
     return Offset(logicalX, logicalY);
   }
 
-  void _startSendingMovement(Offset logicalTarget) {
+  void _startSendingMovement(Offset logicalTarget, [Offset? globalPosition]) {
     _lastPointerLogical = logicalTarget;
+    if (globalPosition != null) {
+      _lastPointerGlobal = globalPosition;
+    }
     // Wait until _myPlayerId is set before starting movement
     if (_myPlayerId == null) {
       print('No playerId yet, delaying movement start.');
@@ -75,19 +77,27 @@ class _GameScreenState extends State<GameScreen> {
     }
     _moveTimer?.cancel();
     _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
-      _sendMovementTo(_lastPointerLogical!);
+      // Always recalculate logical target from the latest global pointer position
+      if (_lastPointerGlobal != null) {
+        final logical = _getLogicalFromGlobal(_lastPointerGlobal!);
+        _sendMovementTo(logical);
+      }
     });
     _sendMovementTo(logicalTarget); // Send immediately
   }
 
-  void _updateSendingMovement(Offset logicalTarget) {
+  void _updateSendingMovement(Offset logicalTarget, [Offset? globalPosition]) {
     _lastPointerLogical = logicalTarget;
+    if (globalPosition != null) {
+      _lastPointerGlobal = globalPosition;
+    }
   }
 
   void _stopSendingMovement() {
     _moveTimer?.cancel();
     _moveTimer = null;
     _lastPointerLogical = null;
+    _lastPointerGlobal = null;
     widget.webSocketService.sendMovement(0, 0);
   }
 
@@ -192,9 +202,10 @@ class _GameScreenState extends State<GameScreen> {
           );
         }
       });
-      // If user is holding/tapping, try to send movement again when balls update
-      if (_lastPointerLogical != null && _myPlayerId != null) {
-        _sendMovementTo(_lastPointerLogical!);
+      // If user is holding/tapping, recalculate logical target from latest global pointer
+      if (_lastPointerGlobal != null && _myPlayerId != null) {
+        final logical = _getLogicalFromGlobal(_lastPointerGlobal!);
+        _sendMovementTo(logical);
       }
     };
     widget.webSocketService.onBallsUpdate = (balls) {
@@ -307,11 +318,11 @@ class _GameScreenState extends State<GameScreen> {
             behavior: HitTestBehavior.translucent,
             onPanStart: (DragStartDetails details) {
               final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-              _startSendingMovement(logicalTarget);
+              _startSendingMovement(logicalTarget, details.globalPosition);
             },
             onPanUpdate: (DragUpdateDetails details) {
               final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-              _updateSendingMovement(logicalTarget);
+              _updateSendingMovement(logicalTarget, details.globalPosition);
             },
             onPanEnd: (DragEndDetails details) {
               _stopSendingMovement();
@@ -321,7 +332,7 @@ class _GameScreenState extends State<GameScreen> {
             },
             onTapDown: (TapDownDetails details) {
               final logicalTarget = _getLogicalFromGlobal(details.globalPosition);
-              _startSendingMovement(logicalTarget);
+              _startSendingMovement(logicalTarget, details.globalPosition);
             },
             onTapUp: (TapUpDetails details) {
               _stopSendingMovement();
