@@ -35,7 +35,16 @@ ArenaState decodeArenaState(Uint8List bytes) {
     final y = byteData.getFloat32(offset, Endian.little); offset += 4;
     final vx = byteData.getFloat32(offset, Endian.little); offset += 4;
     final vy = byteData.getFloat32(offset, Endian.little); offset += 4;
-    balls.add(Ball(id: id, x: x, y: y, vx: vx, vy: vy));
+    final stamina = byteData.getFloat32(offset, Endian.little); offset += 4; // Read stamina
+    balls.add(Ball(
+      id: id,
+      x: x,
+      y: y,
+      vx: vx,
+      vy: vy,
+      color: null, // color is not in binary
+      stamina: stamina,
+    ));
   }
 
   // Bands

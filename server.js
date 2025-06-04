@@ -28,7 +28,8 @@ function gameLoop() {
           y: b.y,
           vx: b.vx,
           vy: b.vy,
-          color: b.color // include color if present
+          color: b.color, // include color if present
+          stamina: b.stamina // <-- ADD THIS LINE
         }))
       }));
     }
@@ -54,9 +55,7 @@ const {
 function encodeArenaState(balls, bands, posts) {
   // Format:
   // [ballCount, ...balls, bandCount, ...bands, postCount, ...posts]
-  // Each ball: id (16 bytes), x, y, vx, vy (4x float32)
-  // Each band: segmentCount, ...segments (x, y float32)
-  // Each post: x, y (float32)
+  // Each ball: id (16 bytes), x, y, vx, vy, stamina (5x float32)
   const idLen = 16;
   const ballCount = balls.length;
   const bandCount = bands.length;
@@ -65,8 +64,9 @@ function encodeArenaState(balls, bands, posts) {
   for (const band of bands) bandSegmentsTotal += band.segments.length;
 
   // Calculate total buffer size
-  const ballBytes = 4 + ballCount * (idLen + 4 * 4); // 4 bytes for count, idLen for id, 4 floats (x, y, vx, vy)
-  const bandBytes = 4 + bands.reduce((sum, band) => sum + 4 + band.segments.length * 8, 0); // 4 bytes for count, 4 for segCount, 8 per segment
+  // 4 bytes for count, idLen for id, 5 floats (x, y, vx, vy, stamina)
+  const ballBytes = 4 + ballCount * (idLen + 5 * 4);
+  const bandBytes = 4 + bands.reduce((sum, band) => sum + 4 + band.segments.length * 8, 0);
   const postBytes = 4 + postCount * 8;
   const totalBytes = ballBytes + bandBytes + postBytes;
 
@@ -83,6 +83,7 @@ function encodeArenaState(balls, bands, posts) {
     buffer.writeFloatLE(b.y, offset); offset += 4;
     buffer.writeFloatLE(b.vx, offset); offset += 4;
     buffer.writeFloatLE(b.vy, offset); offset += 4;
+    buffer.writeFloatLE(typeof b.stamina === 'number' ? b.stamina : 1.0, offset); offset += 4; // Add stamina
     // NOTE: color is NOT sent in the binary buffer!
   });
 
