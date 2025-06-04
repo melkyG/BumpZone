@@ -35203,8 +35203,8 @@ $S:38}
 A.aaV.prototype={
 $1(a){var s,r=this.a
 r.ag(new A.aaS(r,a))
-s=r.db
-if(s!=null&&r.a.c.w!=null){s.toString
+if(r.d!=null&&r.db!=null&&r.a.c.w!=null){s=r.db
+s.toString
 r.Bn(r.nI(s))}},
 $S:273}
 A.aaS.prototype={

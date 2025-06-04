@@ -220,8 +220,8 @@ class _GameScreenState extends State<GameScreen> {
           );
         }
       });
-      // If user is holding/tapping, recalculate logical target from latest global pointer
-      if (_lastPointerGlobal != null && _myPlayerId != null) {
+      // Only send movement if the user is actively holding/tapping (moveTimer is running)
+      if (_moveTimer != null && _lastPointerGlobal != null && _myPlayerId != null) {
         final logical = _getLogicalFromGlobal(_lastPointerGlobal!);
         _sendMovementTo(logical);
       }
