@@ -522,6 +522,38 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  // Store the last burst's ball position
+  Offset? _lastBurstBallPosition;
+
+  // This function returns the pointer position for burst (relative to ball movement)
+  Offset _getBurstPointerGlobal() {
+    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
+    Ball? myBall;
+    try {
+      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+    } catch (_) {
+      myBall = null;
+    }
+    // If this is the first burst or mouse moved, just use the last pointer global
+    if (_lastPointerGlobal != null && _lastBurstBallPosition != null && myBall != null) {
+      // Calculate how much the ball moved since last burst
+      final Offset ballDelta = Offset(myBall.x, myBall.y) - _lastBurstBallPosition!;
+      // Convert ballDelta (arena units) to screen pixels
+      if (box != null) {
+        final double scale = box.size.width / _arenaLogicalSize;
+        final Offset pixelDelta = Offset(ballDelta.dx * scale, ballDelta.dy * scale);
+        // Add the ball's movement to the last pointer global
+        return _lastPointerGlobal! + pixelDelta;
+      }
+    }
+    // Fallback: just use the last pointer global or center
+    if (_lastPointerGlobal != null) return _lastPointerGlobal!;
+    if (box != null) {
+      return box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+    }
+    return Offset.zero;
+  }
+
   void _sendBurstTo(Offset logicalTarget) {
     if (_myPlayerId == null) return;
     Ball? myBall;
@@ -532,16 +564,17 @@ class _GameScreenState extends State<GameScreen> {
     }
     if (myBall == null) return;
 
+    // Save the ball position at the time of burst
+    _lastBurstBallPosition = Offset(myBall.x, myBall.y);
+
     final double dx = logicalTarget.dx - myBall.x;
     final double dy = logicalTarget.dy - myBall.y;
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
-    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)'); // <-- Add this debug print
-    // Send burst flag to server
+    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)');
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
 
-    // --- FIX: Stop sending movement after burst unless user is actively holding/tapping ---
     _stopSendingMovement();
   }
 
@@ -559,28 +592,6 @@ class _GameScreenState extends State<GameScreen> {
     _lastPointerCameraOffset = _smoothedCameraOffset != null
         ? Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy)
         : null;
-  }
-
-  // This function returns the adjusted pointer position for burst
-  Offset _getBurstPointerGlobal() {
-    final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-    if (_lastPointerGlobal != null &&
-        _lastPointerCameraOffset != null &&
-        _smoothedCameraOffset != null &&
-        box != null) {
-      // Calculate how much the camera moved since the last mouse event
-      final Offset cameraDelta = _smoothedCameraOffset! - _lastPointerCameraOffset!;
-      final double scale = box.size.width / _arenaLogicalSize;
-      final Offset pixelDelta = Offset(cameraDelta.dx * scale, cameraDelta.dy * scale);
-      // Adjust the global pointer by the camera movement in screen space
-      return _lastPointerGlobal! + pixelDelta;
-    }
-    // Fallback: just use the last pointer global or center
-    if (_lastPointerGlobal != null) return _lastPointerGlobal!;
-    if (box != null) {
-      return box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
-    }
-    return Offset.zero;
   }
 }
 
