@@ -352,18 +352,8 @@ class _GameScreenState extends State<GameScreen> {
           if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
             if (!_pendingBurst) {
               _pendingBurst = true;
-              // --- Calculate logicalTarget at the moment of burst using the latest pointer position and camera ---
-              Offset pointer;
-              final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-              if (_lastPointerGlobal != null) {
-                pointer = _lastPointerGlobal!;
-              } else if (box != null) {
-                // Fallback to arena center if mouse never moved
-                pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
-              } else {
-                pointer = Offset.zero;
-              }
-              // Convert to logicalTarget using the current camera/canvas state
+              // Use the adjusted pointer for burst
+              final pointer = _getBurstPointerGlobal();
               final logicalTarget = _getLogicalFromGlobal(pointer);
               print('[BURST] logicalTarget: $logicalTarget');
               _sendBurstTo(logicalTarget);
@@ -400,7 +390,6 @@ class _GameScreenState extends State<GameScreen> {
               child: MouseRegion(
                 onHover: (PointerHoverEvent event) {
                   _updatePointerGlobal(event.position);
-                  // DO NOT call _startSendingMovement or _updateSendingMovement here!
                 },
                 // Prevent MouseRegion from activating gestures unless a button is pressed
                 child: Listener(
@@ -562,22 +551,24 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
-  // Store the last camera offset when _lastPointerGlobal was updated
-  Offset? _lastPointerCameraOffset;
+  Offset? _lastPointerCameraOffset; // Camera offset when mouse last moved
 
-  // Update _lastPointerGlobal and _lastPointerCameraOffset on mouse move/hover/click/tap
+  // Call this whenever the mouse moves or user clicks/taps in the arena
   void _updatePointerGlobal(Offset globalPosition) {
     _lastPointerGlobal = globalPosition;
-    // Always update to the latest camera offset at the time of pointer update
     _lastPointerCameraOffset = _smoothedCameraOffset != null
         ? Offset(_smoothedCameraOffset!.dx, _smoothedCameraOffset!.dy)
         : null;
   }
 
-  Offset _getAdjustedPointerGlobal() {
+  // This function returns the adjusted pointer position for burst
+  Offset _getBurstPointerGlobal() {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
-    if (_lastPointerGlobal != null && _lastPointerCameraOffset != null && _smoothedCameraOffset != null && box != null) {
-      // Calculate the delta in camera movement since last pointer update
+    if (_lastPointerGlobal != null &&
+        _lastPointerCameraOffset != null &&
+        _smoothedCameraOffset != null &&
+        box != null) {
+      // Calculate how much the camera moved since the last mouse event
       final Offset cameraDelta = _smoothedCameraOffset! - _lastPointerCameraOffset!;
       final double scale = box.size.width / _arenaLogicalSize;
       final Offset pixelDelta = Offset(cameraDelta.dx * scale, cameraDelta.dy * scale);
