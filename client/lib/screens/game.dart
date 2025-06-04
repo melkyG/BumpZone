@@ -540,6 +540,7 @@ class _GameScreenState extends State<GameScreen> {
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
+    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)'); // <-- Add this debug print
     // Send burst flag to server
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
   }
