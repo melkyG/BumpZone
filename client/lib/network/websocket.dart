@@ -106,6 +106,15 @@ class WebSocketService {
       if (onBallsUpdate != null) {
         onBallsUpdate!(balls);
       }
+      // --- Add this: also call onArenaUpdate if present, to update stamina ---
+      if (onArenaUpdate != null) {
+        // Create a minimal ArenaState with just balls (bands/posts can be empty)
+        onArenaUpdate!(ArenaState(
+          balls: balls,
+          bands: [],
+          posts: [],
+        ));
+      }
       return;
     }
     if (type == 'arenaInfo' && data['size'] != null) {
