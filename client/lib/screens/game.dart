@@ -9,6 +9,7 @@ import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 import 'dart:typed_data'; // Add this at the top with other imports
 import 'package:flutter/services.dart'; // <-- Add this import for RawKeyboardListener and LogicalKeyboardKey
 import 'package:flutter/rendering.dart'; // Add this import for mouseTracker
+import 'dart:html' as html; // ignore: avoid_web_libraries_in_flutter
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -355,11 +356,11 @@ class _GameScreenState extends State<GameScreen> {
               try {
                 final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box != null) {
-                  // --- Use the same logic as click/tap: get the mouse position relative to the arena widget ---
-                  // If _lastPointerGlobal is set, use it (it's in global coordinates, just like click/tap)
-                  // If not, fallback to the center of the arena
-                  final Offset globalPointer = _lastPointerGlobal ??
-                      box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
+                  // --- FIX: Use html.window.onMouseMove to track mouse position globally ---
+                  // html.window.event is not supported; instead, use _lastPointerGlobal as fallback.
+                  Offset? globalPointer = _lastPointerGlobal;
+                  // Fallback to center if still null
+                  globalPointer ??= box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
                   pointer = globalPointer;
                 }
               } catch (_) {
