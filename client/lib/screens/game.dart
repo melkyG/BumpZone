@@ -53,6 +53,9 @@ class _GameScreenState extends State<GameScreen> {
   // Stamina state
   double? _myStamina; // Add this to store stamina percent (0.0 - 1.0)
 
+  // Camera zoom factor (set manually here)
+  double _cameraZoom = 1.5; // Set to >1.0 to zoom in, <1.0 to zoom out, 1.0 is default
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -286,9 +289,10 @@ class _GameScreenState extends State<GameScreen> {
     final double margin = 8.0;
     final double availableHeight = MediaQuery.of(context).size.height - margin * 2;
     final double availableWidth = MediaQuery.of(context).size.width - margin * 2;
-    final double scale = (availableHeight < availableWidth)
+    final double baseScale = (availableHeight < availableWidth)
         ? availableHeight / _arenaLogicalSize
         : availableWidth / _arenaLogicalSize;
+    final double scale = baseScale * _cameraZoom; // <-- Use manual zoom factor here
     final double displaySize = _arenaLogicalSize * scale;
     final bool ready = _myPlayerId != null;
 

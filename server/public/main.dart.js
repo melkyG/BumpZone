@@ -35121,7 +35121,7 @@ bm(){this.du()
 this.a.c.f=new A.aaD(this)},
 P(a){var s,r,q,p,o,n,m,l,k,j,i,h,g=this,f=null,e=t.w,d=A.bl(a,f,e).w.a.b-16,c=A.bl(a,f,e).w.a.a-16
 e=g.z
-n=e*(d<c?d/e:c/e)
+n=e*((d<c?d/e:c/e)*1.5)
 e=g.a.c.w
 s=null
 try{s=B.b.ri(g.r,new A.aan(g))}catch(m){s=null}l=g.CW
