@@ -198,6 +198,23 @@ class GameState {
       // Initialize stamina if missing
       if (typeof ball.stamina !== 'number') ball.stamina = STAMINA_MAX;
 
+      // --- Burst logic ---
+      const burst = this.burstRequests[ball.id];
+      if (burst && ball.stamina >= BURST_MIN_STAMINA) {
+        // Apply burst impulse immediately
+        const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
+        if (len > 0) {
+          const bx = (burst.dx / len) * BURST_IMPULSE / BALL_MASS;
+          const by = (burst.dy / len) * BURST_IMPULSE / BALL_MASS;
+          ball.vx += bx;
+          ball.vy += by;
+          // Drain burst stamina
+          ball.stamina -= BURST_STAMINA_COST;
+          if (ball.stamina < 0) ball.stamina = 0;
+        }
+        delete this.burstRequests[ball.id];
+      }
+
       if (isMoving) {
         // Drain stamina
         ball.stamina -= STAMINA_DRAIN_PER_SEC * (dt * 0.05);
