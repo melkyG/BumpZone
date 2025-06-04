@@ -65,11 +65,14 @@ class _GameScreenState extends State<GameScreen> {
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return Offset.zero;
-    final Offset local = box.globalToLocal(globalPosition);
-
+    // --- FIX: Use box.localToGlobal(Offset.zero) to get the arena's top-left in global coordinates ---
+    final Offset arenaTopLeftGlobal = box.localToGlobal(Offset.zero);
     final double scale = box.size.width / _arenaLogicalSize;
     final Offset cameraOffset = _smoothedCameraOffset ??
         Offset(_arenaLogicalSize / 2, _arenaLogicalSize / 2);
+
+    // Calculate local position relative to the arena widget
+    final Offset local = globalPosition - arenaTopLeftGlobal;
 
     final double logicalX = (local.dx - box.size.width / 2) / scale + cameraOffset.dx;
     final double logicalY = (local.dy - box.size.height / 2) / scale + cameraOffset.dy;
