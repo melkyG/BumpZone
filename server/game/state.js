@@ -5,12 +5,12 @@ const ACCELERATION = 725; // units per second^2
 
 const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
-const BALL_MASS_GROWTH_INTERVAL = 5.0; // seconds between mass increments
-const BALL_MASS_INCREMENT = 0.5; // How much to increase mass each interval
-const BALL_MASS_MAX_MULTIPLIER = 6; // Max mass = BALL_MASS * 6
+const BALL_MASS_GROWTH_INTERVAL = 3.0; // seconds between mass increments
+const BALL_MASS_INCREMENT = 0.1; // How much to increase mass each interval
+const BALL_MASS_MAX_MULTIPLIER = 10; // Max mass = BALL_MASS * 6
 
 const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
-const BAND_SPRING_CONSTANT = 11.0;
+const BAND_SPRING_CONSTANT = 7.0;
 const BAND_DAMPING_COEFF = 0.02;
 const BAND_MASS = 0.04;
 const BAND_REST_LENGTH_SCALE = 0.03;
@@ -21,13 +21,13 @@ const POST_RADIUS = 22; // for collision, slightly larger than ball
 // Stamina system constants
 const STAMINA_MAX = 1.0;
 const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per second)
-const STAMINA_RECOVER_PER_SEC = 0.31; // how fast stamina recovers when not holding (per second)
+const STAMINA_RECOVER_PER_SEC = 0.29; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
 // Burst settings
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
-const BURST_IMPULSE = 550; // tweak as needed
+const BURST_IMPULSE = 600; // tweak as needed
 
 class GameState {
   constructor() {
@@ -217,8 +217,10 @@ class GameState {
         // Apply burst impulse immediately
         const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
         if (len > 0) {
-          const bx = (burst.dx / len) * BURST_IMPULSE / ball.mass;
-          const by = (burst.dy / len) * BURST_IMPULSE / ball.mass;
+          // Scale burst impulse with mass
+          const massScale = ball.mass / BALL_MASS;
+          const bx = (burst.dx / len) * BURST_IMPULSE * massScale;
+          const by = (burst.dy / len) * BURST_IMPULSE * massScale;
           ball.vx += bx;
           ball.vy += by;
           // Drain burst stamina
@@ -245,8 +247,10 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
           if (len > 0) {
-            const ax = (impulse.dx / len) * ACCELERATION / ball.mass;
-            const ay = (impulse.dy / len) * ACCELERATION / ball.mass;
+            // Scale acceleration with mass
+            const massScale = ball.mass / BALL_MASS;
+            const ax = (impulse.dx / len) * ACCELERATION * massScale;
+            const ay = (impulse.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
             ball.vy += ay * dt * 0.05;
             // Drain stamina for impulse
@@ -260,8 +264,10 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
           if (len > 0) {
-            const ax = (input.dx / len) * ACCELERATION / ball.mass;
-            const ay = (input.dy / len) * ACCELERATION / ball.mass;
+            // Scale acceleration with mass
+            const massScale = ball.mass / BALL_MASS;
+            const ax = (input.dx / len) * ACCELERATION * massScale;
+            const ay = (input.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
             ball.vy += ay * dt * 0.05;
           }
