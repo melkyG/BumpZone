@@ -29,7 +29,8 @@ function gameLoop() {
           vx: b.vx,
           vy: b.vy,
           color: b.color, // include color if present
-          stamina: b.stamina // <-- ADD THIS LINE
+          stamina: b.stamina, // include stamina
+          mass: b.mass // include mass
         }))
       }));
     }

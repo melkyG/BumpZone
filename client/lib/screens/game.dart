@@ -706,7 +706,7 @@ class _ArenaPainter extends CustomPainter {
       );
     }
 
-    const double logicalRadius = 18;
+    const double logicalRadius = 18; // Base radius
     // Draw balls with player color from playerColors map or ball.color only (no fallback)
     for (final ball in balls) {
       Color? drawColor;
@@ -733,7 +733,8 @@ class _ArenaPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.6 * scale; // Scaled border width
         final Offset center = Offset(ball.x * scale, ball.y * scale);
-        final double radius = logicalRadius * scale;
+        // Calculate radius based on mass if available, otherwise use base radius
+        final double radius = (ball.mass != null ? logicalRadius * (ball.mass! / 2.5) : logicalRadius) * scale;
         canvas.drawCircle(center, radius, ballPaint);
         canvas.drawCircle(center, radius, borderPaint);
       }

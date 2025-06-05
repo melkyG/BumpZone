@@ -7,6 +7,7 @@ class Ball {
   final double vy;
   final String? color;
   final double? stamina; // must exist
+  final double? mass; // Add mass property
 
   Ball({
     required this.id,
@@ -16,6 +17,7 @@ class Ball {
     required this.vy,
     this.color,
     this.stamina,
+    this.mass, // Add mass parameter
   });
 
   factory Ball.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Ball {
       vy: (json['vy'] as num).toDouble(),
       color: json['color'] as String?,
       stamina: json['stamina'] != null ? (json['stamina'] as num).toDouble() : null,
+      mass: json['mass'] != null ? (json['mass'] as num).toDouble() : null, // Parse mass
     );
   }
 
@@ -38,5 +41,6 @@ class Ball {
         'vy': vy,
         if (color != null) 'color': color, // Include color if present
         if (stamina != null) 'stamina': stamina, // Include stamina if present
+        if (mass != null) 'mass': mass, // Include mass if present
       };
 }
