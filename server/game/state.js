@@ -3,7 +3,11 @@ const ARENA_SIZE = 2500; // Logical units (e.g., pixels)
 
 const ACCELERATION = 725; // units per second^2
 
-const BALL_RADIUS = 18; // must match client
+const BALL_MASS = 2.5; // Initial mass
+const BALL_RADIUS = 18; // Initial radius
+const BALL_MASS_GROWTH_INTERVAL = 5.0; // seconds between mass increments
+const BALL_MASS_INCREMENT = 0.5; // How much to increase mass each interval
+const BALL_MASS_MAX_MULTIPLIER = 6; // Max mass = BALL_MASS * 6
 
 const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
 const BAND_SPRING_CONSTANT = 11.0;
@@ -14,18 +18,16 @@ const BAND_COEFFICIENT_OF_RESTITUTION = 0.85;
 
 const POST_RADIUS = 22; // for collision, slightly larger than ball
 
-const BALL_MASS = 2.5; // Increase this for "heavier" balls (default 1.0)
-
 // Stamina system constants
 const STAMINA_MAX = 1.0;
 const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per second)
-const STAMINA_RECOVER_PER_SEC = 0.33; // how fast stamina recovers when not holding (per second)
+const STAMINA_RECOVER_PER_SEC = 0.31; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
 // Burst settings
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
-const BURST_IMPULSE = 420; // tweak as needed
+const BURST_IMPULSE = 550; // tweak as needed
 
 class GameState {
   constructor() {
@@ -134,8 +136,9 @@ class GameState {
       y: spawnY,
       vx: 0,
       vy: 0,
-      color: color || '#ff2196f3', // default blue if not provided
-      stamina: STAMINA_MAX, // Start with full stamina
+      color: color || '#ff2196f3',
+      stamina: STAMINA_MAX,
+      mass: BALL_MASS, // Add per-ball mass
     };
     // console.log('[DEBUG] Ball added:', this.balls[playerId]);
 
@@ -193,6 +196,11 @@ class GameState {
     }
   }
 
+  // --- Helper to get current radius for a ball ---
+  static getBallRadius(ball) {
+    return BALL_RADIUS * (ball.mass / BALL_MASS);
+  }
+
   // Update all balls' positions based on their velocities, apply friction, and update stamina
   updateBalls(dt) {
     // dt is in "ticks" (e.g., 1 = 50ms)
@@ -209,8 +217,8 @@ class GameState {
         // Apply burst impulse immediately
         const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
         if (len > 0) {
-          const bx = (burst.dx / len) * BURST_IMPULSE / BALL_MASS;
-          const by = (burst.dy / len) * BURST_IMPULSE / BALL_MASS;
+          const bx = (burst.dx / len) * BURST_IMPULSE / ball.mass;
+          const by = (burst.dy / len) * BURST_IMPULSE / ball.mass;
           ball.vx += bx;
           ball.vy += by;
           // Drain burst stamina
@@ -237,8 +245,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
           if (len > 0) {
-            const ax = (impulse.dx / len) * ACCELERATION / BALL_MASS;
-            const ay = (impulse.dy / len) * ACCELERATION / BALL_MASS;
+            const ax = (impulse.dx / len) * ACCELERATION / ball.mass;
+            const ay = (impulse.dy / len) * ACCELERATION / ball.mass;
             ball.vx += ax * dt * 0.05;
             ball.vy += ay * dt * 0.05;
             // Drain stamina for impulse
@@ -252,8 +260,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
           if (len > 0) {
-            const ax = (input.dx / len) * ACCELERATION / BALL_MASS;
-            const ay = (input.dy / len) * ACCELERATION / BALL_MASS;
+            const ax = (input.dx / len) * ACCELERATION / ball.mass;
+            const ay = (input.dy / len) * ACCELERATION / ball.mass;
             ball.vx += ax * dt * 0.05;
             ball.vy += ay * dt * 0.05;
           }
@@ -271,29 +279,33 @@ class GameState {
       for (let j = i + 1; j < ballsArr.length; j++) {
         const a = ballsArr[i];
         const b = ballsArr[j];
+        const aRadius = GameState.getBallRadius(a);
+        const bRadius = GameState.getBallRadius(b);
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < BALL_RADIUS * 2 && dist > 0) {
+        if (dist < aRadius + bRadius && dist > 0) {
           // Move balls apart so they just touch
-          const overlap = BALL_RADIUS * 2 - dist;
+          const overlap = aRadius + bRadius - dist;
           const nx = dx / dist;
           const ny = dy / dist;
-          a.x -= nx * overlap / 2;
-          a.y -= ny * overlap / 2;
-          b.x += nx * overlap / 2;
-          b.y += ny * overlap / 2;
+          a.x -= nx * overlap * (bRadius / (aRadius + bRadius));
+          a.y -= ny * overlap * (bRadius / (aRadius + bRadius));
+          b.x += nx * overlap * (aRadius / (aRadius + bRadius));
+          b.y += ny * overlap * (aRadius / (aRadius + bRadius));
 
-          // Elastic collision: exchange velocity along normal
+          // Elastic collision: exchange velocity along normal (mass-aware)
           const dvx = b.vx - a.vx;
           const dvy = b.vy - a.vy;
           const vn = dvx * nx + dvy * ny;
-          if (vn < 0) { // Only if moving towards each other
-            const impulse = vn;
-            a.vx += nx * impulse;
-            a.vy += ny * impulse;
-            b.vx -= nx * impulse;
-            b.vy -= ny * impulse;
+          if (vn < 0) {
+            const ma = a.mass || BALL_MASS;
+            const mb = b.mass || BALL_MASS;
+            const impulse = (2 * vn) / (ma + mb);
+            a.vx += impulse * mb * nx;
+            a.vy += impulse * mb * ny;
+            b.vx -= impulse * ma * nx;
+            b.vy -= impulse * ma * ny;
           }
         }
       }
@@ -435,9 +447,9 @@ class GameState {
         const dx = ball.x - post.x;
         const dy = ball.y - post.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < BALL_RADIUS + POST_RADIUS) {
+        if (dist < GameState.getBallRadius(ball) + POST_RADIUS) {
           // Push ball out
-          const overlap = BALL_RADIUS + POST_RADIUS - dist;
+          const overlap = GameState.getBallRadius(ball) + POST_RADIUS - dist;
           const nx = dx / (dist || 1e-8);
           const ny = dy / (dist || 1e-8);
           ball.x += nx * overlap;
@@ -476,11 +488,11 @@ class GameState {
           // if (dist < 100) {
           //   // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
           // }
-          if (dist < BALL_RADIUS + 10) {
+          if (dist < GameState.getBallRadius(ball) + 10) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
-            const overlap = BALL_RADIUS + 10 - dist;
+            const overlap = GameState.getBallRadius(ball) + 10 - dist;
             ball.x += nx * overlap * 0.7;
             ball.y += ny * overlap * 0.7;
             if (!fixedIndices.includes(i)) {
@@ -525,6 +537,19 @@ class GameState {
   }
 
   update(dt) {
+    // dt is in ticks (1 tick = 50ms), so dt*0.05 = seconds
+    const seconds = dt * 0.05;
+    this._elapsedMassGrowth = (this._elapsedMassGrowth || 0) + seconds;
+    if (this._elapsedMassGrowth >= BALL_MASS_GROWTH_INTERVAL) {
+      // Increment mass for all balls
+      for (const ball of Object.values(this.balls)) {
+        const maxMass = BALL_MASS * BALL_MASS_MAX_MULTIPLIER;
+        if (ball.mass < maxMass) {
+          ball.mass = Math.min(ball.mass + BALL_MASS_INCREMENT, maxMass);
+        }
+      }
+      this._elapsedMassGrowth = 0;
+    }
     this.updateBalls(dt);
     this.updateBands(dt);
   }
