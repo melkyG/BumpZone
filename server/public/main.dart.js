@@ -6511,7 +6511,7 @@ a7c:function a7c(){},
 a7b:function a7b(){},
 mO:function mO(a,b){this.c=a
 this.a=b},
-LC:function LC(a,b,c,d,e,f){var _=this
+LC:function LC(a,b,c,d,e,f,g){var _=this
 _.e=_.d=null
 _.f=a
 _.r=b
@@ -6526,8 +6526,9 @@ _.ay=35
 _.ch=0.35
 _.cx=_.CW=null
 _.cy=f
-_.dx=_.db=null
-_.fr=!1
+_.db=g
+_.dy=_.dx=null
+_.fx=!1
 _.c=_.a=null},
 aak:function aak(a){this.a=a},
 aaj:function aaj(a){this.a=a},
@@ -6589,7 +6590,7 @@ this.b=b},
 aaz:function aaz(a){this.a=a},
 aaA:function aaA(a){this.a=a},
 aai:function aai(a){this.a=a},
-JG:function JG(a,b,c,d,e,f,g,h,i){var _=this
+JG:function JG(a,b,c,d,e,f,g,h,i,j){var _=this
 _.b=a
 _.c=b
 _.d=c
@@ -6598,7 +6599,8 @@ _.f=e
 _.w=f
 _.x=g
 _.y=h
-_.a=i},
+_.z=i
+_.a=j},
 vU:function vU(a){this.a=a},
 zY:function zY(a,b){var _=this
 _.d=a
@@ -35088,7 +35090,8 @@ if(typeof a=="string"){s=A.a1A(a,null)
 return s==null?b:s}return b},
 $S:263}
 A.mO.prototype={
-am(){return new A.LC(new A.bj(null,t.A),A.c([],t.Q9),A.c([],t.zU),A.c([],t.v1),A.c([],t.sI),A.y(t.N,t.G))}}
+am(){var s=t.N
+return new A.LC(new A.bj(null,t.A),A.c([],t.Q9),A.c([],t.zU),A.c([],t.v1),A.c([],t.sI),A.y(s,t.G),A.y(s,t.i))}}
 A.LC.prototype={
 nI(a){var s,r,q,p,o,n,m=$.Z.a6$.x.h(0,this.f)
 m=m==null?null:m.gT()
@@ -35104,7 +35107,7 @@ o=new A.f(r,r)}n=a.S(0,s)
 return new A.f((n.a-m.gp().a/2)/p+o.a,(n.b-m.gp().b/2)/p+o.b)},
 BC(a,b){var s,r=this
 r.e=a
-if(b!=null)r.db=b
+if(b!=null)r.dx=b
 if(r.a.c.w==null){A.bO("No playerId yet, delaying movement start.")
 return}s=r.d
 if(s!=null)s.aJ()
@@ -35113,7 +35116,7 @@ r.Bo(a)},
 a7X(a){return this.BC(a,null)},
 va(){var s=this,r=s.d
 if(r!=null)r.aJ()
-s.db=s.e=s.d=null
+s.dx=s.e=s.d=null
 s.a.c.G4(0,0)},
 Bo(a){var s,r,q,p,o,n,m,l,k,j=this
 if(j.a.c.w==null){A.bO("No playerId yet.")
@@ -35157,13 +35160,13 @@ o=null
 try{p=J.iI(q,"playerId")
 o=J.iI(q,"color")}catch(m){try{p=q.gxH()
 o=q.gR()}catch(m){p=null
-o=null}}if(p!=null)if(o!=null)J.cn(o)}A.bO("[DEBUG] (build) _myStamina: "+A.m(f.dx))
+o=null}}if(p!=null)if(o!=null)J.cn(o)}A.bO("[DEBUG] (build) _myStamina: "+A.m(f.dy))
 k=A.F_(!0,e,!0,!0,e,e,!1)
 j=A.and(0,A.eX(e,B.z,B.eR,e,e,e,e,e,e,e))
 h=f.z
-h=A.kw(B.bC,A.j9(A.pC(B.bh,A.eX(A.oM(A.eX(A.hW(e,e,!1,e,new A.JG(f.r,f.x,f.y,h,l,f.a.c.w,f.cx,f.cy,e),new A.G(h,h),!1),B.z,B.A,e,e,n,f.f,e,e,n),e,e),B.z,B.A,e,e,1/0,e,e,e,1/0),e,new A.aat(),e,e,e),B.bf,e,e,e,new A.aau(f)),B.a7,!1,e,e,e,e,e,e,e,new A.aaC(f),new A.aaD(f),new A.aaE(f),new A.aaF(f),e,e,e,e,e,e,new A.aaG(f),new A.aaH(f))
+h=A.kw(B.bC,A.j9(A.pC(B.bh,A.eX(A.oM(A.eX(A.hW(e,e,!1,e,new A.JG(f.r,f.x,f.y,h,l,f.a.c.w,f.cx,f.cy,f.db,e),new A.G(h,h),!1),B.z,B.A,e,e,n,f.f,e,e,n),e,e),B.z,B.A,e,e,1/0,e,e,e,1/0),e,new A.aat(),e,e,e),B.bf,e,e,e,new A.aau(f)),B.a7,!1,e,e,e,e,e,e,e,new A.aaC(f),new A.aaD(f),new A.aaE(f),new A.aaF(f),e,e,e,e,e,e,new A.aaG(f),new A.aaH(f))
 g=f.w
-g=A.c([j,h,new A.wD(g,e),new A.Fg(g,f.Q,f.as,f.at,f.ax,f.ay,f.ch,new A.aaI(f),new A.aaJ(f),new A.aav(f),new A.aaw(f),new A.aax(f),new A.aay(f),new A.aaz(f),new A.aaA(f),f.dx,e)],t.E)
+g=A.c([j,h,new A.wD(g,e),new A.Fg(g,f.Q,f.as,f.at,f.ax,f.ay,f.ch,new A.aaI(f),new A.aaJ(f),new A.aav(f),new A.aaw(f),new A.aax(f),new A.aay(f),new A.aaz(f),new A.aaA(f),f.dy,e)],t.E)
 if(d==null)g.push(A.eX(B.zn,B.z,A.a8(B.c.ap(76.5),B.l.u()>>>16&255,B.l.u()>>>8&255,B.l.u()&255),e,e,e,e,e,e,e))
 return A.anB(new A.wM(k,!0,new A.aaB(f),A.jz(B.bQ,g,B.U,B.bI),e))},
 a7d(a){var s,r,q,p,o,n,m,l,k=this
@@ -35179,12 +35182,12 @@ l=n?p/o:0
 A.bO("Burst raw: dx="+A.m(q)+" dy="+A.m(p)+", normalized: ("+A.m(m)+", "+A.m(l)+")")
 n=t.N
 k.a.c.qm(A.ac(["type","move","direction",A.ac(["dx",m,"dy",l],n,t.i),"burst",!0],n,t.z))
-if(k.d==null||k.db==null)k.va()},
+if(k.d==null||k.dx==null)k.va()},
 l(){var s=this.d
 if(s!=null)s.aJ()
 this.aF()}}
 A.aak.prototype={
-$1(a){var s=this.a,r=s.db
+$1(a){var s=this.a,r=s.dx
 if(r!=null)s.Bo(s.nI(r))},
 $S:85}
 A.aaj.prototype={
@@ -35211,7 +35214,7 @@ $S:38}
 A.aaV.prototype={
 $1(a){var s,r=this.a
 r.ag(new A.aaS(r,a))
-if(r.d!=null&&r.db!=null&&r.a.c.w!=null){s=r.db
+if(r.d!=null&&r.dx!=null&&r.a.c.w!=null){s=r.dx
 s.toString
 r.Bo(r.nI(s))}},
 $S:273}
@@ -35221,7 +35224,7 @@ p.r=n
 p.x=o.b
 p.y=o.c
 s=null
-try{s=B.b.mC(n,new A.aaN(p))}catch(r){s=null}if(s!=null&&s.r!=null){p.dx=s.r
+try{s=B.b.mC(n,new A.aaN(p))}catch(r){s=null}if(s!=null&&s.r!=null){p.dy=s.r
 A.bO("[DEBUG] (onArenaUpdate) myBall.stamina: "+A.m(s.r))}else A.bO("[DEBUG] (onArenaUpdate) myBall or stamina is null")
 if(s!=null)q=new A.f(s.b,s.c)
 else{o=p.z/2
@@ -35235,18 +35238,21 @@ A.aaN.prototype={
 $1(a){return a.a===this.a.a.c.w},
 $S:49}
 A.aaW.prototype={
-$1(a){var s,r,q,p,o,n,m,l,k
-for(q=a.length,p=this.a,o=p.cy,n=0;n<a.length;a.length===q||(0,A.F)(a),++n){s=a[n]
-if(typeof s.f=="string"){m=s.f
-l=m==null?A.bu(m):m}else l=null
-r=l
-if(r!=null&&J.cn(r)===9&&J.ahl(r,"#"))try{o.m(0,s.a,A.aN(A.fs(J.ahm(r,1),16)))}catch(k){}}p.ag(new A.aaR(p,a))},
+$1(a){var s,r,q,p,o,n,m,l,k,j,i
+for(q=a.length,p=this.a,o=p.cy,n=p.db,m=0;m<a.length;a.length===q||(0,A.F)(a),++m){s=a[m]
+if(typeof s.f=="string"){l=s.f
+k=l==null?A.bu(l):l}else k=null
+r=k
+if(r!=null&&J.cn(r)===9&&J.ahl(r,"#"))try{o.m(0,s.a,A.aN(A.fs(J.ahm(r,1),16)))}catch(j){}if(s.w!=null){l=s.a
+i=s.w
+i.toString
+n.m(0,l,i)}}p.ag(new A.aaR(p,a))},
 $S:274}
 A.aaR.prototype={
 $0(){var s,r,q=this.a,p=this.b
 q.r=p
 s=null
-try{s=B.b.mC(p,new A.aaM(q))}catch(r){s=null}if(s!=null&&s.r!=null){q.dx=s.r
+try{s=B.b.mC(p,new A.aaM(q))}catch(r){s=null}if(s!=null&&s.r!=null){q.dy=s.r
 A.bO("[DEBUG] (onBallsUpdate) myBall.stamina: "+A.m(s.r))}else A.bO("[DEBUG] (onBallsUpdate) myBall or stamina is null")},
 $S:0}
 A.aaM.prototype={
@@ -35287,9 +35293,9 @@ $S:49}
 A.aaB.prototype={
 $1(a){var s,r,q,p,o,n,m,l,k
 if(a instanceof A.jp&&a.c.grG().j(0,B.fy)){q=this.a
-if(!q.fr){q.fr=!0
+if(!q.fx){q.fx=!0
 s=null
-try{p=q.db
+try{p=q.dx
 if(p!=null)s=p}catch(o){}n=s!=null?s:null
 if(n==null){p=$.Z.a6$.x.h(0,q.f)
 p=p==null?null:p.gT()
@@ -35300,7 +35306,7 @@ n=A.b6(p.aD(null),new A.f(m.a/2,l.b/2))}}A.bO("[BURST] Raw pointer for burst: "+
 if(q.a.c.w!=null){r=null
 try{r=B.b.mC(q.r,new A.aal(q))}catch(o){r=null}if(r!=null)A.bO("[BURST] My ball position: ("+A.m(r.b)+", "+A.m(r.c)+")")}if(n!=null){k=q.nI(n)
 A.bO("[BURST] Logical burst target: "+k.k(0))
-q.a7d(k)}}}if(a instanceof A.nw&&a.c.grG().j(0,B.fy))this.a.fr=!1},
+q.a7d(k)}}}if(a instanceof A.nw&&a.c.grG().j(0,B.fy))this.a.fx=!1},
 $S:76}
 A.aal.prototype={
 $1(a){return a.a===this.a.a.c.w},
@@ -35312,7 +35318,7 @@ $S:33}
 A.aaF.prototype={
 $1(a){var s=this.a,r=a.d
 s.e=s.nI(r)
-s.db=r},
+s.dx=r},
 $S:13}
 A.aaD.prototype={
 $1(a){this.a.va()},
@@ -35328,7 +35334,7 @@ A.aaH.prototype={
 $1(a){this.a.va()},
 $S:42}
 A.aau.prototype={
-$1(a){this.a.db=a.gbo()},
+$1(a){this.a.dx=a.gbo()},
 $S:142}
 A.aat.prototype={
 $1(a){},
@@ -35418,65 +35424,66 @@ A.aai.prototype={
 $1(a){return a.a===this.a.a.c.w},
 $S:49}
 A.JG.prototype={
-az(b7,b8){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1=this,b2=b8.a,b3=b1.e,b4=b2/b3,b5=b1.f,b6=b5.a
-if(isNaN(b6)||b6==1/0||b6==-1/0)b6=b3/2
-q=b5.b
-if(isNaN(q)||q==1/0||q==-1/0)q=b3/2
-b5=$.W()
-p=b5.aH()
+az(b9,c0){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3=this,b4=c0.a,b5=b3.e,b6=b4/b5,b7=b3.f,b8=b7.a
+if(isNaN(b8)||b8==1/0||b8==-1/0)b8=b5/2
+q=b7.b
+if(isNaN(q)||q==1/0||q==-1/0)q=b5/2
+b7=$.W()
+p=b7.aH()
 p.sR(B.eR)
-o=b8.b
-b7.dD(new A.r(0,0,0+b2,0+o),p)
-n=b2/2-b6*b4
-m=o/2-q*b4
-l=b3*b4
-k=b5.aH()
+o=c0.b
+b9.dD(new A.r(0,0,0+b4,0+o),p)
+n=b4/2-b8*b6
+m=o/2-q*b6
+l=b5*b6
+k=b7.aH()
 k.sR(B.k)
-b7.dD(new A.r(n,m,n+l,m+l),k)
-b7.d7()
-b7.b3(n,m)
-j=b5.aH()
+b9.dD(new A.r(n,m,n+l,m+l),k)
+b9.d7()
+b9.b3(n,m)
+j=b7.aH()
 j.sR(B.l)
 j.scQ(B.al)
 j.sdt(7)
-b5=0+l
-b7.dD(new A.r(0,0,b5,b5),j)
+b7=0+l
+b9.dD(new A.r(0,0,b7,b7),j)
 i=[B.b9,B.ct,B.b9,B.ct]
-for(b2=b1.c,h=0;h<b2.length;++h){b3=b2[h].a
-if(b3.length!==0){g=b3[0]
+for(b4=b3.c,h=0;h<b4.length;++h){b5=b4[h].a
+if(b5.length!==0){g=b5[0]
 f=$.W().bI()
-f.iH(g.a*b4,g.b*b4)
-for(b5=A.a_(b3),o=b5.i("el<1>"),e=new A.el(b3,1,null,o),e.pJ(b3,1,null,b5.c),e=new A.bm(e,e.gF(0),o.i("bm<av.E>")),o=o.i("av.E");e.v();){b3=e.d
-if(b3==null)b3=o.a(b3)
-f.cF(b3.a*b4,b3.b*b4)}d=$.W().aH()
+f.iH(g.a*b6,g.b*b6)
+for(b7=A.a_(b5),o=b7.i("el<1>"),e=new A.el(b5,1,null,o),e.pJ(b5,1,null,b7.c),e=new A.bm(e,e.gF(0),o.i("bm<av.E>")),o=o.i("av.E");e.v();){b5=e.d
+if(b5==null)b5=o.a(b5)
+f.cF(b5.a*b6,b5.b*b6)}d=$.W().aH()
 d.sR(i[B.j.br(h,4)])
 d.scQ(B.al)
 d.sdt(3)
-b7.eI(f,d)}}c=[B.b9,B.ct,B.b9,B.ct]
-for(b2=b1.d,b3=22*b4,h=0;h<b2.length;++h){b=b2[h]
+b9.eI(f,d)}}c=[B.b9,B.ct,B.b9,B.ct]
+for(b4=b3.d,b5=22*b6,h=0;h<b4.length;++h){b=b4[h]
 a=$.W().aH()
 a.sR(c[B.j.br(h,4)])
 a.scQ(B.bG)
-b7.hl(new A.f(b.a*b4,b.b*b4),b3,a)}for(b2=b1.b,b3=b2.length,b5=b1.w,o=b5!=null,e=b1.y,a0=b1.x,a1=a0!=null,a2=0.6*b4,a3=0;a3<b2.length;b2.length===b3||(0,A.F)(b2),++a3){a4=b2[a3]
+b9.hl(new A.f(b.a*b6,b.b*b6),b5,a)}for(b4=b3.b,b5=b4.length,b7=b3.w,o=b7!=null,e=b3.y,a0=b3.x,a1=a0!=null,a2=0.6*b6,a3=b3.z,a4=0;a4<b4.length;b4.length===b5||(0,A.F)(b4),++a4){a5=b4[a4]
 s=null
-a5=a4.f
-if(!(typeof a5=="string"))a5=null
-r=a5
-if(r!=null&&J.cn(r)===9&&J.ahl(r,"#"))try{s=A.aN(A.fs(J.ahm(r,1),16))}catch(a6){s=null}if(s==null&&e.h(0,a4.a)!=null)s=e.h(0,a4.a)
-if(o&&a4.a===b5&&a1)s=a0
-if(s!=null){a7=$.W()
-a8=a7.aH()
-a8.sR(s)
-a8.scQ(B.bG)
-j=a7.aH()
+a6=a5.f
+if(!(typeof a6=="string"))a6=null
+r=a6
+if(r!=null&&J.cn(r)===9&&J.ahl(r,"#"))try{s=A.aN(A.fs(J.ahm(r,1),16))}catch(a7){s=null}if(s==null&&e.h(0,a5.a)!=null)s=e.h(0,a5.a)
+if(o&&a5.a===b7&&a1)s=a0
+if(s!=null){a8=$.W()
+a9=a8.aH()
+a9.sR(s)
+a9.scQ(B.bG)
+j=a8.aH()
 j.sR(B.l)
 j.scQ(B.al)
 j.sdt(a2)
-a9=new A.f(a4.b*b4,a4.c*b4)
-a7=a4.w
-b0=(a7!=null?18*(a7/2.5):18)*b4
-b7.hl(a9,b0,a8)
-b7.hl(a9,b0,j)}}b7.c9()},
+b0=new A.f(a5.b*b6,a5.c*b6)
+a8=a5.w
+b1=a8==null?a3.h(0,a5.a):a8
+b2=18*((b1==null?2.5:b1)/2.5)*b6
+b9.hl(b0,b2,a9)
+b9.hl(b0,b2,j)}}b9.c9()},
 e4(a){return!0}}
 A.vU.prototype={
 am(){return new A.zY(new A.Iy(B.x1,$.ai()),B.b9)}}

@@ -48,6 +48,7 @@ class _GameScreenState extends State<GameScreen> {
 
   // Fallback color map for balls
   final Map<String, Color> _lastBallColors = {}; // Add this
+  final Map<String, double> _lastBallMasses = {}; // Add this map for masses
 
   // Store the last pointer position in global (screen) coordinates
   Offset? _lastPointerGlobal; // Add this
@@ -230,13 +231,17 @@ class _GameScreenState extends State<GameScreen> {
       }
     };
     widget.webSocketService.onBallsUpdate = (balls) {
-      // Update last known color for each ball
+      // Update last known color and mass for each ball
       for (final ball in balls) {
         final String? colorStr = ball.color is String ? ball.color as String : null;
         if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
           try {
             _lastBallColors[ball.id] = Color(int.parse(colorStr.substring(1), radix: 16));
           } catch (_) {}
+        }
+        // Store last known mass
+        if (ball.mass != null) {
+          _lastBallMasses[ball.id] = ball.mass!;
         }
       }
       setState(() {
@@ -457,6 +462,7 @@ class _GameScreenState extends State<GameScreen> {
                             myPlayerId: _myPlayerId,
                             myBallColor: _myBallColor,
                             lastBallColors: _lastBallColors,
+                            lastBallMasses: _lastBallMasses,
                           ),
                           isComplex: false,
                           willChange: false,
@@ -602,9 +608,10 @@ class _ArenaPainter extends CustomPainter {
   final double arenaLogicalSize;
   final Offset cameraOffset;
   final Map<String, Color> playerColors;
-  final String? myPlayerId;      // Add this
-  final Color? myBallColor;      // Add this
-  final Map<String, Color> lastBallColors; // Add this
+  final String? myPlayerId;
+  final Color? myBallColor;
+  final Map<String, Color> lastBallColors;
+  final Map<String, double> lastBallMasses;
 
   _ArenaPainter({
     required this.balls,
@@ -613,9 +620,10 @@ class _ArenaPainter extends CustomPainter {
     required this.arenaLogicalSize,
     required this.cameraOffset,
     this.playerColors = const {},
-    this.myPlayerId,             // Add this
-    this.myBallColor,            // Add this
-    required this.lastBallColors, // Add this
+    this.myPlayerId,
+    this.myBallColor,
+    required this.lastBallColors,
+    required this.lastBallMasses,
   });
 
   @override
@@ -733,8 +741,9 @@ class _ArenaPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.6 * scale; // Scaled border width
         final Offset center = Offset(ball.x * scale, ball.y * scale);
-        // Calculate radius based on mass if available, otherwise use base radius
-        final double radius = (ball.mass != null ? logicalRadius * (ball.mass! / 2.5) : logicalRadius) * scale;
+        // Calculate radius based on mass if available, otherwise use last known mass or base radius
+        final double mass = ball.mass ?? lastBallMasses[ball.id] ?? 2.5;
+        final double radius = logicalRadius * (mass / 2.5) * scale;
         canvas.drawCircle(center, radius, ballPaint);
         canvas.drawCircle(center, radius, borderPaint);
       }
