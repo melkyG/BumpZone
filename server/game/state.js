@@ -1,7 +1,7 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 3000; // Logical units (e.g., pixels)
 
-const ACCELERATION = 675; // units per second^2
+const ACCELERATION = 600; // units per second^2
 
 const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
@@ -10,10 +10,10 @@ const BALL_MASS_INCREMENT = 0.1; // How much to increase mass each interval
 const BALL_MASS_MAX_MULTIPLIER = 12; // Max mass = BALL_MASS * 6
 
 const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
-const BAND_SPRING_CONSTANT = 50;
-const BAND_DAMPING_COEFF = 0.03;
+const BAND_SPRING_CONSTANT = 15;
+const BAND_DAMPING_COEFF = 0.04;
 const BAND_MASS = 0.04;
-const BAND_REST_LENGTH_SCALE = 0.03;
+const BAND_REST_LENGTH_SCALE = 0.02;
 const BAND_COEFFICIENT_OF_RESTITUTION = 0.65;
 
 const POST_RADIUS = 22; // for collision, slightly larger than ball
@@ -27,7 +27,7 @@ const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to mov
 // Burst settings
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
-const BURST_IMPULSE = 600; // tweak as needed
+const BURST_IMPULSE = 400; // tweak as needed
 
 class GameState {
   constructor() {
@@ -324,13 +324,7 @@ class GameState {
       const band = this.bands[bandIdx];
       const { segments, velocities, springConstant, dampingCoeff, mass, restLength, fixedIndices } = band;
       const numPts = segments.length;
-      // Print only the first tick for each band
-      if (!band._printedOnce) {
-        for (let i = 0; i < numPts; i++) {
-          console.log(`[PRE] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
-        }
-        band._printedOnce = true;
-      }
+      
       // Compute Hooke's law forces for each segment
       const forces = Array.from({ length: numPts }, () => ({ x: 0, y: 0 }));
       for (let i = 0; i < numPts; i++) {
@@ -436,13 +430,6 @@ class GameState {
           segments[i].x = 0;
           segments[i].y = 0;
         }
-      }
-      // After update, print only the first tick for each band
-      if (band._printedOnce === true) {
-        for (let i = 0; i < numPts; i++) {
-          console.log(`[POST] Band ${bandIdx} seg ${i}: (${segments[i].x}, ${segments[i].y})`);
-        }
-        band._printedOnce = "done";
       }
     }
 

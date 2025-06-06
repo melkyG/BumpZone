@@ -35147,7 +35147,7 @@ if(l==null)l=2.5
 if(s.w!=null){a=s.a
 k=s.w
 k.toString
-c.db.m(0,a,k)}j=B.c.ea(2.5/B.c.ea(l/2.5,0.5,3),1.5,2.5)}else j=2.5
+c.db.m(0,a,k)}j=B.c.ea(3/B.c.ea(l/2.5,0.5,3),1.5,3)}else j=3
 a=c.fy
 if(a==null){c.fy=j
 a=j}else a=c.fy=a+(j-a)*0.1
