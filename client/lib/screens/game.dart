@@ -88,11 +88,7 @@ class _GameScreenState extends State<GameScreen> {
     if (globalPosition != null) {
       _lastPointerGlobal = globalPosition;
     }
-    // Wait until _myPlayerId is set before starting movement
-    if (_myPlayerId == null) {
-      print('No playerId yet, delaying movement start.');
-      return;
-    }
+
     _moveTimer?.cancel();
     _moveTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       // Always recalculate logical target from the latest global pointer position
@@ -120,10 +116,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _sendMovementTo(Offset logicalTarget) {
-    if (_myPlayerId == null) {
-      print('No playerId yet.');
-      return;
-    }
     Ball? myBall;
     try {
       myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
@@ -135,14 +127,11 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
-    print('My ball position: (${myBall.x}, ${myBall.y}), Target: (${logicalTarget.dx}, ${logicalTarget.dy})');
-
     final double dx = logicalTarget.dx - myBall.x;
     final double dy = logicalTarget.dy - myBall.y;
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
-    print('Sending direction: ($dirX, $dirY)');
     widget.webSocketService.sendMovement(dirX, dirY);
   }
 
@@ -189,10 +178,6 @@ class _GameScreenState extends State<GameScreen> {
       });
     };
     widget.webSocketService.onArenaUpdate = (arena) {
-      //print('[DEBUG] Arena bands received: ${arena.bands.length}');
-      if (arena.bands.isNotEmpty) {
-        //print('[DEBUG] First band segment count: ${arena.bands[0].segments.length}');
-      }
       setState(() {
         _balls = arena.balls;
         _bands = arena.bands;
@@ -206,10 +191,7 @@ class _GameScreenState extends State<GameScreen> {
         }
         if (myBall != null && myBall.stamina != null) {
           _myStamina = myBall.stamina;
-          print('[DEBUG] (onArenaUpdate) myBall.stamina: ${myBall.stamina}');
-        } else {
-          print('[DEBUG] (onArenaUpdate) myBall or stamina is null');
-        }
+        } 
         // Camera smoothing: update target position here
         final Offset target = (myBall != null)
             ? Offset(myBall.x, myBall.y)
@@ -258,9 +240,6 @@ class _GameScreenState extends State<GameScreen> {
         }
         if (myBall != null && myBall.stamina != null) {
           _myStamina = myBall.stamina;
-          print('[DEBUG] (onBallsUpdate) myBall.stamina: ${myBall.stamina}');
-        } else {
-          print('[DEBUG] (onBallsUpdate) myBall or stamina is null');
         }
       });
     };
@@ -269,12 +248,9 @@ class _GameScreenState extends State<GameScreen> {
       if (_lastPointerLogical != null) {
         _startSendingMovement(_lastPointerLogical!);
       }
-      // Request band settings after join
-      print('[GAME] Sending getBandSettings after join'); // <-- Add this debug print
       widget.webSocketService.sendRaw({'type': 'getBandSettings'});
     };
     widget.webSocketService.onBandSettingsUpdate = (spring, damping, mass, restitution, segmentsPerSide, restLengthScale) {
-      print('[GAME] onBandSettingsUpdate: $spring, $damping, $mass, $restitution, $segmentsPerSide, $restLengthScale');
       setState(() {
         _springConstant = spring;
         _dampingCoeff = damping;
@@ -367,8 +343,6 @@ class _GameScreenState extends State<GameScreen> {
       }
     }
 
-    print('[DEBUG] (build) _myStamina: $_myStamina');
-
     return Scaffold(
       body: RawKeyboardListener(
         focusNode: FocusNode(),
@@ -397,8 +371,6 @@ class _GameScreenState extends State<GameScreen> {
                   pointer = box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2));
                 }
               }
-              // --- DEBUG PRINT: Print the pointer position when burst is activated ---
-              print('[BURST] Raw pointer for burst: $pointer');
               if (_myPlayerId != null) {
                 Ball? myBall;
                 try {
@@ -406,14 +378,10 @@ class _GameScreenState extends State<GameScreen> {
                 } catch (_) {
                   myBall = null;
                 }
-                if (myBall != null) {
-                  print('[BURST] My ball position: (${myBall.x}, ${myBall.y})');
-                }
               }
               // ---------------------------------------------------------------
               if (pointer != null) {
                 final logical = _getLogicalFromGlobal(pointer);
-                print('[BURST] Logical burst target: $logical');
                 _sendBurstTo(logical);
               }
             }
