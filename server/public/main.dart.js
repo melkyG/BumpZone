@@ -6529,7 +6529,7 @@ _.cy=f
 _.db=g
 _.dy=_.dx=null
 _.fx=!1
-_.c=_.a=null},
+_.c=_.a=_.fy=null},
 aak:function aak(a){this.a=a},
 aaj:function aaj(a){this.a=a},
 aaU:function aaU(a){this.a=a},
@@ -35151,29 +35151,32 @@ s=null
 try{s=B.b.mC(d.r,new A.aas(d))}catch(m){s=null}if(s!=null&&s.w!=null){b=s.w
 b.toString
 l=1.5/B.c.en(b/2.5,0.5,3)}else l=1.5
-b=d.z
-k=b*(n*l)
-j=d.a.c.w
+b=d.fy
+if(b==null){d.fy=l
+b=l}else b=d.fy=b+(l-b)*0.1
+k=d.z
+j=k*(n*b)
+b=d.a.c.w
 i=d.CW
-if(i==null)if(s!=null){b=new A.f(s.b,s.c)
-i=b}else{b/=2
-b=new A.f(b,b)
-i=b}r=A.y(t.N,t.G)
-for(b=d.w,h=b.length,g=0;g<b.length;b.length===h||(0,A.F)(b),++g){q=b[g]
+if(i==null)if(s!=null){k=new A.f(s.b,s.c)
+i=k}else{k/=2
+k=new A.f(k,k)
+i=k}r=A.y(t.N,t.G)
+for(k=d.w,h=k.length,g=0;g<k.length;k.length===h||(0,A.F)(k),++g){q=k[g]
 p=null
 o=null
 try{p=J.iI(q,"playerId")
 o=J.iI(q,"color")}catch(m){try{p=q.gxH()
 o=q.gR()}catch(m){p=null
 o=null}}if(p!=null)if(o!=null)J.cn(o)}A.bO("[DEBUG] (build) _myStamina: "+A.m(d.dy))
-b=A.F_(!0,c,!0,!0,c,c,!1)
+k=A.F_(!0,c,!0,!0,c,c,!1)
 h=A.and(0,A.eX(c,B.z,B.eR,c,c,c,c,c,c,c))
 f=d.z
-f=A.kw(B.bC,A.j9(A.pC(B.bh,A.eX(A.oM(A.eX(A.hW(c,c,!1,c,new A.JG(d.r,d.x,d.y,f,i,d.a.c.w,d.cx,d.cy,d.db,c),new A.G(f,f),!1),B.z,B.A,c,c,k,d.f,c,c,k),c,c),B.z,B.A,c,c,1/0,c,c,c,1/0),c,new A.aat(),c,c,c),B.bf,c,c,c,new A.aau(d)),B.a7,!1,c,c,c,c,c,c,c,new A.aaC(d),new A.aaD(d),new A.aaE(d),new A.aaF(d),c,c,c,c,c,c,new A.aaG(d),new A.aaH(d))
+f=A.kw(B.bC,A.j9(A.pC(B.bh,A.eX(A.oM(A.eX(A.hW(c,c,!1,c,new A.JG(d.r,d.x,d.y,f,i,d.a.c.w,d.cx,d.cy,d.db,c),new A.G(f,f),!1),B.z,B.A,c,c,j,d.f,c,c,j),c,c),B.z,B.A,c,c,1/0,c,c,c,1/0),c,new A.aat(),c,c,c),B.bf,c,c,c,new A.aau(d)),B.a7,!1,c,c,c,c,c,c,c,new A.aaC(d),new A.aaD(d),new A.aaE(d),new A.aaF(d),c,c,c,c,c,c,new A.aaG(d),new A.aaH(d))
 e=d.w
 e=A.c([h,f,new A.wD(e,c),new A.Fg(e,d.Q,d.as,d.at,d.ax,d.ay,d.ch,new A.aaI(d),new A.aaJ(d),new A.aav(d),new A.aaw(d),new A.aax(d),new A.aay(d),new A.aaz(d),new A.aaA(d),d.dy,c)],t.E)
-if(j==null)e.push(A.eX(B.zn,B.z,A.a8(B.c.ap(76.5),B.l.u()>>>16&255,B.l.u()>>>8&255,B.l.u()&255),c,c,c,c,c,c,c))
-return A.anB(new A.wM(b,!0,new A.aaB(d),A.jz(B.bQ,e,B.U,B.bI),c))},
+if(b==null)e.push(A.eX(B.zn,B.z,A.a8(B.c.ap(76.5),B.l.u()>>>16&255,B.l.u()>>>8&255,B.l.u()&255),c,c,c,c,c,c,c))
+return A.anB(new A.wM(k,!0,new A.aaB(d),A.jz(B.bQ,e,B.U,B.bI),c))},
 a7d(a){var s,r,q,p,o,n,m,l,k=this
 if(k.a.c.w==null)return
 s=null

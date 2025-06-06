@@ -62,6 +62,9 @@ class _GameScreenState extends State<GameScreen> {
   // Track burst request
   bool _pendingBurst = false;
 
+  // Smooth zoom factor
+  double? _smoothedZoom; // Add this field
+
   // Convert global pointer position to logical arena coordinates
   Offset _getLogicalFromGlobal(Offset globalPosition) {
     final RenderBox? box = _arenaKey.currentContext?.findRenderObject() as RenderBox?;
@@ -314,14 +317,23 @@ class _GameScreenState extends State<GameScreen> {
       myBall = null;
     }
 
-    // Calculate dynamic zoom based on mass
-    double dynamicZoom = 1.5; // Default zoom
+    // Calculate target zoom based on mass
+    double targetZoom = 1.5; // Default zoom
     if (myBall != null && myBall.mass != null) {
       // Invert the mass ratio to zoom out as mass increases
       // Clamp between 0.5 and 1.5 to prevent extreme zoom levels
-      dynamicZoom = 1.5 / (myBall.mass! / 2.5).clamp(0.5, 3.0);
+      targetZoom = 1.5 / (myBall.mass! / 2.5).clamp(0.5, 3.0);
     }
-    final double scale = baseScale * dynamicZoom; // Use dynamic zoom factor here
+
+    // Smooth zoom transition
+    const double zoomSmoothing = 0.1; // Adjust this value to control zoom transition speed
+    if (_smoothedZoom == null) {
+      _smoothedZoom = targetZoom;
+    } else {
+      _smoothedZoom = _smoothedZoom! + (targetZoom - _smoothedZoom!) * zoomSmoothing;
+    }
+
+    final double scale = baseScale * _smoothedZoom!; // Use smoothed zoom factor here
     final double displaySize = _arenaLogicalSize * scale;
     final bool ready = _myPlayerId != null;
 
