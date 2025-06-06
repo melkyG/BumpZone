@@ -1,7 +1,7 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 3000; // Logical units (e.g., pixels)
 
-const ACCELERATION = 600; // units per second^2
+const ACCELERATION = 585; // units per second^2
 
 const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
@@ -27,7 +27,7 @@ const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to mov
 // Burst settings
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
-const BURST_IMPULSE = 400; // tweak as needed
+const BURST_IMPULSE = 375; // tweak as needed
 
 class GameState {
   constructor() {
@@ -217,8 +217,8 @@ class GameState {
         // Apply burst impulse immediately
         const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
         if (len > 0) {
-          // Scale burst impulse with mass
-          const massScale = ball.mass / BALL_MASS;
+          // Scale burst impulse with mass, using square root for more gradual scaling
+          const massScale = Math.sqrt(ball.mass / BALL_MASS);
           const bx = (burst.dx / len) * BURST_IMPULSE * massScale;
           const by = (burst.dy / len) * BURST_IMPULSE * massScale;
           ball.vx += bx;
@@ -247,8 +247,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
           if (len > 0) {
-            // Scale acceleration with mass
-            const massScale = ball.mass / BALL_MASS;
+            // Scale acceleration with mass, but use square root to make it more gradual
+            const massScale = Math.sqrt(ball.mass / BALL_MASS);
             const ax = (impulse.dx / len) * ACCELERATION * massScale;
             const ay = (impulse.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
@@ -264,8 +264,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
           if (len > 0) {
-            // Scale acceleration with mass
-            const massScale = ball.mass / BALL_MASS;
+            // Scale acceleration with mass, but use square root to make it more gradual
+            const massScale = Math.sqrt(ball.mass / BALL_MASS);
             const ax = (input.dx / len) * ACCELERATION * massScale;
             const ay = (input.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
