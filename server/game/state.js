@@ -1,12 +1,12 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 3000; // Logical units (e.g., pixels)
 
-const ACCELERATION = 585; // units per second^2
+const ACCELERATION = 580; // units per second^2
 
 const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
 const BALL_MASS_GROWTH_INTERVAL = 3.0; // seconds between mass increments
-const BALL_MASS_INCREMENT = 0.1; // How much to increase mass each interval
+const BALL_MASS_INCREMENT = 0.07; // How much to increase mass each interval
 const BALL_MASS_MAX_MULTIPLIER = 12; // Max mass = BALL_MASS * 6
 
 const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
