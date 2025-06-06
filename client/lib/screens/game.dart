@@ -30,7 +30,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Player> _players = [];
   List<Band> _bands = [];
   List<BandSegment> _posts = [];
-  double _arenaLogicalSize = 2500.0;
+  double _arenaLogicalSize = 3000.0;
 
   // Band settings state (add these fields)
   double _springConstant = 10.0; // <-- This is just a default, will be overwritten by server
@@ -305,17 +305,26 @@ class _GameScreenState extends State<GameScreen> {
     final double baseScale = (availableHeight < availableWidth)
         ? availableHeight / _arenaLogicalSize
         : availableWidth / _arenaLogicalSize;
-    final double scale = baseScale * _cameraZoom; // <-- Use manual zoom factor here
-    final double displaySize = _arenaLogicalSize * scale;
-    final bool ready = _myPlayerId != null;
 
-    // Find my ball
+    // Find my ball and calculate dynamic zoom based on mass
     Ball? myBall;
     try {
       myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
     } catch (_) {
       myBall = null;
     }
+
+    // Calculate dynamic zoom based on mass
+    double dynamicZoom = 1.5; // Default zoom
+    if (myBall != null && myBall.mass != null) {
+      // Invert the mass ratio to zoom out as mass increases
+      // Clamp between 0.5 and 1.5 to prevent extreme zoom levels
+      dynamicZoom = 1.5 / (myBall.mass! / 2.5).clamp(0.5, 3.0);
+    }
+    final double scale = baseScale * dynamicZoom; // Use dynamic zoom factor here
+    final double displaySize = _arenaLogicalSize * scale;
+    final bool ready = _myPlayerId != null;
+
     // Use smoothed camera offset if available
     Offset cameraOffset = _smoothedCameraOffset ??
         ((myBall != null)
