@@ -293,12 +293,20 @@ class _GameScreenState extends State<GameScreen> {
       myBall = null;
     }
 
-    // Calculate target zoom based on mass
-    double targetZoom = 1.5; // Default zoom
-    if (myBall != null && myBall.mass != null) {
+    // Calculate target zoom based on mass, using cached mass if available
+    double targetZoom = 2.5; // Default zoom (changed from 1.5 to 2.5)
+    if (myBall != null) {
+      // Use cached mass if available, otherwise use current mass
+      final double mass = myBall.mass ?? _lastBallMasses[myBall.id] ?? 2.5;
+      // Update cache with current mass if available
+      if (myBall.mass != null) {
+        _lastBallMasses[myBall.id] = myBall.mass!;
+      }
       // Invert the mass ratio to zoom out as mass increases
-      // Clamp between 0.5 and 1.5 to prevent extreme zoom levels
-      targetZoom = 1.5 / (myBall.mass! / 2.5).clamp(0.5, 3.0);
+      // Clamp between 1.5 and 2.5 to keep camera closer
+      targetZoom = 2.5 / (mass / 2.5).clamp(0.5, 3.0);
+      // Ensure zoom stays within our desired range
+      targetZoom = targetZoom.clamp(1.5, 2.5);
     }
 
     // Smooth zoom transition
@@ -573,7 +581,6 @@ class _GameScreenState extends State<GameScreen> {
     final double length = math.sqrt(dx * dx + dy * dy);
     final double dirX = length > 0 ? dx / length : 0;
     final double dirY = length > 0 ? dy / length : 0;
-    print('Burst raw: dx=$dx dy=$dy, normalized: ($dirX, $dirY)'); // <-- Add this debug print
     // Send burst flag to server
     widget.webSocketService.sendMovementWithBurst(dirX, dirY, true);
 
