@@ -134,13 +134,6 @@ wss.on('connection', (ws) => {
       segmentsPerSide: Number(b.segmentsPerSide), // <-- add
       restLengthScale: Number(b.restLengthScale), // <-- add
     }));
-    // This print statement is present:
-    console.log('[SERVER] Sent bandSettings on connect:', {
-      springConstant: b.springConstant,
-      dampingCoeff: b.dampingCoeff,
-      mass: b.mass,
-      restitution: b.coefficientOfRestitution,
-    });
   }
   console.log('🔗 New WebSocket connection established');
 
@@ -295,6 +288,10 @@ wss.on('connection', (ws) => {
           gameState.balls[player.playerId].vx = 0;
           gameState.balls[player.playerId].vy = 0;
         }
+      } else if (data.type === 'spawnBot') {
+        // Add a bot to the game
+        const botId = gameState.addBot();
+        console.log(`🤖 Bot spawned with ID: ${botId}`);
       }
     } catch (err) {
       console.error('❌ Failed to parse message:', err);

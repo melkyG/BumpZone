@@ -29,6 +29,11 @@ const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
 const BURST_IMPULSE = 375; // tweak as needed
 
+// Bot settings
+const BOT_UPDATE_INTERVAL = 0.5; // seconds between bot direction changes
+const BOT_MOVE_CHANCE = 0.7; // probability of bot moving in a direction
+const BOT_BURST_CHANCE = 0.1; // probability of bot using burst
+
 class GameState {
   constructor() {
     // console.log('[DEBUG] GameState constructor called');
@@ -88,6 +93,10 @@ class GameState {
     // After initializing balls and bands, add:
     // console.log('Initial ball positions:', Object.values(this.balls));
     // console.log('Initial band segment positions:', this.bands.map(b => b.segments.map(s => [s.x, s.y])));
+
+    this.bots = {}; // Store bot data
+    this._lastBotUpdate = 0; // Track last bot update time
+    this.botCounter = 1; // Add counter for bot names
   }
 
   getPlayerBySocket(ws) {
@@ -596,6 +605,76 @@ class GameState {
   // Helper: clamp value
   static _clamp(val, min, max) {
     return Math.max(min, Math.min(max, val));
+  }
+
+  // Helper to get a random color
+  static getRandomColor() {
+    const colors = [
+      '#ff0000', // red
+      '#ff4081', // pink
+      '#9c27b0', // purple
+      '#673ab7', // deep purple
+      '#3f51b5', // indigo
+      '#2196f3', // blue
+      '#03a9f4', // light blue
+      '#00bcd4', // cyan
+      '#009688', // teal
+      '#4caf50', // green
+      '#8bc34a', // light green
+      '#cddc39', // lime
+      '#ffeb3b', // yellow
+      '#ffc107', // amber
+      '#ff9800', // orange
+      '#ff5722', // deep orange
+      '#795548', // brown
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  // Add a bot to the game
+  addBot() {
+    const botId = 'Bot' + this.botCounter++;
+    const color = GameState.getRandomColor();
+    
+    // Spawn bot at a random spot near the center, not overlapping others
+    const radius = 18;
+    const maxAttempts = 20;
+    let spawnX, spawnY, attempts = 0;
+    let safe = false;
+    while (!safe && attempts < maxAttempts) {
+      const offset = () => (Math.random() - 0.5) * 240;
+      spawnX = ARENA_SIZE / 2 + offset();
+      spawnY = ARENA_SIZE / 2 + offset();
+      safe = true;
+      for (const ball of Object.values(this.balls)) {
+        const dx = spawnX - ball.x;
+        const dy = spawnY - ball.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < radius * 2 + 4) {
+          safe = false;
+          break;
+        }
+      }
+      attempts++;
+    }
+    if (!safe) {
+      spawnX = ARENA_SIZE / 2;
+      spawnY = ARENA_SIZE / 2;
+    }
+
+    this.balls[botId] = {
+      id: botId,
+      x: spawnX,
+      y: spawnY,
+      vx: 0,
+      vy: 0,
+      color: color,
+      stamina: STAMINA_MAX,
+      mass: BALL_MASS,
+      isBot: true
+    };
+
+    return botId;
   }
 }
 

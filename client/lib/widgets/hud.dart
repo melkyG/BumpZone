@@ -84,6 +84,7 @@ class BandSettingsHUD extends StatefulWidget {
   final ValueChanged<double> onRestLengthScaleChanged;
   final VoidCallback onResetToDefault;
   final VoidCallback onRespawn;
+  final VoidCallback onSpawnBot;
 
   const BandSettingsHUD({
     super.key,
@@ -101,6 +102,7 @@ class BandSettingsHUD extends StatefulWidget {
     required this.onRestLengthScaleChanged,
     required this.onResetToDefault,
     required this.onRespawn,
+    required this.onSpawnBot,
   });
 
   @override
@@ -209,16 +211,19 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
             ),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: widget.onResetToDefault,
-                  child: const Text('Default'),
+                  child: const Text('Reset to Default'),
                 ),
-                const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: widget.onRespawn,
                   child: const Text('Respawn'),
+                ),
+                ElevatedButton(
+                  onPressed: widget.onSpawnBot,
+                  child: const Text('Spawn Bot'),
                 ),
               ],
             ),
@@ -271,6 +276,7 @@ class HUD extends StatelessWidget {
   final ValueChanged<double> onRestLengthScaleChanged;
   final VoidCallback onResetToDefault;
   final VoidCallback onRespawn;
+  final VoidCallback onSpawnBot;
 
   final double? staminaPercent; // Add this
 
@@ -291,6 +297,7 @@ class HUD extends StatelessWidget {
     required this.onRestLengthScaleChanged,
     required this.onResetToDefault,
     required this.onRespawn,
+    required this.onSpawnBot,
     this.staminaPercent,
   });
 
@@ -316,6 +323,7 @@ class HUD extends StatelessWidget {
             onRestLengthScaleChanged: onRestLengthScaleChanged,
             onResetToDefault: onResetToDefault,
             onRespawn: onRespawn,
+            onSpawnBot: onSpawnBot,
           ),
         ),
         // --- Battery/Stamina HUD in bottom right ---

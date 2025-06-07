@@ -548,10 +548,9 @@ class _GameScreenState extends State<GameScreen> {
               onResetToDefault: () {
                 widget.webSocketService.sendRaw({'type': 'resetBandSettings'});
               },
-              onRespawn: () {
-                widget.webSocketService.sendRaw({'type': 'respawn'});
-              },
-              staminaPercent: _myStamina, // --- Add staminaPercent to HUD ---
+              onRespawn: _handleRespawn,
+              onSpawnBot: _handleSpawnBot,
+              staminaPercent: _myStamina,
             ),
             if (!ready)
               Container(
@@ -588,6 +587,14 @@ class _GameScreenState extends State<GameScreen> {
     if (_moveTimer == null || _lastPointerGlobal == null) {
       _stopSendingMovement();
     }
+  }
+
+  void _handleRespawn() {
+    widget.webSocketService.sendRaw({'type': 'respawn'});
+  }
+
+  void _handleSpawnBot() {
+    widget.webSocketService.sendRaw({'type': 'spawnBot'});
   }
 
   @override

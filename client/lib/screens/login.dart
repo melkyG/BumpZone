@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bump_zone/network/websocket.dart';
 import 'package:bump_zone/screens/game.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'dart:math' as math;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   int _playerCount = 0;
   bool _joining = false;
-  Color _selectedColor = Colors.blue;
+  Color _selectedColor = Colors.primaries[math.Random().nextInt(Colors.primaries.length)];
 
   @override
   void initState() {
