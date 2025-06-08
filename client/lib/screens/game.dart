@@ -592,7 +592,10 @@ class _GameScreenState extends State<GameScreen> {
       // Only update color if it's provided (from JSON message)
       if (ball.color is String && ball.color.toString().startsWith('#')) {
         try {
-          final color = Color(int.parse(ball.color.toString().substring(1), radix: 16));
+          // Add 'ff' prefix to ensure alpha is 1.0 (fully opaque)
+          final colorStr = ball.color.toString();
+          final colorHex = colorStr.startsWith('#ff') ? colorStr : '#ff${colorStr.substring(1)}';
+          final color = Color(int.parse(colorHex.substring(1), radix: 16));
           _lastBallColors[ball.id] = color;
           print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}, parsedColor=$color');
         } catch (e) {
