@@ -220,37 +220,7 @@ class _GameScreenState extends State<GameScreen> {
       }
     };
     widget.webSocketService.onBallsUpdate = (balls) {
-      // Update last known color and mass for each ball
-      for (final ball in balls) {
-        final bool isBot = ball.id.startsWith('Bot');
-        print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
-        final String? colorStr = ball.color is String ? ball.color as String : null;
-        if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
-          try {
-            _lastBallColors[ball.id] = Color(int.parse(colorStr.substring(1), radix: 16));
-            print('Updated ball color: id=${ball.id}, isBot=$isBot, color=${colorStr}');
-          } catch (_) {
-            print('Failed to parse color: ${colorStr}');
-          }
-        }
-        // Store last known mass
-        if (ball.mass != null) {
-          _lastBallMasses[ball.id] = ball.mass!;
-        }
-      }
-      setState(() {
-        _balls = balls;
-        // --- Also update stamina here ---
-        Ball? myBall;
-        try {
-          myBall = balls.firstWhere((b) => b.id == _myPlayerId);
-        } catch (_) {
-          myBall = null;
-        }
-        if (myBall != null && myBall.stamina != null) {
-          _myStamina = myBall.stamina;
-        }
-      });
+      _onBallsUpdate(balls);
     };
     widget.webSocketService.onWelcome = (playerId) {
       // If user is holding/tapping, start movement now that playerId is available
@@ -611,6 +581,68 @@ class _GameScreenState extends State<GameScreen> {
     _moveTimer?.cancel();
     super.dispose();
   }
+
+  void _onBallsUpdate(List<Ball> balls) {
+    // Update last known color and mass for each ball
+    for (final ball in balls) {
+      final bool isBot = ball.id.startsWith('Bot');
+      print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
+      
+      // Try to get color from ball's own color first
+      if (ball.color is String && ball.color.toString().startsWith('#')) {
+        try {
+          final color = Color(int.parse(ball.color.toString().substring(1), radix: 16));
+          _lastBallColors[ball.id] = color;
+          print('Updated ball color from direct color: id=${ball.id}, isBot=$isBot, color=${ball.color}');
+        } catch (_) {
+          print('Failed to parse direct color: ${ball.color}');
+        }
+      }
+      
+      // If no direct color, try to get from player list
+      if (!_lastBallColors.containsKey(ball.id)) {
+        for (final player in _players) {
+          if (player.id == ball.id && player.color != null) {
+            try {
+              final color = Color(int.parse(player.color!.substring(1), radix: 16));
+              _lastBallColors[ball.id] = color;
+              print('Updated ball color from player: id=${ball.id}, isBot=$isBot, color=${player.color}');
+              break;
+            } catch (_) {
+              print('Failed to parse player color: ${player.color}');
+            }
+          }
+        }
+      }
+      
+      // Store last known mass
+      if (ball.mass != null) {
+        _lastBallMasses[ball.id] = ball.mass!;
+      }
+    }
+    setState(() {
+      _balls = balls;
+    });
+  }
+
+  void _updateCamera() {
+    if (_myPlayerId == null) return;
+    Ball? myBall;
+    try {
+      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
+    } catch (_) {
+      return;
+    }
+
+    // Update camera position to follow ball
+    _smoothedCameraOffset = Offset(myBall.x, myBall.y);
+
+    // Update zoom based on mass
+    final mass = myBall.mass ?? _lastBallMasses[_myPlayerId] ?? 2.5;
+    // Adjust zoom calculation to keep camera closer when ball is large
+    final targetZoom = 3.0 / (mass / 2.5).clamp(0.5, 2.5);
+    _smoothedZoom = (_smoothedZoom ?? 1.0) + (targetZoom - (_smoothedZoom ?? 1.0)) * 0.1;
+  }
 }
 
 class _ArenaPainter extends CustomPainter {
@@ -734,17 +766,8 @@ class _ArenaPainter extends CustomPainter {
       final double radius = logicalRadius * (mass / 2.5) * scale;
       final Offset center = Offset(ball.x * scale, ball.y * scale);
       
-      // Get color from ball's own color, cached color, or default
-      Color ballColor;
-      if (ball.color is String && ball.color.toString().startsWith('#')) {
-        try {
-          ballColor = Color(int.parse(ball.color.toString().substring(1), radix: 16));
-        } catch (_) {
-          ballColor = lastBallColors[ball.id] ?? Colors.blue;
-        }
-      } else {
-        ballColor = lastBallColors[ball.id] ?? Colors.blue;
-      }
+      // Get color from cache or default
+      final ballColor = lastBallColors[ball.id] ?? Colors.blue;
 
       // Draw the ball
       final paint = Paint()
