@@ -583,6 +583,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onBallsUpdate(List<Ball> balls) {
+    print('_onBallsUpdate received ${balls.length} balls: ${balls.map((b) => '${b.id}').join(', ')}');
     // Update last known color and mass for each ball
     for (final ball in balls) {
       final bool isBot = ball.id.startsWith('Bot');
@@ -593,10 +594,12 @@ class _GameScreenState extends State<GameScreen> {
         try {
           final color = Color(int.parse(ball.color.toString().substring(1), radix: 16));
           _lastBallColors[ball.id] = color;
-          print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}');
-        } catch (_) {
-          print('Failed to parse color from JSON: ${ball.color}');
+          print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}, parsedColor=$color');
+        } catch (e) {
+          print('Failed to parse color from JSON: ${ball.color}, error=$e');
         }
+      } else {
+        print('No color update for ball ${ball.id}: color=${ball.color}');
       }
       
       // Store last known mass if available
@@ -607,6 +610,8 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _balls = balls;
     });
+    print('After _onBallsUpdate, _balls has ${_balls.length} balls: ${_balls.map((b) => '${b.id}(${b.color})').join(', ')}');
+    print('Current _lastBallColors: ${_lastBallColors.entries.map((e) => '${e.key}: ${e.value}').join(', ')}');
   }
 
   void _updateCamera() {
@@ -656,6 +661,7 @@ class _ArenaPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    print('Painter received ${balls.length} balls: ${balls.map((b) => '${b.id}(${b.color})').join(', ')}');
     final double scale = size.width / arenaLogicalSize;
     final double camX = (cameraOffset.dx.isNaN || cameraOffset.dx.isInfinite)
         ? arenaLogicalSize / 2
