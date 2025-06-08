@@ -285,7 +285,7 @@ class _GameScreenState extends State<GameScreen> {
       // Clamp between 1.5 and 3.0 to keep camera closer
       targetZoom = 4.0 / (mass / 2.5).clamp(0.5, 4.0);
       // Ensure zoom stays within our desired range
-      targetZoom = targetZoom.clamp(1.5, 4.0);
+      targetZoom = targetZoom.clamp(1.8, 4.0);
     }
 
     // Smooth zoom transition
@@ -587,6 +587,7 @@ class _GameScreenState extends State<GameScreen> {
     for (final ball in balls) {
       final bool isBot = ball.id.startsWith('Bot');
       print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
+      print('Current cached colors: $_lastBallColors');
       
       // Try to get color from ball's own color first
       if (ball.color is String && ball.color.toString().startsWith('#')) {
@@ -597,10 +598,13 @@ class _GameScreenState extends State<GameScreen> {
         } catch (_) {
           print('Failed to parse direct color: ${ball.color}');
         }
+      } else {
+        print('No direct color available for ball: id=${ball.id}, isBot=$isBot');
       }
       
       // If no direct color and no cached color, try to get from player list
       if (!_lastBallColors.containsKey(ball.id)) {
+        print('No cached color, checking player list for: id=${ball.id}, isBot=$isBot');
         for (final player in _players) {
           if (player.id == ball.id && player.color != null) {
             try {
@@ -613,6 +617,8 @@ class _GameScreenState extends State<GameScreen> {
             }
           }
         }
+      } else {
+        print('Using cached color for ball: id=${ball.id}, isBot=$isBot, color=${_lastBallColors[ball.id]}');
       }
       
       // Store last known mass if available, otherwise keep existing mass
