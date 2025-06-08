@@ -30,7 +30,6 @@ function gameLoop() {
         stamina: b.stamina, // include stamina
         mass: b.mass // include mass
       }));
-      console.log('Sending JSON balls:', jsonBalls);
       client.send(JSON.stringify({
         type: 'balls',
         balls: jsonBalls

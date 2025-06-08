@@ -155,12 +155,24 @@ class GameState {
   }
 
   removePlayer(ws) {
-    // console.log('[DEBUG] removePlayer called for ws:', ws && ws.readyState);
     const player = this.getPlayerBySocket(ws);
     if (player) {
       delete this.balls[player.playerId];
     }
     this.players = this.players.filter(player => player.ws !== ws);
+
+    // If no players left, remove all bots
+    if (this.players.length === 0) {
+      console.log('No players left, removing all bots');
+      // Remove all bot balls and players
+      Object.keys(this.balls).forEach(id => {
+        if (id.startsWith('Bot')) {
+          delete this.balls[id];
+        }
+      });
+      this.players = this.players.filter(p => !p.playerId.startsWith('Bot'));
+      this.botCounter = 1;
+    }
   }
   getBalls() {
     // Return balls with color property from player if not already present
@@ -181,7 +193,6 @@ class GameState {
       }
       // Always include stamina in the output
       const result = { ...ball, stamina: typeof ball.stamina === 'number' ? ball.stamina : STAMINA_MAX };
-      console.log('Sending ball:', { id: result.id, color: result.color, mass: result.mass });
       return result;
     });
   }
@@ -216,6 +227,18 @@ class GameState {
   updateBalls(dt) {
     // dt is in "ticks" (e.g., 1 = 50ms)
     for (const ball of Object.values(this.balls)) {
+      // Check for boundary collision and eliminate player if they touch the boundary
+      const radius = GameState.getBallRadius(ball);
+      if (ball.x - radius < 0 || ball.x + radius > ARENA_SIZE || 
+          ball.y - radius < 0 || ball.y + radius > ARENA_SIZE) {
+        // Player has touched the boundary, eliminate them
+        console.log(`Player ${ball.id} eliminated for touching boundary`);
+        delete this.balls[ball.id];
+        // Remove from players list but keep their WebSocket connection
+        this.players = this.players.filter(p => p.playerId !== ball.id);
+        continue; // Skip the rest of the update for this ball
+      }
+
       // --- Stamina logic ---
       let input = this.inputDirections[ball.id] || { dx: 0, dy: 0 };
       const isMoving = input.dx !== 0 || input.dy !== 0;
@@ -637,7 +660,6 @@ class GameState {
   addBot() {
     const botId = 'Bot' + this.botCounter++;
     const color = GameState.getRandomColor();
-    console.log('Creating bot:', { id: botId, color: color });
     
     // Spawn bot at a random spot near the center, not overlapping others
     const radius = 18;
@@ -679,9 +701,6 @@ class GameState {
       mass: BALL_MASS,
       isBot: true
     };
-    console.log('Bot created:', this.balls[botId]);
-    console.log('Current players:', this.players);
-    console.log('Current balls:', this.balls);
 
     return botId;
   }

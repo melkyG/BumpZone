@@ -9,6 +9,7 @@ import 'package:bump_zone/network/arena_binary.dart'; // <-- Add this
 import 'dart:typed_data'; // Add this at the top with other imports
 import 'package:flutter/services.dart'; // <-- Add this import for RawKeyboardListener and LogicalKeyboardKey
 import 'package:flutter/rendering.dart'; // Add this import for mouseTracker
+import 'dart:convert'; // Add this import for jsonDecode
 
 class GameScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -583,11 +584,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onBallsUpdate(List<Ball> balls) {
-    print('_onBallsUpdate received ${balls.length} balls: ${balls.map((b) => '${b.id}').join(', ')}');
     // Update last known color and mass for each ball
     for (final ball in balls) {
       final bool isBot = ball.id.startsWith('Bot');
-      print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
       
       // Only update color if it's provided (from JSON message)
       if (ball.color is String && ball.color.toString().startsWith('#')) {
@@ -598,12 +597,9 @@ class _GameScreenState extends State<GameScreen> {
           final colorHex = colorStr.length == 7 ? '#ff${colorStr.substring(1)}' : colorStr;
           final color = Color(int.parse(colorHex.substring(1), radix: 16));
           _lastBallColors[ball.id] = color;
-          print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}, parsedColor=$color');
         } catch (e) {
-          print('Failed to parse color from JSON: ${ball.color}, error=$e');
+          // Silently handle color parsing errors
         }
-      } else {
-        print('No color update for ball ${ball.id}: color=${ball.color}');
       }
       
       // Store last known mass if available
@@ -614,8 +610,6 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _balls = balls;
     });
-    print('After _onBallsUpdate, _balls has ${_balls.length} balls: ${_balls.map((b) => '${b.id}(${b.color})').join(', ')}');
-    print('Current _lastBallColors: ${_lastBallColors.entries.map((e) => '${e.key}: ${e.value}').join(', ')}');
   }
 
   void _updateCamera() {
@@ -635,6 +629,50 @@ class _GameScreenState extends State<GameScreen> {
     // Adjust zoom calculation to keep camera closer when ball is large
     final targetZoom = 3.0 / (mass / 2.5).clamp(0.5, 2.5);
     _smoothedZoom = (_smoothedZoom ?? 1.0) + (targetZoom - (_smoothedZoom ?? 1.0)) * 0.1;
+  }
+
+  void _onMessage(dynamic message) {
+    if (message is String) {
+      try {
+        final json = jsonDecode(message);
+        if (json['type'] == 'balls') {
+          final List<dynamic> ballsJson = json['balls'];
+          final balls = ballsJson.map((b) => Ball(
+            id: b['id'],
+            x: b['x'],
+            y: b['y'],
+            vx: b['vx'],
+            vy: b['vy'],
+            color: b['color'],
+            stamina: b['stamina'],
+            mass: b['mass'],
+          )).toList();
+          _onBallsUpdate(balls);
+        } else if (json['type'] == 'eliminated') {
+          final List<dynamic> eliminatedJson = json['players'];
+          final eliminated = eliminatedJson.map((p) => {
+            'id': p['id'],
+            'username': p['username'],
+          }).toList();
+          _onPlayersEliminated(eliminated);
+        }
+      } catch (e) {
+        print('Error parsing JSON message: $e');
+      }
+    }
+  }
+
+  void _onPlayersEliminated(List<Map<String, dynamic>> eliminated) {
+    print('Players eliminated: ${eliminated.map((p) => p['username']).join(', ')}');
+    // Show a snackbar for each eliminated player
+    for (final player in eliminated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${player['username']} was eliminated!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 
@@ -665,7 +703,6 @@ class _ArenaPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print('Painter received ${balls.length} balls: ${balls.map((b) => '${b.id}(${b.color})').join(', ')}');
     final double scale = size.width / arenaLogicalSize;
     final double camX = (cameraOffset.dx.isNaN || cameraOffset.dx.isInfinite)
         ? arenaLogicalSize / 2
@@ -762,7 +799,6 @@ class _ArenaPainter extends CustomPainter {
       
       // Get color from cache or default
       final ballColor = lastBallColors[ball.id] ?? Colors.blue;
-      print('Drawing ball: id=${ball.id}, isBot=$isBot, cachedColor=$ballColor, hasColor=${lastBallColors.containsKey(ball.id)}');
 
       // Draw the ball
       final paint = Paint()
