@@ -607,6 +607,19 @@ class _GameScreenState extends State<GameScreen> {
         _lastBallMasses[ball.id] = ball.mass!;
       }
     }
+
+    // Check if we're still receiving updates for our ball
+    final bool isEliminated = !balls.any((ball) => ball.id == _myPlayerId);
+    if (isEliminated) {
+      _myStamina = 0.0;
+    } else {
+      // Update stamina from our ball if present
+      final myBall = balls.firstWhere((ball) => ball.id == _myPlayerId);
+      if (myBall.stamina != null) {
+        _myStamina = myBall.stamina;
+      }
+    }
+
     setState(() {
       _balls = balls;
     });
@@ -676,44 +689,8 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildBatteryIndicator() {
-    // Check if we're still receiving updates for our ball
-    final bool isEliminated = !_balls.any((ball) => ball.id == _myPlayerId);
-    
-    // If eliminated, show 0 stamina
-    if (isEliminated) {
-      return Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.battery_0_bar,
-              color: Colors.red,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '0%',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Find my ball in the current balls list
-    final myBall = _balls.firstWhere((ball) => ball.id == _myPlayerId);
-
     // Calculate battery level (0.0 to 1.0)
-    final batteryLevel = myBall.stamina ?? 0.0;
+    final batteryLevel = _myStamina ?? 0.0;
 
     // Determine color based on battery level
     Color batteryColor;

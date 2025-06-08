@@ -1,7 +1,7 @@
 // Arena/game configuration (shared with all clients)
 const ARENA_SIZE = 3000; // Logical units (e.g., pixels)
 
-const ACCELERATION = 580; // units per second^2
+const ACCELERATION = 570; // units per second^2
 
 const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
@@ -9,14 +9,14 @@ const BALL_MASS_GROWTH_INTERVAL = 3.0; // seconds between mass increments
 const BALL_MASS_INCREMENT = 0.07; // How much to increase mass each interval
 const BALL_MASS_MAX_MULTIPLIER = 12; // Max mass = BALL_MASS * 6
 
-const BAND_SEGMENTS_PER_SIDE = 20; // from reference code
-const BAND_SPRING_CONSTANT = 15;
+const BAND_SEGMENTS_PER_SIDE = 8; // from reference code
+const BAND_SPRING_CONSTANT = 1;
 const BAND_DAMPING_COEFF = 0.04;
 const BAND_MASS = 0.04;
 const BAND_REST_LENGTH_SCALE = 0.02;
 const BAND_COEFFICIENT_OF_RESTITUTION = 0.65;
 
-const POST_RADIUS = 22; // for collision, slightly larger than ball
+const POST_RADIUS = 25; // for collision, slightly larger than ball
 
 // Stamina system constants
 const STAMINA_MAX = 1.0;
@@ -660,7 +660,12 @@ class GameState {
 
   // Add a bot to the game
   addBot() {
-    const botId = 'Bot' + this.botCounter++;
+    // Find the first available bot number
+    let botNumber = 1;
+    while (this.players.some(p => p.playerId === `Bot${botNumber}`)) {
+      botNumber++;
+    }
+    const botId = `Bot${botNumber}`;
     const color = GameState.getRandomColor();
     
     // Spawn bot at a random spot near the center, not overlapping others
