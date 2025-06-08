@@ -599,7 +599,7 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       
-      // If no direct color, try to get from player list
+      // If no direct color and no cached color, try to get from player list
       if (!_lastBallColors.containsKey(ball.id)) {
         for (final player in _players) {
           if (player.id == ball.id && player.color != null) {
@@ -615,7 +615,7 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       
-      // Store last known mass
+      // Store last known mass if available, otherwise keep existing mass
       if (ball.mass != null) {
         _lastBallMasses[ball.id] = ball.mass!;
       }
