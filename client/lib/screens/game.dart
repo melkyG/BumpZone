@@ -222,12 +222,13 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.onBallsUpdate = (balls) {
       // Update last known color and mass for each ball
       for (final ball in balls) {
-        print('Ball update: id=${ball.id}, color=${ball.color}, mass=${ball.mass}');
+        final bool isBot = ball.id.startsWith('Bot');
+        print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
         final String? colorStr = ball.color is String ? ball.color as String : null;
         if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
           try {
             _lastBallColors[ball.id] = Color(int.parse(colorStr.substring(1), radix: 16));
-            print('Updated ball color: id=${ball.id}, color=${colorStr}');
+            print('Updated ball color: id=${ball.id}, isBot=$isBot, color=${colorStr}');
           } catch (_) {
             print('Failed to parse color: ${colorStr}');
           }
@@ -726,43 +727,37 @@ class _ArenaPainter extends CustomPainter {
     }
 
     const double logicalRadius = 18; // Base radius
-    // Draw balls with player color from playerColors map or ball.color only (no fallback)
+    // Draw balls
     for (final ball in balls) {
-      Color? drawColor;
-      final String? colorStr = ball.color is String ? ball.color as String : null;
-      if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
-        try {
-          drawColor = Color(int.parse(colorStr.substring(1), radix: 16));
-          print('Drawing ball with direct color: id=${ball.id}, color=${colorStr}');
-        } catch (_) {
-          drawColor = null;
-        }
-      }
-      if (drawColor == null && lastBallColors[ball.id] != null) {
-        drawColor = lastBallColors[ball.id];
-        print('Drawing ball with cached color: id=${ball.id}, color=${drawColor}');
-      }
-      if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
-        drawColor = myBallColor!;
-        print('Drawing my ball with my color: id=${ball.id}, color=${drawColor}');
-      }
+      final bool isBot = ball.id.startsWith('Bot');
+      final double mass = ball.mass ?? lastBallMasses[ball.id] ?? 2.5;
+      final double radius = logicalRadius * (mass / 2.5) * scale;
+      final Offset center = Offset(ball.x * scale, ball.y * scale);
       
-      if (drawColor != null) {
-        final Paint ballPaint = Paint()
-          ..color = drawColor
-          ..style = PaintingStyle.fill;
-        final Paint borderPaint = Paint()
-          ..color = Colors.black
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.6 * scale;
-        final Offset center = Offset(ball.x * scale, ball.y * scale);
-        final double mass = ball.mass ?? lastBallMasses[ball.id] ?? 2.5;
-        final double radius = logicalRadius * (mass / 2.5) * scale;
-        canvas.drawCircle(center, radius, ballPaint);
-        canvas.drawCircle(center, radius, borderPaint);
+      // Get color from ball's own color, cached color, or default
+      Color ballColor;
+      if (ball.color is String && ball.color.toString().startsWith('#')) {
+        try {
+          ballColor = Color(int.parse(ball.color.toString().substring(1), radix: 16));
+        } catch (_) {
+          ballColor = lastBallColors[ball.id] ?? Colors.blue;
+        }
       } else {
-        print('Failed to draw ball: id=${ball.id}, no color available');
+        ballColor = lastBallColors[ball.id] ?? Colors.blue;
       }
+
+      // Draw the ball
+      final paint = Paint()
+        ..color = ballColor
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius, paint);
+      
+      // Draw border
+      final borderPaint = Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.6 * scale;
+      canvas.drawCircle(center, radius, borderPaint);
     }
 
     canvas.restore();

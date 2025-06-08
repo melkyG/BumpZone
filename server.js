@@ -20,18 +20,20 @@ function gameLoop() {
     if (client.readyState === WebSocket.OPEN) {
       client.send(buffer);
       // Send balls as JSON with color for rendering
+      const jsonBalls = balls.map(b => ({
+        id: b.id,
+        x: b.x,
+        y: b.y,
+        vx: b.vx,
+        vy: b.vy,
+        color: b.color, // include color if present
+        stamina: b.stamina, // include stamina
+        mass: b.mass // include mass
+      }));
+      console.log('Sending JSON balls:', jsonBalls);
       client.send(JSON.stringify({
         type: 'balls',
-        balls: balls.map(b => ({
-          id: b.id,
-          x: b.x,
-          y: b.y,
-          vx: b.vx,
-          vy: b.vy,
-          color: b.color, // include color if present
-          stamina: b.stamina, // include stamina
-          mass: b.mass // include mass
-        }))
+        balls: jsonBalls
       }));
     }
   });

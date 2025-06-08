@@ -665,6 +665,9 @@ class GameState {
       spawnY = ARENA_SIZE / 2;
     }
 
+    // Add bot to players list
+    this.players.push({ playerId: botId, username: botId, color: color });
+
     this.balls[botId] = {
       id: botId,
       x: spawnX,
@@ -677,6 +680,8 @@ class GameState {
       isBot: true
     };
     console.log('Bot created:', this.balls[botId]);
+    console.log('Current players:', this.players);
+    console.log('Current balls:', this.balls);
 
     return botId;
   }
