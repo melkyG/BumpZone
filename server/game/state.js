@@ -313,7 +313,6 @@ class GameState {
       // No friction, no max speed
       ball.x += ball.vx * dt * 0.05;
       ball.y += ball.vy * dt * 0.05;
-      // Optionally: handle arena boundaries here
     }
 
     // --- Collision handling between balls ---

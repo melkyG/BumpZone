@@ -11,8 +11,24 @@ function gameLoop() {
   for (let i = 0; i < substeps; i++) {
     gameState.update(dt / substeps);
   }
-  // --- Send balls, bands, and posts as binary ---
+
+  // Get current players and balls
+  const players = gameState.getPlayers();
   const balls = gameState.getBalls();
+
+  // Send player list update
+  const simplifiedPlayers = players.map(p => ({
+    playerId: p.playerId,
+    username: p.username,
+    color: p.color,
+  }));
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'playerList', players: simplifiedPlayers }));
+    }
+  });
+
+  // --- Send balls, bands, and posts as binary ---
   const bands = gameState.bands;
   const posts = gameState.posts;
   const buffer = encodeArenaState(balls, bands, posts);
