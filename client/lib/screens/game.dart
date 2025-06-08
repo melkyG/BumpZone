@@ -124,7 +124,6 @@ class _GameScreenState extends State<GameScreen> {
       myBall = null;
     }
     if (myBall == null) {
-      print('My ball is null.');
       return;
     }
 
@@ -143,9 +142,6 @@ class _GameScreenState extends State<GameScreen> {
       setState(() {
         _players = players;
         // Debug: Log all players and their colors
-        for (final player in players) {
-          print('Player: id=${player.id}, username=${player.username}, color=${player.color}');
-        }
         // Update myBallColor if my player is in the list
         final myPlayer = players.cast<dynamic?>().firstWhere(
           (p) {
@@ -661,30 +657,10 @@ class _GameScreenState extends State<GameScreen> {
             mass: b['mass'],
           )).toList();
           _onBallsUpdate(balls);
-        } else if (json['type'] == 'eliminated') {
-          final List<dynamic> eliminatedJson = json['players'];
-          final eliminated = eliminatedJson.map((p) => {
-            'id': p['id'],
-            'username': p['username'],
-          }).toList();
-          _onPlayersEliminated(eliminated);
         }
       } catch (e) {
         print('Error parsing JSON message: $e');
       }
-    }
-  }
-
-  void _onPlayersEliminated(List<Map<String, dynamic>> eliminated) {
-    print('Players eliminated: ${eliminated.map((p) => p['username']).join(', ')}');
-    // Show a snackbar for each eliminated player
-    for (final player in eliminated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${player['username']} was eliminated!'),
-          duration: Duration(seconds: 3),
-        ),
-      );
     }
   }
 

@@ -53,8 +53,6 @@ class WebSocketService {
   }
 
   void _onMessage(dynamic message) {
-    // print('WebSocket raw message type: ${message.runtimeType}'); // Commented out
-
     // --- Handle binary arena update for Dart VM (List<int>) ---
     if (message is List<int>) {
       final arena = decodeArenaState(Uint8List.fromList(message));
@@ -81,27 +79,10 @@ class WebSocketService {
       return;
     }
 
-    // print("WebSocket message received: $message"); // Commented out
-
     // Step 1: Parse JSON
     final data = jsonDecode(message as String);
-    // print('[DEBUG] Decoded JSON: $data'); // Commented out
-
     // Step 2: Check type
-    if (data is! Map) {
-      // print('[DEBUG] Unexpected message format.'); // Commented out
-      return;
-    }
     final type = data['type'];
-    // print('[DEBUG] Message type: $type'); // Commented out
-
-    // Step 3: Print bandSettings payload if present
-    // if (type == 'bandSettings') {
-    //   print('[DEBUG] bandSettings payload: $data');
-    // }
-
-    // Add this debug print to always log incoming message types and payloads
-    print('[CLIENT] Received message type: $type, payload: $data');
 
     if (type == 'balls' && data['balls'] is List) {
       final balls = (data['balls'] as List)
@@ -121,7 +102,6 @@ class WebSocketService {
     }
     // Call the onWelcome callback when a welcome message is received
     if (type == 'welcome' && data['playerId'] != null) {
-      // print('Welcome message received with playerId: ${data['playerId']}'); // Commented out
       playerId = data['playerId'] as String; // <-- Store playerId
       if (onWelcome != null) onWelcome!(playerId!);
     }
@@ -138,12 +118,9 @@ class WebSocketService {
 
       case 'error':
         final msg = data['message'] ?? 'unknown_error';
-        // print('Server error: $msg'); // Commented out
         onError?.call(msg);
         break;
       case 'bandSettings':
-        // Add this debug print to confirm this branch is reached
-        print('[CLIENT] Handling bandSettings: $data');
         if (onBandSettingsUpdate != null) {
           double parseNum(dynamic v, double fallback) {
             if (v is num) return v.toDouble();
@@ -162,7 +139,6 @@ class WebSocketService {
           final restitution = parseNum(data['restitution'], 0.85);
           final segmentsPerSide = parseInt(data['segmentsPerSide'], 35);
           final restLengthScale = parseNum(data['restLengthScale'], 0.35);
-          print('[CLIENT] onBandSettingsUpdate will be called with: $spring, $damping, $mass, $restitution, $segmentsPerSide, $restLengthScale');
           onBandSettingsUpdate!(
             spring,
             damping,
@@ -173,9 +149,7 @@ class WebSocketService {
           );
         }
         break;
-
       default:
-        // print("[DEBUG] Unhandled message type: $type"); // Commented out
         break;
     }
   }

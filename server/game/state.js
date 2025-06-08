@@ -537,7 +537,6 @@ class GameState {
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
 
           if (dist < GameState.getBallRadius(ball) + 10) {
-            console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             const nx = (ball.x - closestX) / (dist || 1e-8);
             const ny = (ball.y - closestY) / (dist || 1e-8);
             const overlap = GameState.getBallRadius(ball) + 10 - dist;
