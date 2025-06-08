@@ -593,8 +593,10 @@ class _GameScreenState extends State<GameScreen> {
       if (ball.color is String && ball.color.toString().startsWith('#')) {
         try {
           final colorStr = ball.color.toString();
-          // Parse the color directly - server sends #AARRGGBB format
-          final color = Color(int.parse(colorStr.substring(1), radix: 16));
+          // If color is 6 digits (#RRGGBB), add alpha channel
+          // If color is 8 digits (#AARRGGBB), use as is
+          final colorHex = colorStr.length == 7 ? '#ff${colorStr.substring(1)}' : colorStr;
+          final color = Color(int.parse(colorHex.substring(1), radix: 16));
           _lastBallColors[ball.id] = color;
           print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}, parsedColor=$color');
         } catch (e) {
