@@ -587,41 +587,19 @@ class _GameScreenState extends State<GameScreen> {
     for (final ball in balls) {
       final bool isBot = ball.id.startsWith('Bot');
       print('Ball update: id=${ball.id}, isBot=$isBot, color=${ball.color}, mass=${ball.mass}');
-      print('Current cached colors: $_lastBallColors');
       
-      // Try to get color from ball's own color first
+      // Only update color if it's provided (from JSON message)
       if (ball.color is String && ball.color.toString().startsWith('#')) {
         try {
           final color = Color(int.parse(ball.color.toString().substring(1), radix: 16));
           _lastBallColors[ball.id] = color;
-          print('Updated ball color from direct color: id=${ball.id}, isBot=$isBot, color=${ball.color}');
+          print('Updated ball color from JSON: id=${ball.id}, isBot=$isBot, color=${ball.color}');
         } catch (_) {
-          print('Failed to parse direct color: ${ball.color}');
+          print('Failed to parse color from JSON: ${ball.color}');
         }
-      } else {
-        print('No direct color available for ball: id=${ball.id}, isBot=$isBot');
       }
       
-      // If no direct color and no cached color, try to get from player list
-      if (!_lastBallColors.containsKey(ball.id)) {
-        print('No cached color, checking player list for: id=${ball.id}, isBot=$isBot');
-        for (final player in _players) {
-          if (player.id == ball.id && player.color != null) {
-            try {
-              final color = Color(int.parse(player.color!.substring(1), radix: 16));
-              _lastBallColors[ball.id] = color;
-              print('Updated ball color from player: id=${ball.id}, isBot=$isBot, color=${player.color}');
-              break;
-            } catch (_) {
-              print('Failed to parse player color: ${player.color}');
-            }
-          }
-        }
-      } else {
-        print('Using cached color for ball: id=${ball.id}, isBot=$isBot, color=${_lastBallColors[ball.id]}');
-      }
-      
-      // Store last known mass if available, otherwise keep existing mass
+      // Store last known mass if available
       if (ball.mass != null) {
         _lastBallMasses[ball.id] = ball.mass!;
       }
