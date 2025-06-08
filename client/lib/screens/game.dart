@@ -141,6 +141,10 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.onPlayerListUpdate = (players) {
       setState(() {
         _players = players;
+        // Debug: Log all players and their colors
+        for (final player in players) {
+          print('Player: id=${player.id}, username=${player.username}, color=${player.color}');
+        }
         // Update myBallColor if my player is in the list
         final myPlayer = players.cast<dynamic?>().firstWhere(
           (p) {
@@ -218,11 +222,15 @@ class _GameScreenState extends State<GameScreen> {
     widget.webSocketService.onBallsUpdate = (balls) {
       // Update last known color and mass for each ball
       for (final ball in balls) {
+        print('Ball update: id=${ball.id}, color=${ball.color}, mass=${ball.mass}');
         final String? colorStr = ball.color is String ? ball.color as String : null;
         if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
           try {
             _lastBallColors[ball.id] = Color(int.parse(colorStr.substring(1), radix: 16));
-          } catch (_) {}
+            print('Updated ball color: id=${ball.id}, color=${colorStr}');
+          } catch (_) {
+            print('Failed to parse color: ${colorStr}');
+          }
         }
         // Store last known mass
         if (ball.mass != null) {
@@ -725,16 +733,20 @@ class _ArenaPainter extends CustomPainter {
       if (colorStr != null && colorStr.length == 9 && colorStr.startsWith('#')) {
         try {
           drawColor = Color(int.parse(colorStr.substring(1), radix: 16));
+          print('Drawing ball with direct color: id=${ball.id}, color=${colorStr}');
         } catch (_) {
           drawColor = null;
         }
       }
       if (drawColor == null && lastBallColors[ball.id] != null) {
         drawColor = lastBallColors[ball.id];
+        print('Drawing ball with cached color: id=${ball.id}, color=${drawColor}');
       }
       if (myPlayerId != null && ball.id == myPlayerId && myBallColor != null) {
         drawColor = myBallColor!;
+        print('Drawing my ball with my color: id=${ball.id}, color=${drawColor}');
       }
+      
       if (drawColor != null) {
         final Paint ballPaint = Paint()
           ..color = drawColor
@@ -742,13 +754,14 @@ class _ArenaPainter extends CustomPainter {
         final Paint borderPaint = Paint()
           ..color = Colors.black
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.6 * scale; // Scaled border width
+          ..strokeWidth = 0.6 * scale;
         final Offset center = Offset(ball.x * scale, ball.y * scale);
-        // Calculate radius based on mass if available, otherwise use last known mass or base radius
         final double mass = ball.mass ?? lastBallMasses[ball.id] ?? 2.5;
         final double radius = logicalRadius * (mass / 2.5) * scale;
         canvas.drawCircle(center, radius, ballPaint);
         canvas.drawCircle(center, radius, borderPaint);
+      } else {
+        print('Failed to draw ball: id=${ball.id}, no color available');
       }
     }
 

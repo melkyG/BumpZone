@@ -180,7 +180,9 @@ class GameState {
         }
       }
       // Always include stamina in the output
-      return { ...ball, stamina: typeof ball.stamina === 'number' ? ball.stamina : STAMINA_MAX };
+      const result = { ...ball, stamina: typeof ball.stamina === 'number' ? ball.stamina : STAMINA_MAX };
+      console.log('Sending ball:', { id: result.id, color: result.color, mass: result.mass });
+      return result;
     });
   }
 
@@ -635,6 +637,7 @@ class GameState {
   addBot() {
     const botId = 'Bot' + this.botCounter++;
     const color = GameState.getRandomColor();
+    console.log('Creating bot:', { id: botId, color: color });
     
     // Spawn bot at a random spot near the center, not overlapping others
     const radius = 18;
@@ -673,6 +676,7 @@ class GameState {
       mass: BALL_MASS,
       isBot: true
     };
+    console.log('Bot created:', this.balls[botId]);
 
     return botId;
   }
