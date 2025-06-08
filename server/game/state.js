@@ -45,6 +45,11 @@ class GameState {
     this.pendingImpulses = {}; // { playerId: {dx, dy} }
     this.burstRequests = {}; // { playerId: {dx, dy} }
 
+    // Add collision tracking
+    this.lastCollisions = {}; // Maps ballId to { colliderId, timestamp }
+    this.COLLISION_MEMORY_TIME = 5000; // Remember collisions for 5 seconds
+    this.ELIMINATION_GROWTH = 1.2; // 20% growth on elimination
+
     // --- Elastic Zone Data Structures ---
     // Four posts at the corners of a square
     const margin = 800;
@@ -236,6 +241,14 @@ class GameState {
           ball.y - radius < 0 || ball.y + radius > ARENA_SIZE) {
         // Player has touched the boundary, eliminate them
         console.log(`Player ${ball.id} eliminated for touching boundary`);
+        
+        // Check for last collision before elimination
+        const lastColliderId = this.checkLastCollision(ball.id);
+        if (lastColliderId) {
+          console.log(`Player ${lastColliderId} gets growth for eliminating ${ball.id}`);
+          this.growBall(lastColliderId);
+        }
+
         delete this.balls[ball.id];
         // Remove from players list but keep their WebSocket connection
         this.players = this.players.filter(p => p.playerId !== ball.id);
@@ -327,6 +340,10 @@ class GameState {
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < aRadius + bRadius && dist > 0) {
+          // Record collision for both balls
+          this.recordCollision(a.id, b.id);
+          this.recordCollision(b.id, a.id);
+
           // Move balls apart so they just touch
           const overlap = aRadius + bRadius - dist;
           const nx = dx / dist;
@@ -511,12 +528,6 @@ class GameState {
           const closestY = p1.y + segDy * t;
           const dist = GameState._dist(ball.x, ball.y, closestX, closestY);
 
-          // if (i === 0 && ball.id) {
-          //   console.log(`[DEBUG] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)}) vs band seg 0 (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) dist=${dist.toFixed(2)} (BALL_RADIUS+6=${BALL_RADIUS+6})`);
-          // }
-          // if (dist < 100) {
-          //   // console.log(`[DEBUG] Ball ${ball.id} near band seg ${i}: dist=${dist.toFixed(2)}`);
-          // }
           if (dist < GameState.getBallRadius(ball) + 10) {
             console.log(`[COLLISION] Ball-band collision: ball at (${ball.x},${ball.y}), band seg ${i} at (${p1.x},${p1.y}), dist=${dist}`);
             const nx = (ball.x - closestX) / (dist || 1e-8);
@@ -554,15 +565,6 @@ class GameState {
         }
       }
     }
-
-    // Print all ball positions and first segment of each band every tick
-    // for (const ball of Object.values(this.balls)) {
-    //   console.log(`[TICK] Ball ${ball.id} at (${ball.x.toFixed(1)},${ball.y.toFixed(1)})`);
-    // }
-    // for (let b = 0; b < this.bands.length; b++) {
-    //   const seg = this.bands[b].segments[0];
-    //   console.log(`[TICK] Band ${b} seg0 at (${seg.x.toFixed(1)},${seg.y.toFixed(1)})`);
-    // }
   }
 
   update(dt) {
@@ -710,6 +712,37 @@ class GameState {
     };
 
     return botId;
+  }
+
+  // Add method to record a collision
+  recordCollision(ballId, colliderId) {
+    if (colliderId.startsWith('Bot')) return; // Don't track bot collisions
+    this.lastCollisions[ballId] = {
+      colliderId,
+      timestamp: Date.now()
+    };
+  }
+
+  // Add method to check for valid collision before elimination
+  checkLastCollision(eliminatedBallId) {
+    const collision = this.lastCollisions[eliminatedBallId];
+    if (!collision) return null;
+
+    // Check if collision is still within memory time
+    if (Date.now() - collision.timestamp > this.COLLISION_MEMORY_TIME) {
+      return null;
+    }
+
+    return collision.colliderId;
+  }
+
+  // Add method to grow a ball
+  growBall(ballId) {
+    const ball = this.balls[ballId];
+    if (!ball) return;
+
+    const maxMass = BALL_MASS * BALL_MASS_MAX_MULTIPLIER;
+    ball.mass = Math.min(ball.mass * this.ELIMINATION_GROWTH, maxMass);
   }
 }
 
