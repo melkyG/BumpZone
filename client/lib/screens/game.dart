@@ -752,6 +752,7 @@ class _ArenaPainter extends CustomPainter {
       
       // Get color from cache or default
       final ballColor = lastBallColors[ball.id] ?? Colors.blue;
+      print('Drawing ball: id=${ball.id}, isBot=$isBot, cachedColor=$ballColor, hasColor=${lastBallColors.containsKey(ball.id)}');
 
       // Draw the ball
       final paint = Paint()
