@@ -161,9 +161,10 @@ class GameState {
     }
     this.players = this.players.filter(player => player.ws !== ws);
 
-    // If no players left, remove all bots
-    if (this.players.length === 0) {
-      console.log('No players left, removing all bots');
+    // Check if there are any human players left (non-bot players)
+    const hasHumanPlayers = this.players.some(p => !p.playerId.startsWith('Bot'));
+    if (!hasHumanPlayers) {
+      console.log('No human players left, removing all bots');
       // Remove all bot balls and players
       Object.keys(this.balls).forEach(id => {
         if (id.startsWith('Bot')) {
@@ -198,8 +199,10 @@ class GameState {
   }
 
   getPlayers() {
-    // Return player info without WebSocket object
-    return this.players.map(({ playerId, username, color }) => ({ playerId, username, color }));
+    // Return player info without WebSocket object, but only for players with active balls
+    return this.players
+      .filter(player => this.balls[player.playerId]) // Only include players with active balls
+      .map(({ playerId, username, color }) => ({ playerId, username, color }));
   }
   
   // Set the velocity of a player's ball based on input direction (dx, dy) and burst
