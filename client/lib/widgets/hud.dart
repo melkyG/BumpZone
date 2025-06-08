@@ -7,6 +7,11 @@ class PlayerListHUD extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sort players by mass and take top 15
+    final sortedPlayers = List<Player>.from(players)
+      ..sort((a, b) => (b.mass ?? 0).compareTo(a.mass ?? 0));
+    final topPlayers = sortedPlayers.take(15).toList();
+
     return Align(
       alignment: Alignment.topRight,
       child: Container(
@@ -54,10 +59,14 @@ class PlayerListHUD extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final player in players)
+                  for (var i = 0; i < topPlayers.length; i++)
                     Text(
-                      player.username,
-                      style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 13, fontWeight: FontWeight.w100,),
+                      '#${i + 1} ${topPlayers[i].username}',
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w100,
+                      ),
                     ),
                 ],
               ),
@@ -215,7 +224,7 @@ class _BandSettingsHUDState extends State<BandSettingsHUD> {
               children: [
                 ElevatedButton(
                   onPressed: widget.onResetToDefault,
-                  child: const Text('Reset to Default'),
+                  child: const Text('Default Bands'),
                 ),
                 ElevatedButton(
                   onPressed: widget.onRespawn,

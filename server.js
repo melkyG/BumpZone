@@ -21,6 +21,7 @@ function gameLoop() {
     playerId: p.playerId,
     username: p.username,
     color: p.color,
+    mass: p.mass
   }));
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
@@ -187,6 +188,7 @@ wss.on('connection', (ws) => {
           playerId: p.playerId,
           username: p.username,
           color: p.color,
+          mass: p.mass
         }));
 
         // For join, broadcast to all. For getPlayers, send only to requester
@@ -339,6 +341,7 @@ wss.on('connection', (ws) => {
       playerId: p.playerId,
       username: p.username,
       color: p.color,
+      mass: p.mass
     }));
 
     wss.clients.forEach((client) => {

@@ -207,7 +207,15 @@ class GameState {
     // Return player info without WebSocket object, but only for players with active balls
     return this.players
       .filter(player => this.balls[player.playerId]) // Only include players with active balls
-      .map(({ playerId, username, color }) => ({ playerId, username, color }));
+      .map(player => {
+        const ball = this.balls[player.playerId];
+        return {
+          playerId: player.playerId,
+          username: player.username,
+          color: player.color,
+          mass: ball.mass
+        };
+      });
   }
   
   // Set the velocity of a player's ball based on input direction (dx, dy) and burst
