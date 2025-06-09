@@ -608,6 +608,7 @@ class _GameScreenState extends State<GameScreen> {
     final bool isEliminated = !balls.any((ball) => ball.id == _myPlayerId);
     if (isEliminated) {
       _myStamina = 0.0;
+      _smoothedZoom = 1.0; 
     } else {
       // Update stamina from our ball if present
       final myBall = balls.firstWhere((ball) => ball.id == _myPlayerId);
