@@ -163,7 +163,6 @@ wss.on('connection', (ws) => {
     try {
       // Convert Buffer to string if necessary
       const jsonString = typeof message === 'string' ? message : message.toString('utf8');
-      console.log('📩 Received message:', jsonString);
       const data = JSON.parse(jsonString);
 
       if (data.type === 'join' || data.type === 'getPlayers') {
@@ -240,14 +239,6 @@ wss.on('connection', (ws) => {
           if (typeof data.restLengthScale === 'number') gameState.bands.forEach(b => b.restLengthScale = data.restLengthScale);
         }
 
-        console.log('[SERVER] Band settings updated:', {
-          springConstant: data.springConstant,
-          dampingCoeff: data.dampingCoeff,
-          mass: data.mass,
-          restitution: data.restitution,
-          segmentsPerSide,
-          restLengthScale,
-        });
         // Broadcast new settings to all clients
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
@@ -360,6 +351,5 @@ wss.on('connection', (ws) => {
 
 // Fallback to serve index.html for SPA routing
 app.get('*', (req, res) => {
-  console.log(`📄 Serving index.html for route: ${req.url}`);
   res.sendFile(path.join(__dirname, 'server', 'public', 'index.html'));
 });

@@ -7,7 +7,7 @@ const BALL_MASS = 2.5; // Initial mass
 const BALL_RADIUS = 18; // Initial radius
 const BALL_MASS_GROWTH_INTERVAL = 3.0; // seconds between mass increments
 const BALL_MASS_INCREMENT = 0.07; // How much to increase mass each interval
-const BALL_MASS_MAX_MULTIPLIER = 12; // Max mass = BALL_MASS * 6
+const BALL_MASS_MAX_MULTIPLIER = 10; // Max mass = BALL_MASS * 6
 
 const BAND_SEGMENTS_PER_SIDE = 12; // from reference code
 const BAND_SPRING_CONSTANT = 2;
@@ -271,7 +271,7 @@ class GameState {
         const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
         if (len > 0) {
           // Scale burst impulse with mass, using the same scaling
-          const massScale = Math.pow(ball.mass / BALL_MASS, 0.3); // Changed from sqrt to power of 0.3
+          const massScale = Math.pow(ball.mass / BALL_MASS, 0.25); // Changed from sqrt to power of 0.3
           const bx = (burst.dx / len) * BURST_IMPULSE * massScale;
           const by = (burst.dy / len) * BURST_IMPULSE * massScale;
           ball.vx += bx;
