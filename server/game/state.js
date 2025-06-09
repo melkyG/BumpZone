@@ -20,7 +20,7 @@ const POST_RADIUS = 25; // for collision, slightly larger than ball
 
 // Stamina system constants
 const STAMINA_MAX = 1.0;
-const STAMINA_DRAIN_PER_SEC = 0.15; // how fast stamina drains when holding (per second)
+const STAMINA_DRAIN_PER_SEC = 0.13; // how fast stamina drains when holding (per second)
 const STAMINA_RECOVER_PER_SEC = 0.29; // how fast stamina recovers when not holding (per second)
 const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to move
 
@@ -28,11 +28,6 @@ const STAMINA_MIN_TO_MOVE = 0.01; // must have at least this much stamina to mov
 const BURST_STAMINA_COST = 0.3;
 const BURST_MIN_STAMINA = 0.66;
 const BURST_IMPULSE = 350; // tweak as needed
-
-// Bot settings
-const BOT_UPDATE_INTERVAL = 0.5; // seconds between bot direction changes
-const BOT_MOVE_CHANCE = 0.7; // probability of bot moving in a direction
-const BOT_BURST_CHANCE = 0.1; // probability of bot using burst
 
 class GameState {
   constructor() {
@@ -275,8 +270,8 @@ class GameState {
         // Apply burst impulse immediately
         const len = Math.sqrt(burst.dx * burst.dx + burst.dy * burst.dy);
         if (len > 0) {
-          // Scale burst impulse with mass, using square root for more gradual scaling
-          const massScale = Math.sqrt(ball.mass / BALL_MASS);
+          // Scale burst impulse with mass, using the same scaling
+          const massScale = Math.pow(ball.mass / BALL_MASS, 0.3); // Changed from sqrt to power of 0.3
           const bx = (burst.dx / len) * BURST_IMPULSE * massScale;
           const by = (burst.dy / len) * BURST_IMPULSE * massScale;
           ball.vx += bx;
@@ -305,8 +300,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(impulse.dx * impulse.dx + impulse.dy * impulse.dy);
           if (len > 0) {
-            // Scale acceleration with mass, but use square root to make it more gradual
-            const massScale = Math.sqrt(ball.mass / BALL_MASS);
+            // Scale acceleration with mass, using a more gradual scaling
+            const massScale = Math.pow(ball.mass / BALL_MASS, 0.3); // Changed from sqrt to power of 0.3
             const ax = (impulse.dx / len) * ACCELERATION * massScale;
             const ay = (impulse.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
@@ -322,8 +317,8 @@ class GameState {
         if (ball.stamina > STAMINA_MIN_TO_MOVE) {
           const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
           if (len > 0) {
-            // Scale acceleration with mass, but use square root to make it more gradual
-            const massScale = Math.sqrt(ball.mass / BALL_MASS);
+            // Scale acceleration with mass, using a more gradual scaling
+            const massScale = Math.pow(ball.mass / BALL_MASS, 0.3); // Changed from sqrt to power of 0.3
             const ax = (input.dx / len) * ACCELERATION * massScale;
             const ay = (input.dy / len) * ACCELERATION * massScale;
             ball.vx += ax * dt * 0.05;
