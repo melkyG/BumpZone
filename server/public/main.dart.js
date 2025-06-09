@@ -35154,31 +35154,32 @@ P(a4){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a=this,a0=null,a1=t.w,a2=A.bl(a4,a
 a1=a.z
 n=a2<a3?a2/a1:a3/a1
 s=null
-try{s=B.b.mC(a.r,new A.aay(a))}catch(m){s=null}if(s!=null){a1=s.w
-l=a1==null?a.db.h(0,s.a):a1
-if(l==null)l=2.5
+try{s=B.b.mC(a.r,new A.aay(a))}catch(m){s=null}if(a.dy===0)l=1
+else if(s!=null){a1=s.w
+k=a1==null?a.db.h(0,s.a):a1
+if(k==null)k=2.5
 if(s.w!=null){a1=s.a
-k=s.w
-k.toString
-a.db.m(0,a1,k)}j=B.c.ea(4/B.c.ea(l/2.5,0.5,4),1.8,4)}else j=4
+j=s.w
+j.toString
+a.db.m(0,a1,j)}l=B.c.ea(4/B.c.ea(k/2.5,0.5,4),1.8,4)}else l=4
 a1=a.fy
-if(a1==null){a.fy=j
-a1=j}else a1=a.fy=a1+(j-a1)*0.1
-k=a.z
-i=k*(n*a1)
+if(a1==null){a.fy=l
+a1=l}else a1=a.fy=a1+(l-a1)*0.1
+j=a.z
+i=j*(n*a1)
 a1=a.a.c.w
 h=a.CW
-if(h==null)if(s!=null){k=new A.f(s.b,s.c)
-h=k}else{k/=2
-k=new A.f(k,k)
-h=k}r=A.x(t.N,t.G)
-for(k=a.w,g=k.length,f=0;f<k.length;k.length===g||(0,A.F)(k),++f){q=k[f]
+if(h==null)if(s!=null){j=new A.f(s.b,s.c)
+h=j}else{j/=2
+j=new A.f(j,j)
+h=j}r=A.x(t.N,t.G)
+for(j=a.w,g=j.length,f=0;f<j.length;j.length===g||(0,A.F)(j),++f){q=j[f]
 p=null
 o=null
 try{p=J.iK(q,"playerId")
 o=J.iK(q,"color")}catch(m){try{p=q.gxH()
 o=q.c}catch(m){p=null
-o=null}}if(p!=null&&o!=null&&J.cq(o)===9&&J.akH(o,"#"))try{J.oz(r,p,A.aN(A.fr(J.RB(o,1),16)))}catch(m){}}k=A.F0(!0,a0,!0,!0,a0,a0,!1)
+o=null}}if(p!=null&&o!=null&&J.cq(o)===9&&J.akH(o,"#"))try{J.oz(r,p,A.aN(A.fr(J.RB(o,1),16)))}catch(m){}}j=A.F0(!0,a0,!0,!0,a0,a0,!1)
 g=A.anf(0,A.eX(a0,B.z,B.eR,a0,a0,a0,a0,a0,a0,a0))
 e=a.z
 d=a.r
@@ -35189,7 +35190,7 @@ e=A.kw(B.bC,A.ja(A.pD(B.bh,A.eX(A.oN(A.eX(A.hZ(a0,a0,!1,a0,new A.JH(d,c,b,e,h,a.
 b=a.w
 b=A.c([g,e,new A.wE(b,a0),new A.Fh(b,a.Q,a.as,a.at,a.ax,a.ay,a.ch,new A.aaN(a),new A.aaO(a),new A.aaB(a),new A.aaC(a),new A.aaD(a),new A.aaE(a),new A.aaF(a),a.ga2b(),a.ga2I(),a.dy,a0)],t.E)
 if(a1==null)b.push(A.eX(B.zD,B.z,A.a8(B.c.ap(76.5),B.l.u()>>>16&255,B.l.u()>>>8&255,B.l.u()&255),a0,a0,a0,a0,a0,a0,a0))
-return A.anD(new A.wM(k,!0,new A.aaG(a),A.jz(B.bQ,b,B.U,B.bI),a0))},
+return A.anD(new A.wM(j,!0,new A.aaG(a),A.jz(B.bQ,b,B.U,B.bI),a0))},
 a7i(a){var s,r,q,p,o,n,m,l,k=this
 if(k.a.c.w==null)return
 s=null

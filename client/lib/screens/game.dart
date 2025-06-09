@@ -271,7 +271,11 @@ class _GameScreenState extends State<GameScreen> {
 
     // Calculate target zoom based on mass, using cached mass if available
     double targetZoom = 4; // Default zoom (changed from 2.5 to 3.0 for more zoomed in start)
-    if (myBall != null) {
+    
+    // If eliminated, force zoom to 1.0
+    if (_myStamina == 0.0) {
+      targetZoom = 1.0;
+    } else if (myBall != null) {
       // Use cached mass if available, otherwise use current mass
       final double mass = myBall.mass ?? _lastBallMasses[myBall.id] ?? 2.5;
       // Update cache with current mass if available
