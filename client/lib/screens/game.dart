@@ -623,21 +623,22 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _updateCamera() {
-    if (_myPlayerId == null) return;
-    Ball? myBall;
-    try {
-      myBall = _balls.firstWhere((b) => b.id == _myPlayerId);
-    } catch (_) {
+    if (!mounted) return;
+
+    // If we're eliminated, keep the zoom at 1.0
+    if (_myStamina == 0.0) {
+      _smoothedZoom = 1.0;
       return;
     }
 
-    // Update camera position to follow ball
-    _smoothedCameraOffset = Offset(myBall.x, myBall.y);
+    // Calculate target zoom based on ball mass
+    double targetZoom = 1.0;
+    if (_balls.isNotEmpty && _balls.first.mass != null) {
+      // Scale zoom with mass, but use a more gradual scaling
+      targetZoom = math.pow(_balls.first.mass! / 2.5, 0.3).toDouble();
+    }
 
-    // Update zoom based on mass
-    final mass = myBall.mass ?? _lastBallMasses[_myPlayerId] ?? 2.5;
-    // Adjust zoom calculation to keep camera closer when ball is large
-    final targetZoom = 3.0 / (mass / 2.5).clamp(0.5, 2.5);
+    // Smoothly interpolate current zoom to target
     _smoothedZoom = (_smoothedZoom ?? 1.0) + (targetZoom - (_smoothedZoom ?? 1.0)) * 0.1;
   }
 
