@@ -625,17 +625,22 @@ class _GameScreenState extends State<GameScreen> {
   void _updateCamera() {
     if (!mounted) return;
 
-    // If we're eliminated, keep the zoom at 1.0
+    // If we're eliminated, keep the zoom at 1.0 and don't do any other calculations
     if (_myStamina == 0.0) {
       _smoothedZoom = 1.0;
       return;
     }
 
-    // Calculate target zoom based on ball mass
+    // Only calculate zoom if we're not eliminated
     double targetZoom = 1.0;
-    if (_balls.isNotEmpty && _balls.first.mass != null) {
-      // Scale zoom with mass, but use a more gradual scaling
-      targetZoom = math.pow(_balls.first.mass! / 2.5, 0.3).toDouble();
+    try {
+      final myBall = _balls.firstWhere((ball) => ball.id == _myPlayerId);
+      if (myBall.mass != null) {
+        targetZoom = math.pow(myBall.mass! / 2.5, 0.3).toDouble();
+      }
+    } catch (_) {
+      // If we can't find our ball, stay at current zoom
+      return;
     }
 
     // Smoothly interpolate current zoom to target
