@@ -128,7 +128,7 @@ function encodeArenaState(balls, bands, posts) {
 
 const app = express();
 console.log('🧠 Running on process ID:', process.pid);
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT;// || 3002;
 const server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 const wss = new WebSocket.Server({ server });
 
